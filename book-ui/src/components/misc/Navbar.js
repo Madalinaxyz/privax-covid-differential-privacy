@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Container, Menu } from 'semantic-ui-react'
 import { useAuth } from '../context/AuthContext'
-
+import logo from '../../assets/images/Covid_logo.png'
 function Navbar() {
   const { getUser, userIsAuthenticated, userLogout } = useAuth()
 
@@ -36,8 +36,14 @@ function Navbar() {
   return (
     <Menu inverted color='blue' stackable size='massive' style={{borderRadius: 0}}>
       <Container>
-        <Menu.Item header>Book-UI</Menu.Item>
+        <Menu.Item header>
+            <img className="covid-logo" src={logo}/>
+        </Menu.Item>
         <Menu.Item as={Link} exact='true' to="/">Home</Menu.Item>
+        <Menu.Item as={Link} exact='true' to="/">COVID-19 Dashboard</Menu.Item>
+        <Menu.Item as={Link} exact='true' to="/">Blog</Menu.Item>
+        <Menu.Item as={Link} exact='true' to="/">Contact</Menu.Item>
+
         <Menu.Item as={Link} to="/adminpage" style={adminPageStyle()}>AdminPage</Menu.Item>
         <Menu.Item as={Link} to="/userpage" style={userPageStyle()}>UserPage</Menu.Item>
         <Menu.Menu position='right'>
