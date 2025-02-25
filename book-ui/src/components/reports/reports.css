@@ -1,0 +1,7 @@
+.report-container {
+    padding: 40px; 
+}
+
+.ui.grid>[class*="four wide"].column {
+    width: 15% !important;
+}
