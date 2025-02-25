@@ -34,7 +34,7 @@ function Navbar() {
   }
 
   return (
-    <Menu inverted color='blue' stackable size='massive' style={{borderRadius: 0}}>
+    <Menu className="custom_header" inverted color='blue' stackable size='massive' style={{borderRadius: 0}}>
       <Container>
         <Menu.Item header>
             <img className="covid-logo" src={logo}/>

@@ -20,20 +20,12 @@ code {
   width:80px;
 }
 .right.menu{
-  display: flex;
+    display: flex;
     align-content: center;
     justify-content: center;
     align-items: center;
 }
+.custom_header{
+    margin:0!important;
+}
  
-@media only screen and (min-width: 1200px){
-
-div .ui.text.container.homepage-design{
-   background-image: url('./assets/images/001c0614-1600.png');
-    background-size:cover;
-    margin: 0;
-    max-width:none!important;
-    width: 100%;
-    height:calc(100vh - 90px);
-}
-}

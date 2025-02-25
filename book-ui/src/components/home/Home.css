@@ -1,0 +1,21 @@
+@media only screen and (min-width: 1200px){
+
+div .ui.text.container.homepage-design{
+   background-image: url('../../assets/images/001c0614-1600.png');
+    background-size:cover;
+    margin: 0;
+    max-width:none!important;
+    width: 100%;
+    height:calc(100vh - 90px);
+}
+}
+.text-homepage{
+    position:absolute;
+    top:50%;
+    left:5%;
+    transform:translateY(-50%);
+    background-color:rgba(255,255,255,0.8);
+    padding:20px;
+    border-radius:8px;
+    max-width:30%;
+}
