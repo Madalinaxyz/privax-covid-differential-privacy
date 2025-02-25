@@ -28,12 +28,27 @@ code {
  
 @media only screen and (min-width: 1200px){
 
-div .ui.text.container.homepage-design{
-   background-image: url('./assets/images/001c0614-1600.png');
-    background-size:cover;
+  div .ui.text.container.homepage-design {
+    position: relative;
     margin: 0;
-    max-width:none!important;
+    max-width: none !important;
     width: 100%;
-    height:calc(100vh - 90px);
+    height: calc(100vh - 90px);
+    overflow: hidden; /* Prevents blur overflow */
 }
+
+div .ui.text.container.homepage-design::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('./assets/images/001c0614-1600.png');
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px); /* Adjust blur intensity */
+    z-index: -1; /* Moves it behind content */
+}
+
 }

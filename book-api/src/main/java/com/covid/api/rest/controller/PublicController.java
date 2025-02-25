@@ -1,4 +1,4 @@
-package com.covid.api.rest;
+package com.covid.api.rest.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

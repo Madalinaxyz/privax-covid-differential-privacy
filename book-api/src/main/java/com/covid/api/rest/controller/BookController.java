@@ -1,4 +1,4 @@
-package com.covid.api.rest;
+package com.covid.api.rest.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

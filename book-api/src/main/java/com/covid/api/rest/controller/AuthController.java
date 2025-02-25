@@ -1,4 +1,4 @@
-package com.covid.api.rest;
+package com.covid.api.rest.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

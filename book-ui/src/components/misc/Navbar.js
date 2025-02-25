@@ -43,6 +43,7 @@ function Navbar() {
         <Menu.Item as={Link} exact='true' to="/">COVID-19 Dashboard</Menu.Item>
         <Menu.Item as={Link} exact='true' to="/">Blog</Menu.Item>
         <Menu.Item as={Link} exact='true' to="/">Contact</Menu.Item>
+        <Menu.Item as={Link} exact='true' to="/reports">Reports</Menu.Item>
 
         <Menu.Item as={Link} to="/adminpage" style={adminPageStyle()}>AdminPage</Menu.Item>
         <Menu.Item as={Link} to="/userpage" style={userPageStyle()}>UserPage</Menu.Item>

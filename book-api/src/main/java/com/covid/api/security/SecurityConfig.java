@@ -18,11 +18,13 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers(HttpMethod.GET, "/api/books", "/api/books/**").hasAnyAuthority(ADMIN, USER)
-                        .requestMatchers(HttpMethod.GET, "/api/users/me").hasAnyAuthority(ADMIN, USER)
-                        .requestMatchers("/api/books", "/api/books/**").hasAuthority(ADMIN)
-                        .requestMatchers("/api/users", "/api/users/**").hasAuthority(ADMIN)
+                        // .requestMatchers(HttpMethod.GET, "/api/books", "/api/books/**").hasAnyAuthority(ADMIN, USER)
+                        // .requestMatchers(HttpMethod.GET, "/api/users/me").hasAnyAuthority(ADMIN, USER)
+                        // .requestMatchers(HttpMethod.GET, "/api/**").hasAnyAuthority(ADMIN, USER)
+                        // .requestMatchers("/api/books", "/api/books/**").hasAuthority(ADMIN)
+                        // .requestMatchers("/api/users", "/api/users/**").hasAuthority(ADMIN)
                         .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers("/api/vaccinations/**").permitAll()
                         .requestMatchers("/", "/error", "/csrf", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
