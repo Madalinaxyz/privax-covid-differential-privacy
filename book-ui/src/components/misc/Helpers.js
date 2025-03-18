@@ -40,3 +40,66 @@ export const cityCoordinates = {
   "Târgoviște": { lat: 44.9252, lng: 25.4563 },
   "Bistrița": { lat: 47.1325, lng: 24.5006 }
 };
+
+
+
+export const applyDifferentialPrivacy = (data, epsilon) => {
+  return data.map(report => ({
+    ...report,
+    age: clamp(Math.floor(report.age + laplaceNoise(epsilon)), 18, 80), // ✅ Ensures age stays between 18-80
+    severity: randomizeSeverity(report.severity, epsilon),
+    vaccineName: randomizeVaccine(report.vaccineName, epsilon),
+    city: randomizeCity(report.city, epsilon),
+    symptoms: randomizeSymptoms(report.symptoms, epsilon),
+  }));
+};
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+
+const laplaceNoise = (epsilon) => {
+  const sensitivity = 5.0;
+  const scale = sensitivity / epsilon;
+  const u = Math.random() - 0.5;
+  return -scale * Math.sign(u) * Math.log(1 - 2 * Math.abs(u)); 
+};
+
+
+const randomizeSeverity = (original, epsilon) => {
+  if (Math.random() < (1 / epsilon)) {
+    const severities = ["MILD", "MODERATE", "SEVERE", "FATAL"];
+    return severities[Math.floor(Math.random() * severities.length)];
+  }
+  return original;
+};
+
+const randomizeVaccine = (original, epsilon) => {
+  if (Math.random() < (1 / epsilon)) {
+    const vaccines = ["Pfizer", "Moderna", "AstraZeneca", "Johnson & Johnson"];
+    return vaccines[Math.floor(Math.random() * vaccines.length)];
+  }
+  return original;
+};
+
+const randomizeCity = (original, epsilon) => {
+  if (Math.random() < (1 / epsilon)) {
+    const cities = ["Bucharest", "Cluj-Napoca", "Timișoara", "Iași", "Brașov", "Constanța"];
+    return cities[Math.floor(Math.random() * cities.length)];
+  }
+  return original;
+};
+
+const randomizeSymptoms = (originalSymptoms, epsilon) => {
+  const symptomsList = ["Fatigue", "Fever", "Headache", "Muscle Pain", "Chills", "Dizziness"];
+  let newSymptoms = [...originalSymptoms];
+
+  if (Math.random() < (1 / epsilon)) {
+    newSymptoms.push(symptomsList[Math.floor(Math.random() * symptomsList.length)]);
+  }
+
+  if (Math.random() < (1 / epsilon) && newSymptoms.length > 0) {
+    newSymptoms.splice(Math.floor(Math.random() * newSymptoms.length), 1);
+  }
+
+  return newSymptoms;
+};

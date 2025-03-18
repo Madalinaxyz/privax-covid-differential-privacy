@@ -3,8 +3,10 @@ package com.covid.api.rest.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.covid.api.rest.dto.GroupedReportDTO;
 import com.covid.api.rest.dto.SideEffectReportDTO;
 import com.covid.api.rest.model.SideEffectReport;
 import com.covid.api.rest.service.SideEffectService;
@@ -16,9 +18,6 @@ import static com.covid.api.config.SwaggerConfig.BASIC_AUTH_SECURITY_SCHEME;
 
 import java.util.List;
 
-/**
- * REST controller for handling side-effect reporting.
- */
 @RestController
 @RequestMapping("/api/side-effects")
 public class SideEffectController {
@@ -30,31 +29,41 @@ public class SideEffectController {
         this.sideEffectService = sideEffectService;
     }
 
-    /**
-     * Endpoint for users to submit a side-effect report anonymously.
-     *
-     * @param reportDTO the side-effect report data.
-     * @return the created SideEffectReport object.
-     */
     @PostMapping
     public SideEffectReport reportSideEffect(@RequestBody SideEffectReportDTO reportDTO) {
         return sideEffectService.reportSideEffect(reportDTO);
     }
 
-    /**
-     * (Optional) Endpoint to retrieve all side-effect reports.
-     * This can be used for internal analysis and may be restricted.
-     *
-     * @return a list of all SideEffectReport objects.
-     */
     @GetMapping("/all")
     public List<SideEffectReport> getAllSideEffects() {
         return sideEffectService.getAllSideEffects();
     }
 
-    @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
+    // @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
+    // @GetMapping
+    // public Page<SideEffectReport> getSideEffects(
+    //     Pageable pageable,
+    //     @RequestParam(value = "epsilon", required = false) Double epsilon) {
+    //     return sideEffectService.findAll(pageable, epsilon);
+    // }
+
+
     @GetMapping
-    public Page<SideEffectReport> getSideEffects(Pageable pageable) {
-        return sideEffectService.findAll(pageable);
+    public ResponseEntity<Page<SideEffectReport>> getReports(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(value = "epsilon", required = false) Double epsilon
+    ) {
+        Page<SideEffectReport> reports = sideEffectService.getSideEffectReports(page, size, epsilon);
+        return ResponseEntity.ok(reports);
+    }
+
+    @GetMapping("/grouped")
+    public ResponseEntity<List<GroupedReportDTO>> getGroupedReports(
+        @RequestParam(value = "vaccineName", required = false) String vaccineName,
+        @RequestParam(value = "severityLevel", required = false) String severityLevel,
+        @RequestParam(value = "epsilon", required = false) Double epsilon
+    ) {
+        return ResponseEntity.ok(sideEffectService.getGroupedReports(vaccineName, severityLevel, epsilon));
     }
 }

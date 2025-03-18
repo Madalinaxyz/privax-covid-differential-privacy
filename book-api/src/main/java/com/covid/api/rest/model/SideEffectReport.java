@@ -41,7 +41,7 @@ public class SideEffectReport {
     @Column(name = "vaccine_name", nullable = false)
     private String vaccineName;
 
-    @Column(name = "vcity", nullable = false)
+    @Column(name = "city", nullable = false)
     private String city;
 
     public SideEffectReport() {

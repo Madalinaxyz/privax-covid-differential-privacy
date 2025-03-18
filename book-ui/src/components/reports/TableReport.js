@@ -1,135 +1,52 @@
-// import React from 'react'
-// import {
-//   TableRow,
-//   TableHeaderCell,
-//   TableHeader,
-//   TableCell,
-//   TableBody,
-//   Table,
-// } from 'semantic-ui-react'
-
-// const TableReport = () => (
-//   <Table striped>
-//     <TableHeader>
-//       <TableRow>
-//         <TableHeaderCell>Name</TableHeaderCell>
-//         <TableHeaderCell>Status</TableHeaderCell>
-//         <TableHeaderCell>Notes</TableHeaderCell>
-//       </TableRow>
-//     </TableHeader>
-
-//     <TableBody>
-//       <TableRow verticalAlign='top'>
-//         <TableCell>John</TableCell>
-//         <TableCell>Approved</TableCell>
-//         <TableCell verticalAlign='top'>
-//           Notes
-//           <br />
-//           1<br />
-//           2<br />
-//         </TableCell>
-//       </TableRow>
-//       <TableRow>
-//         <TableCell>Jamie</TableCell>
-//         <TableCell verticalAlign='bottom'>Approved</TableCell>
-//         <TableCell>
-//           Notes
-//           <br />
-//           1<br />
-//           2<br />
-//         </TableCell>
-//       </TableRow>
-//     </TableBody>
-//   </Table>
-// )
-
-// export default TableReport
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import {
-  TableRow,
-  TableHeaderCell,
-  TableHeader,
-  TableCell,
-  TableBody,
-  Table,
-  Loader,
-  Button
-} from "semantic-ui-react";
-
+import React, { useEffect, useState } from "react";
+import { Table, TableRow, TableHeaderCell, TableHeader, TableCell, TableBody, Button } from "semantic-ui-react";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 import { bookApi } from "../misc/BookApi";
+import { applyDifferentialPrivacy } from "../misc/Helpers";
 
 const TableReport = ({ handleLogError }) => {
   const [reports, setReports] = useState([]);
+  const [originalReports, setOriginalReports] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [epsilon, setEpsilon] = useState(10.0);
 
-  const observer = useRef(null);
-  const tableContainerRef = useRef(null); // To track scrolling
-
-  // ✅ **Fetch Reports Function**
   const fetchReports = async () => {
     if (loading || !hasMore) return;
     setLoading(true);
-    
+  
     try {
       console.log(`Fetching page: ${page}`);
       const response = await bookApi.getSideEffectReports({ page, size: 10 });
-
-      console.log("API Response:", response.data); // Debug API response
-
-      if (response.data && Array.isArray(response.data.content)) {
-        setReports((prev) => [...prev, ...response.data.content]); // Append new data
-        setHasMore(response.data.content.length > 0); // Stop loading if empty
-        setPage((prev) => prev + 1);
-      } else {
-        console.error("Unexpected API response:", response.data);
-      }
+  
+      setOriginalReports((prev) => [...prev, ...response.data.content]); 
+      setReports((prev) => [...prev, ...applyDifferentialPrivacy(response.data.content, epsilon)]); 
+  
+      setHasMore(response.data.content.length > 0);
+      setPage((prev) => prev + 1);
     } catch (error) {
       console.error("Error fetching reports:", error);
       handleLogError?.(error);
     }
+  
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchReports();
-  }, []);
-
-  // ✅ **IntersectionObserver for Infinite Scroll**
-  const lastRowRef = useCallback(
-    (node) => {
-      if (loading) return;
-
-      if (observer.current) observer.current.disconnect(); // Disconnect previous observer
-
-      observer.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasMore) {
-            console.log("🔹 Last row visible - Loading more data...");
-            fetchReports();
-          }
-        },
-        { root: tableContainerRef.current, rootMargin: "100px", threshold: 1.0 } // root: container element
-      );
-
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore]
-  );
-
-  // ✅ **Debug Scrolling Manually**
-  const handleManualLoadMore = () => {
-    console.log("🔹 Manually triggered load more!");
-    fetchReports();
-  };
+    if (originalReports.length > 0) {
+      setReports(applyDifferentialPrivacy(originalReports, epsilon));
+    }
+  }, [epsilon, originalReports]);
 
   return (
-    <div
-      ref={tableContainerRef}
-      style={{ height: "80vh", overflowY: "auto", border: "1px solid gray", padding: "10px" }}
-      onScroll={() => console.log("🔹 Scrolling detected!")} // Debug if scrolling works
-    >
+    <div style={{ height: "80vh", overflowY: "auto", border: "1px solid gray", padding: "10px" }}>
+      <div style={{ marginBottom: "20px" }}>
+        <p>Epsilon: {epsilon.toFixed(1)} (Lower = More Privacy, Higher = More Accuracy)</p>
+        <Slider min={0.1} max={10} step={0.1} value={epsilon} onChange={setEpsilon} />
+      </div>
+
       <Table striped>
         <TableHeader>
           <TableRow>
@@ -138,35 +55,33 @@ const TableReport = ({ handleLogError }) => {
             <TableHeaderCell>Vaccine</TableHeaderCell>
             <TableHeaderCell>Symptoms</TableHeaderCell>
             <TableHeaderCell>Reported At</TableHeaderCell>
+            <TableHeaderCell>City</TableHeaderCell>
             <TableHeaderCell>Additional Info</TableHeaderCell>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {reports.map((report, index) => (
-            <TableRow key={report.id} ref={index === reports.length - 1 ? lastRowRef : null}>
-              <TableCell>{report.age}</TableCell>
-              <TableCell>{report.severity}</TableCell>
-              <TableCell>{report.vaccineName}</TableCell>
-              <TableCell>{report.symptoms.join(", ")}</TableCell>
+          {reports.map((report) => (
+            <TableRow key={report.id}>
+              <TableCell><b>{report.age}</b></TableCell>
+              <TableCell><b>{report.severity}</b></TableCell>
+              <TableCell><b>{report.vaccineName}</b></TableCell>
+              <TableCell><b>{report.symptoms.join(", ")}</b></TableCell>
               <TableCell>{new Date(report.reportedAt).toLocaleString()}</TableCell>
-              <TableCell>{report.additionalInfo || "N/A"}</TableCell>
+              <TableCell><b>{report.city}</b></TableCell>
+              <TableCell>{report.additionalInfo}</TableCell>
             </TableRow>
           ))}
         </TableBody>
-
-        {loading && (
-          <TableRow>
-            <TableCell colSpan="6">
-              <Loader active inline="centered" />
-            </TableCell>
-          </TableRow>
-        )}
       </Table>
 
-      {/* ✅ Debugging Button */}
-      <Button primary onClick={handleManualLoadMore} disabled={loading} style={{ marginTop: "10px" }}>
-        Load More (Debug)
+      <Button 
+        primary 
+        onClick={fetchReports} 
+        disabled={loading || !hasMore} 
+        style={{ marginTop: "10px" }}
+      >
+        {loading ? "Loading..." : "Load More"}
       </Button>
     </div>
   );

@@ -36,7 +36,8 @@ export const bookApi = {
   test,
   getSideEffectReports,
   getAllSideEffectReports,
-  createSideEffectReport
+  createSideEffectReport,
+  getGroupedSideEffectReports
 }
 
 // Authentication Functions
@@ -72,8 +73,16 @@ function test() {
   return instance.get('/api/vaccinations/test')
 }
 
-function getSideEffectReports() {
-  return instance.get('/api/side-effects')
+// function getSideEffectReports(epsilon) {
+//   return instance.get('/api/side-effects', {
+//     params: { epsilon },
+//   });
+// }
+
+function getSideEffectReports({ page = 0, size = 30, epsilon = 1.0 }) {
+  return instance.get('/api/side-effects', {
+    params: { page, size, epsilon },
+  });
 }
 
 function getAllSideEffectReports() {
@@ -85,6 +94,13 @@ function createSideEffectReport(reportData) {
     headers: { "Content-Type": "application/json" },
   });
 }
+
+function getGroupedSideEffectReports(vaccineName, severityLevel, epsilon) {
+  return instance.get("/api/side-effects/grouped", {
+    params: { vaccineName, severityLevel, epsilon },
+  });
+}
+
 
 function getUsers(username) {
   const url = username ? `/api/users/${username}` : '/api/users'
