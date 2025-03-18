@@ -19,3 +19,154 @@ div .ui.text.container.homepage-design{
     border-radius:8px;
     max-width:30%;
 }
+
+/* Vaccine Steps Section Styling */
+.vaccine-steps-container {
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.steps-heading {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.steps-grid {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.step-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.step-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 30px;
+  border: 2px solid #0a3462;
+  max-width: 450px;
+  position: relative;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.step-number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #0a3462;
+}
+
+.step-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.step-description {
+  font-size: 1rem;
+  color: #4F4F4F;
+}
+
+/* Alternating steps layout */
+.step-row:nth-child(odd) {
+  justify-content: flex-start;
+  padding-left: 120px;
+}
+
+.step-row:nth-child(even) {
+  justify-content: flex-end;
+  padding-right: 120px;
+}
+
+/* Connector Dashed Line */
+.step-row::before {
+  content: "";
+  position: absolute;
+  width: 3px;
+  height: 80px;
+  background: #0a3462;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border-left: 3px dashed #0a3462;
+  z-index: -1;
+}
+
+/* Hide last connector */
+.step-row:last-child::before {
+  display: none;
+}
+/* FAQ Section Styling */
+.faq-container {
+  padding: 40px 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.faq-heading {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.faq-item {
+  background: #ffffff;
+  border: 2px solid #0a3462;
+  border-radius: 10px;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.faq-item.open {
+  background: #f5f3ff;
+}
+
+.faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.faq-toggle {
+  font-size: 1.5rem;
+  color: #0a3462;
+  font-weight: bold;
+}
+
+.faq-answer {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #4F4F4F;
+  line-height: 1.5;
+}
+
+
+
+
+
+
+
+
