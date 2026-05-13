@@ -1,0 +1,40 @@
+/* Global reset / base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #FFFFFF;
+  color: #1E293B;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Selection */
+::selection {
+  background: rgba(79, 182, 217, 0.3);
+  color: #E5F1F8;
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(58, 158, 199, 0.35);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(79, 182, 217, 0.6); }
+
+/* Semantic UI modal dimmer */
+.ui.page.modals.dimmer { background: rgba(0, 0, 0, 0.7); }

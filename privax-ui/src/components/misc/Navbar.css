@@ -1,0 +1,180 @@
+/* ============================================================
+   NAVBAR — solid, premium, no tagline, bigger logo
+   ============================================================ */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 92px;
+  display: flex;
+  align-items: center;
+  background: #0F1A2E;
+  border-bottom: 1px solid rgba(58,158,199,0.18);
+  transition: height 0.25s ease, box-shadow 0.25s ease;
+}
+/* On the homepage, overlay the cinematic hero */
+.navbar--overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+}
+.navbar--scrolled {
+  height: 80px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+}
+
+.navbar-inner {
+  margin: 0 auto;
+  padding: 0 8vw;        /* matches hero text padding for alignment */
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 56px;
+  box-sizing: border-box;
+}
+
+/* ── Logo (wordmark only — luxury minimal) ── */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none !important;
+  flex-shrink: 0;
+  transition: transform 0.25s, filter 0.3s;
+  filter: drop-shadow(0 0 0 transparent);
+}
+.navbar-logo:hover {
+  transform: translateX(2px);
+  filter: drop-shadow(0 0 18px rgba(79,182,217,0.3));
+}
+.navbar-logo-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #E5F1F8;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.navbar--scrolled .navbar-logo-name {
+  font-size: 1.9rem;
+}
+.navbar-logo-dot {
+  color: #4FB6D9;
+  margin-left: 1px;
+  text-shadow: 0 0 14px rgba(79,182,217,0.7);
+}
+
+/* ── Links ── */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+.navbar-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(229,241,248,0.7) !important;
+  text-decoration: none !important;
+  padding: 10px 18px;
+  border-radius: 6px;
+  position: relative;
+  transition: color 0.2s;
+}
+.navbar-link::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 24px;
+  height: 1px;
+  background: #4FB6D9;
+  box-shadow: 0 0 8px rgba(79,182,217,0.6);
+  transition: transform 0.25s ease;
+}
+.navbar-link:hover { color: #E5F1F8 !important; }
+.navbar-link:hover::after { transform: translateX(-50%) scaleX(1); }
+.navbar-link--active { color: #4FB6D9 !important; }
+.navbar-link--active::after { transform: translateX(-50%) scaleX(1); }
+
+/* ── Auth ── */
+.navbar-auth {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.navbar-greeting {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(229,241,248,0.7);
+}
+
+.btn-nav-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(229,241,248,0.7) !important;
+  text-decoration: none !important;
+  padding: 11px 18px;
+  border-radius: 100px;
+  transition: color 0.2s;
+}
+.btn-nav-text:hover { color: #E5F1F8 !important; }
+
+.btn-nav-primary {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #0F1A2E !important;
+  text-decoration: none !important;
+  background: linear-gradient(135deg, #3A9EC7 0%, #4FB6D9 100%);
+  padding: 12px 24px;
+  border-radius: 100px;
+  transition: transform 0.18s, box-shadow 0.2s, filter 0.2s;
+  box-shadow: 0 0 0 1px rgba(79,182,217,0.5), 0 6px 22px rgba(58,158,199,0.45);
+}
+.btn-nav-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+  box-shadow: 0 0 0 1px rgba(79,182,217,0.8), 0 10px 32px rgba(58,158,199,0.6);
+  color: #0F1A2E !important;
+}
+
+.btn-nav-outline {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #B8DCE8;
+  background: transparent;
+  border: 1px solid rgba(184,220,232,0.3);
+  padding: 11px 20px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.btn-nav-outline:hover {
+  background: rgba(79,182,217,0.1);
+  border-color: #4FB6D9;
+  color: #E5F1F8;
+}
+
+/* ── Responsive ── */
+@media (max-width: 880px) {
+  .navbar { height: 80px; }
+  .navbar--scrolled { height: 72px; }
+  .navbar-inner { padding: 0 5vw; gap: 16px; }
+  .navbar-links { display: none; }
+  .navbar-logo-img { width: 48px; height: 48px; }
+  .navbar--scrolled .navbar-logo-img { width: 44px; height: 44px; }
+  .navbar-logo-name { font-size: 1.15rem; }
+}

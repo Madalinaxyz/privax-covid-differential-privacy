@@ -5,7 +5,7 @@ services:
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_DB: bookdb
+      POSTGRES_DB: privaxdb
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
     healthcheck:
