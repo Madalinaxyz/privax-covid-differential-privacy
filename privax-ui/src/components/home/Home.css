@@ -29,10 +29,15 @@
   --c-ink-muted:   #6B7790;
   --c-ink-faint:   #9CA5B8;
 
-  /* Single warm accent (replacing all gold) */
-  --c-terra:       #C9B380;   /* champagne — refined, luxurious, neutral warmth */
+  /* Champagne — used ONLY in the personal note scene */
+  --c-terra:       #C9B380;
   --c-terra-soft:  #E0CFA1;
   --c-terra-deep:  #9A865A;
+
+  /* Verdigris — blue-green medical accent, used everywhere outside personal scene */
+  --c-mint:        #2DA597;
+  --c-mint-soft:   #56C0B3;
+  --c-mint-deep:   #1D7068;
 
   /* Fonts */
   --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;
@@ -318,7 +323,7 @@
   margin: 0;
 }
 .fog-text .dim { color: rgba(184,220,232,0.42); }
-.fog-text .accent { color: var(--c-terra-soft); }
+.fog-text .accent { color: var(--c-mint-soft); }
 
 /* ============================================================
    SCENE 3 — SILENCE (LUXURY MEDICAL)
@@ -358,22 +363,17 @@
   background: linear-gradient(90deg, transparent, rgba(58,158,199,0.4), transparent);
 }
 
-/* Top section: text + hero stat */
-.silence-top {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 80px;
-  align-items: center;
+.silence-text {
+  position: relative;
+  max-width: 760px;
 }
-
-.silence-text { position: relative; }
 .silence-quote-mark {
   display: block;
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 5rem;
   line-height: 0.3;
-  color: var(--c-terra);
+  color: var(--c-mint);
   opacity: 0.55;
   margin-bottom: 22px;
 }
@@ -388,7 +388,7 @@
 }
 .silence-text h2 em {
   font-style: normal;
-  color: var(--c-terra);
+  color: var(--c-mint);
 }
 .silence-text p {
   font-size: 1.02rem;
@@ -401,39 +401,125 @@
   color: var(--c-ink-soft);
 }
 
-/* Hero stat */
-.silence-hero-stat {
-  text-align: center;
-  padding-left: 24px;
-  border-left: 1px solid var(--c-stone);
+/* ── Horizontal data visualization (87/13 split) ── */
+.silence-viz {
+  margin-top: 56px;
 }
-.silence-hero-num {
+.silence-viz-label {
   font-family: var(--font-display);
-  font-size: clamp(7rem, 12vw, 11rem);
-  font-weight: 800;
-  line-height: 0.85;
-  letter-spacing: -0.06em;
-  color: var(--c-terra);
-  margin-bottom: 20px;
-  display: inline-block;
-  position: relative;
-}
-.silence-hero-pct {
-  font-size: 0.5em;
-  font-weight: 600;
-  vertical-align: top;
-  margin-left: 4px;
-  letter-spacing: -0.04em;
-  color: var(--c-terra-deep);
-}
-.silence-hero-cap {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--c-ink-muted);
-  max-width: 260px;
-  margin: 0 auto;
+  margin-bottom: 18px;
+}
+
+.silence-viz-bar {
+  display: flex;
+  height: 88px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(20,33,61,0.08);
+  border: 1px solid rgba(228,220,200,0.6);
+}
+
+.silence-bar-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: filter 0.3s;
+}
+.silence-bar-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.silence-bar-num {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.silence-bar-cap {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Silenced segment — muted, weighted */
+.silence-bar-seg.silenced {
+  background:
+    repeating-linear-gradient(45deg,
+      transparent 0,
+      transparent 8px,
+      rgba(20,33,61,0.03) 8px,
+      rgba(20,33,61,0.03) 9px),
+    linear-gradient(180deg, #E8E2D2, #DBD3BF);
+  color: var(--c-ink-muted);
+}
+.silence-bar-seg.silenced .silence-bar-num { color: var(--c-ink-soft); opacity: 0.7; }
+
+/* Heard segment — vivid verdigris, glowing */
+.silence-bar-seg.heard {
+  background: linear-gradient(135deg, var(--c-mint), var(--c-mint-soft));
+  color: #FFFFFF;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.18),
+    0 0 36px rgba(45,165,151,0.45);
+  position: relative;
+  z-index: 2;
+}
+.silence-bar-seg.heard .silence-bar-num {
+  color: #FFFFFF;
+  text-shadow: 0 0 18px rgba(255,255,255,0.4);
+}
+
+/* Subtle entrance animation when section enters viewport */
+.silence-viz-bar.active .silence-bar-seg.heard {
+  animation: heardPulse 3s ease-in-out infinite;
+}
+@keyframes heardPulse {
+  0%,100% { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18), 0 0 36px rgba(45,165,151,0.45); }
+  50%     { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25), 0 0 52px rgba(45,165,151,0.65); }
+}
+
+/* Legend below the bar */
+.silence-viz-legend {
+  display: grid;
+  grid-template-columns: 87fr 13fr;
+  gap: 16px;
+  margin-top: 18px;
+  font-size: 0.88rem;
+  color: var(--c-ink-muted);
+  line-height: 1.5;
+}
+.silence-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 4px;
+}
+.silence-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.silenced-dot {
+  background: #C9BDA8;
+  border: 1px solid rgba(20,33,61,0.15);
+}
+.heard-dot {
+  background: var(--c-mint);
+  box-shadow: 0 0 8px rgba(45,165,151,0.5);
 }
 
 /* Divider */
@@ -935,14 +1021,14 @@
 }
 .timeline-track::before {
   content: ''; position: absolute;
-  top: 18px;      /* aligns with dot center */
+  top: 18px;
   left: 9%;
   right: 9%;
   height: 1px;
   background: linear-gradient(90deg,
     rgba(58,158,199,0.25) 0%,
     rgba(58,158,199,0.55) 50%,
-    rgba(181,135,145,0.55) 100%);
+    rgba(95,184,155,0.55) 100%);
 }
 .timeline-grid {
   display: grid;
@@ -971,11 +1057,11 @@
   z-index: 2;
 }
 .timeline-node:nth-child(5) .timeline-dot {
-  background: var(--c-terra-soft);
+  background: var(--c-mint-soft);
   box-shadow:
     0 0 0 5px var(--c-deep),
-    0 0 0 7px rgba(181,135,145,0.25),
-    0 0 22px rgba(181,135,145,0.7);
+    0 0 0 7px rgba(95,184,155,0.25),
+    0 0 22px rgba(95,184,155,0.7);
 }
 .timeline-node:hover .timeline-dot { transform: scale(1.4); }
 
@@ -991,7 +1077,7 @@
   margin-bottom: 12px;
 }
 .timeline-node:nth-child(5) .timeline-year {
-  background: linear-gradient(180deg, var(--c-glow), var(--c-terra-soft));
+  background: linear-gradient(180deg, var(--c-glow), var(--c-mint-soft));
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
 }
@@ -1022,8 +1108,8 @@
   box-shadow: 0 0 12px rgba(58,158,199,0.5);
 }
 .timeline-node:nth-child(5) .timeline-bar i {
-  background: linear-gradient(90deg, var(--c-terra-deep), var(--c-terra-soft));
-  box-shadow: 0 0 12px rgba(181,135,145,0.5);
+  background: linear-gradient(90deg, var(--c-mint-deep), var(--c-mint-soft));
+  box-shadow: 0 0 12px rgba(95,184,155,0.5);
 }
 .timeline-quality {
   font-size: 0.7rem;
@@ -1308,7 +1394,7 @@
 }
 .finale-eyebrow {
   display: block;
-  color: var(--c-terra-soft);
+  color: var(--c-mint-soft);
   font-size: 0.74rem; font-weight: 700;
   letter-spacing: 0.32em; text-transform: uppercase;
   margin-bottom: 18px;
@@ -1368,13 +1454,14 @@
    ============================================================ */
 @media (max-width: 1024px) {
   .silence-card { padding: 56px 40px; }
-  .silence-top { grid-template-columns: 1fr; gap: 48px; text-align: center; }
-  .silence-text { text-align: left; }
-  .silence-hero-stat { padding-left: 0; border-left: none; padding-top: 32px; border-top: 1px solid var(--c-stone); }
   .silence-stats-row { grid-template-columns: 1fr; gap: 28px; }
   .silence-stat-mini { border-left: none; border-top: 1px solid var(--c-stone); padding: 24px 0 0; }
   .silence-stat-mini:first-child { border-top: none; padding-top: 0; }
   .silence-mini-label { max-width: none; }
+  .silence-bar-num { font-size: 1.4rem; }
+  .silence-bar-cap { font-size: 0.62rem; letter-spacing: 0.16em; }
+  .silence-viz-bar { height: 72px; }
+  .silence-viz-legend { font-size: 0.82rem; }
   .data-grid { grid-template-columns: repeat(2, 1fr); }
   .how-grid { grid-template-columns: 1fr; }
   .timeline-grid { grid-template-columns: repeat(2, 1fr); gap: 60px; }

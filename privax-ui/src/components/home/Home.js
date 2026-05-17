@@ -192,24 +192,49 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════ SCENE 3 — SILENCE (EDITORIAL LUXURY) ════ */}
+      {/* ════ SCENE 3 — SILENCE (DATA-DRIVEN EDITORIAL) ════ */}
       <section className="scene-silence" ref={silenceRef}>
         <div className="silence-inner">
           <span className="silence-eyebrow reveal">Chapter One · The data we never collected</span>
+
           <div className="silence-card reveal reveal-delay-1">
-            <div className="silence-top">
-              <div className="silence-text">
-                <span className="silence-quote-mark">"</span>
-                <h2>And the system couldn't <em>hear</em> all of us.</h2>
-                <p>
-                  Reporting forms were buried. Helplines stayed busy. Many symptoms were dismissed
-                  as anxiety, coincidence, or simply <em className="silence-italic">"not in the studies."</em>
-                  {' '}People stopped reporting — not because they were fine, but because they felt invisible.
-                </p>
+            <div className="silence-text">
+              <span className="silence-quote-mark">"</span>
+              <h2>And the system couldn't <em>hear</em> all of us.</h2>
+              <p>
+                Reporting forms were buried. Helplines stayed busy. Many symptoms were dismissed
+                as anxiety, coincidence, or simply <em className="silence-italic">"not in the studies."</em>
+                {' '}People stopped reporting — not because they were fine, but because they felt invisible.
+              </p>
+            </div>
+
+            <div className="silence-viz">
+              <div className="silence-viz-label">Of every 100 people with post-vaccine symptoms…</div>
+
+              <div className={`silence-viz-bar ${silenceActive ? 'active' : ''}`}>
+                <div className="silence-bar-seg silenced" style={{ flex: 87 }}>
+                  <div className="silence-bar-content">
+                    <span className="silence-bar-num">87</span>
+                    <span className="silence-bar-cap">silenced</span>
+                  </div>
+                </div>
+                <div className="silence-bar-seg heard" style={{ flex: 13 }}>
+                  <div className="silence-bar-content">
+                    <span className="silence-bar-num">13</span>
+                    <span className="silence-bar-cap">heard</span>
+                  </div>
+                </div>
               </div>
-              <div className="silence-hero-stat">
-                <div className="silence-hero-num">87<span className="silence-hero-pct">%</span></div>
-                <p className="silence-hero-cap">felt unheard by their medical system.</p>
+
+              <div className="silence-viz-legend">
+                <div className="silence-legend-item">
+                  <span className="silence-legend-dot silenced-dot" />
+                  <span>felt unheard by their medical system</span>
+                </div>
+                <div className="silence-legend-item">
+                  <span className="silence-legend-dot heard-dot" />
+                  <span>had their voices reach the data</span>
+                </div>
               </div>
             </div>
 
@@ -225,7 +250,7 @@ export default function Home() {
                 <div className="silence-mini-label">average time until a post-vaccine symptom was taken seriously.</div>
               </div>
               <div className="silence-stat-mini">
-                <div className="silence-mini-num">1 in 5<span></span></div>
+                <div className="silence-mini-num">1 in 5</div>
                 <div className="silence-mini-label">received a different diagnosis before being correctly identified.</div>
               </div>
             </div>
