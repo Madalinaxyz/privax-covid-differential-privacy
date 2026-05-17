@@ -76,21 +76,48 @@ public class SideEffectService {
         List<GroupedReportDTO> reports = sideEffectReportRepository.findGroupedReports(vaccineName, severityLevel);
 
         if (epsilon != null && epsilon > 0) {
-            reports = applyDifferentialPrivacy(reports, epsilon);
+            reports = applyDifferentialPrivacy(reports, epsilon, severityLevel);
         }
 
         return reports;
     }
 
-    private List<GroupedReportDTO> applyDifferentialPrivacy(List<GroupedReportDTO> reports, double epsilon) {
-        double sensitivity = 1.0; // Default sensitivity (change if needed)
-        double scale = sensitivity / epsilon; // Scale for Laplace noise
+    /**
+     * Applies Laplace noise only to the requested severity bucket(s).
+     * When a specific severity is selected, the other counts are forced to 0
+     * so noise doesn't leak false positives onto the map.
+     */
+    private List<GroupedReportDTO> applyDifferentialPrivacy(List<GroupedReportDTO> reports, double epsilon, String severityLevel) {
+        double sensitivity = 1.0;
+        double scale = sensitivity / epsilon;
+
+        boolean filtered = severityLevel != null && !severityLevel.equalsIgnoreCase("ALL");
+        String filter   = filtered ? severityLevel.toUpperCase() : null;
 
         for (GroupedReportDTO report : reports) {
-            report.setMildCount(Math.max(0, (long) (report.getMildCount() + laplaceNoise(scale))));
-            report.setModerateCount(Math.max(0, (long) (report.getModerateCount() + laplaceNoise(scale))));
-            report.setSevereCount(Math.max(0, (long) (report.getSevereCount() + laplaceNoise(scale))));
-            report.setFatalCount(Math.max(0, (long) (report.getFatalCount() + laplaceNoise(scale))));
+            if (!filtered || "MILD".equals(filter)) {
+                report.setMildCount(Math.max(0, (long) (report.getMildCount() + laplaceNoise(scale))));
+            } else {
+                report.setMildCount(0L);
+            }
+
+            if (!filtered || "MODERATE".equals(filter)) {
+                report.setModerateCount(Math.max(0, (long) (report.getModerateCount() + laplaceNoise(scale))));
+            } else {
+                report.setModerateCount(0L);
+            }
+
+            if (!filtered || "SEVERE".equals(filter)) {
+                report.setSevereCount(Math.max(0, (long) (report.getSevereCount() + laplaceNoise(scale))));
+            } else {
+                report.setSevereCount(0L);
+            }
+
+            if (!filtered || "FATAL".equals(filter)) {
+                report.setFatalCount(Math.max(0, (long) (report.getFatalCount() + laplaceNoise(scale))));
+            } else {
+                report.setFatalCount(0L);
+            }
         }
 
         return reports;
