@@ -41,12 +41,17 @@ const TableReport = ({ handleLogError }) => {
   }, [epsilon, originalReports]);
 
   return (
-    <div style={{ height: "80vh", overflowY: "auto", border: "1px solid gray", padding: "10px" }}>
-      <div style={{ marginBottom: "20px" }}>
-        <p>Epsilon: {epsilon.toFixed(1)} (Lower = More Privacy, Higher = More Accuracy)</p>
+    <div className="report-card">
+      <div className="report-epsilon">
+        <div className="report-epsilon-label">
+          <span>Privacy budget (epsilon)</span>
+          <span className="report-epsilon-value">{epsilon.toFixed(1)}</span>
+        </div>
         <Slider min={0.1} max={10} step={0.1} value={epsilon} onChange={setEpsilon} />
+        <p className="report-epsilon-hint">Lower value = more privacy · Higher value = more accuracy</p>
       </div>
 
+      <div className="report-table-wrap">
       <Table striped>
         <TableHeader>
           <TableRow>
@@ -74,12 +79,12 @@ const TableReport = ({ handleLogError }) => {
           ))}
         </TableBody>
       </Table>
+      </div>
 
-      <Button 
-        primary 
-        onClick={fetchReports} 
-        disabled={loading || !hasMore} 
-        style={{ marginTop: "10px" }}
+      <Button
+        primary
+        onClick={fetchReports}
+        disabled={loading || !hasMore}
       >
         {loading ? "Loading..." : "Load More"}
       </Button>

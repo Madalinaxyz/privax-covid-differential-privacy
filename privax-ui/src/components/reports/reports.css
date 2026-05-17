@@ -1,7 +1,503 @@
-.report-container {
-    padding: 40px; 
+/* ============================================================
+   REPORTS PAGE — Privax design system (luxury light)
+   Pure styling, no logic change.
+   ============================================================ */
+
+/* ── Page wrapper ── */
+.reports-page {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(58,158,199,0.05) 0%, transparent 50%),
+    #F7F3EA;
+  min-height: calc(100vh - 92px);
+  padding: 28px 3vw 56px;
+  color: #14213D;
+  font-family: 'Inter', -apple-system, sans-serif;
 }
 
-.ui.grid>[class*="four wide"].column {
-    width: 15% !important;
+/* ── Compact inline header — eyebrow + title + sub all in one row ── */
+.reports-header {
+  max-width: 1680px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 0 4px;
+  flex-wrap: wrap;
+}
+.reports-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.reports-eyebrow {
+  color: #2DA597;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+.reports-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #14213D;
+  margin: 0;
+  line-height: 1;
+}
+/* Vertical divider between title block and description */
+.reports-header::before {
+  content: none;
+}
+.reports-sub {
+  font-size: 0.88rem;
+  color: #6B7790;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 20px;
+  border-left: 1px solid rgba(20,33,61,0.12);
+  flex: 0 1 auto;
+  max-width: 520px;
+}
+@media (max-width: 720px) {
+  .reports-sub { border-left: none; padding-left: 0; }
+}
+
+/* ── Outer container holding the tabs ── */
+.reports-tabs-wrap {
+  max-width: 1680px;
+  margin: 0 auto;
+}
+.reports-tabs-wrap > .ui.grid {
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* ============================================================
+   TABS — refined luxury sidebar
+   ============================================================ */
+.reports-page .ui.tab.menu.tabular {
+  border: none;
+  background: transparent;
+  margin: 0;
+}
+.reports-page .ui.vertical.tabular.menu {
+  background: #FFFFFF;
+  border: 1px solid rgba(228,220,200,0.7);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(20,33,61,0.04);
+  width: 100% !important;
+  height: fit-content;
+}
+
+/* Slim sidebar, wide content area
+   (Semantic UI's Tab renders a grid: 4 wide menu + 12 wide content) */
+.reports-page .ui.grid > .row > [class*="four wide"].column,
+.reports-page .ui.grid > [class*="four wide"].column {
+  width: 220px !important;
+  flex: 0 0 220px !important;
+  padding-left: 0 !important;
+  padding-right: 12px !important;
+}
+.reports-page .ui.grid > .row > [class*="twelve wide"].column,
+.reports-page .ui.grid > [class*="twelve wide"].column {
+  width: calc(100% - 220px) !important;
+  flex: 1 1 auto !important;
+  padding-right: 0 !important;
+  padding-left: 12px !important;
+}
+.reports-page .ui.vertical.tabular.menu .item {
+  background: transparent !important;
+  border: none !important;
+  color: #6B7790 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  padding: 12px 18px !important;
+  border-radius: 10px !important;
+  margin: 0 !important;
+  transition: background 0.18s, color 0.18s;
+}
+.reports-page .ui.vertical.tabular.menu .item + .item {
+  margin-top: 4px !important;
+}
+.reports-page .ui.vertical.tabular.menu .item:hover {
+  background: #F7F3EA !important;
+  color: #14213D !important;
+}
+.reports-page .ui.vertical.tabular.menu .active.item {
+  background: linear-gradient(135deg, rgba(58,158,199,0.10), rgba(45,165,151,0.08)) !important;
+  color: #14213D !important;
+  font-weight: 700 !important;
+  box-shadow: inset 0 0 0 1px rgba(58,158,199,0.25) !important;
+}
+
+/* ── Pane content (the white card that each tab body lives in) ── */
+.reports-page .ui.tab.segment {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(228,220,200,0.7) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 8px rgba(20,33,61,0.03), 0 20px 48px rgba(20,33,61,0.06) !important;
+  padding: 24px !important;
+  margin: 0 !important;
+}
+
+/* ============================================================
+   EPSILON CONTROL — slider + label (shared TableReport / MapReport)
+   ============================================================ */
+.report-epsilon {
+  background: #F7F3EA;
+  border: 1px solid rgba(228,220,200,0.6);
+  border-radius: 10px;
+  padding: 12px 18px 14px;
+  margin-bottom: 16px;
+}
+.report-epsilon-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #2DA597;
+  margin-bottom: 8px;
+}
+.report-epsilon-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #14213D;
+  text-transform: none;
+}
+.report-epsilon-hint {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #6B7790;
+  margin: 4px 0 0;
+}
+
+/* ── rc-slider override (verdigris track + handle) ── */
+.reports-page .rc-slider-rail {
+  background: rgba(20,33,61,0.08);
+  height: 4px;
+  border-radius: 4px;
+}
+.reports-page .rc-slider-track {
+  background: linear-gradient(90deg, #3A9EC7, #2DA597);
+  height: 4px;
+  border-radius: 4px;
+}
+.reports-page .rc-slider-handle {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #2DA597;
+  background: #FFFFFF;
+  margin-top: -7px;
+  box-shadow: 0 2px 8px rgba(45,165,151,0.35);
+  opacity: 1;
+}
+.reports-page .rc-slider-handle:hover,
+.reports-page .rc-slider-handle:active,
+.reports-page .rc-slider-handle-dragging {
+  border-color: #2DA597 !important;
+  box-shadow: 0 0 0 6px rgba(45,165,151,0.18), 0 4px 14px rgba(45,165,151,0.45) !important;
+}
+
+/* ============================================================
+   TABLE REPORT — clean editorial table
+   ============================================================ */
+.report-card {
+  /* now we live inside .ui.tab.segment which already provides the card */
+  background: transparent;
+  border: none;
+  padding: 0;
+  height: auto;
+  overflow: visible;
+}
+.report-table-wrap {
+  max-height: 56vh;
+  overflow-y: auto;
+  border: 1px solid rgba(228,220,200,0.6);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.reports-page .ui.striped.table,
+.reports-page .ui.table {
+  border: none !important;
+  margin: 0 !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.reports-page .ui.table thead th {
+  background: #FBF8F1 !important;
+  color: #14213D !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid rgba(228,220,200,0.7) !important;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.reports-page .ui.table tbody td {
+  font-size: 0.88rem !important;
+  color: #2C3950 !important;
+  padding: 14px 16px !important;
+  border-top: 1px solid rgba(228,220,200,0.4) !important;
+  vertical-align: middle !important;
+}
+.reports-page .ui.table tbody tr:hover td {
+  background: rgba(58,158,199,0.04) !important;
+}
+.reports-page .ui.striped.table tbody tr:nth-child(2n) td {
+  background: rgba(247,243,234,0.4) !important;
+}
+.reports-page .ui.table b {
+  color: #14213D;
+  font-weight: 700;
+}
+
+/* ============================================================
+   BUTTONS — match site primary / ghost
+   ============================================================ */
+.reports-page .ui.primary.button,
+.reports-page .ui.button.primary {
+  background: linear-gradient(135deg, #3A9EC7 0%, #4FB6D9 100%) !important;
+  color: #0A0E16 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  padding: 12px 26px !important;
+  border-radius: 100px !important;
+  box-shadow: 0 0 0 1px rgba(79,182,217,0.5), 0 6px 22px rgba(58,158,199,0.4) !important;
+  transition: transform 0.18s, box-shadow 0.2s, filter 0.2s !important;
+  margin: 0 !important;
+}
+.reports-page .ui.primary.button:hover,
+.reports-page .ui.button.primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px rgba(79,182,217,0.7), 0 12px 32px rgba(58,158,199,0.55) !important;
+}
+.reports-page .ui.primary.button:disabled,
+.reports-page .ui.primary.button.disabled {
+  opacity: 0.6 !important;
+}
+
+/* ============================================================
+   MAP REPORT — filter row + map container
+   ============================================================ */
+.report-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.report-map-wrap {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(228,220,200,0.7);
+  box-shadow: 0 1px 3px rgba(20,33,61,0.04);
+}
+
+/* Override the inline 800px height — fits inside one viewport */
+.reports-page .leaflet-container {
+  height: 540px !important;
+  border-radius: 14px;
+}
+
+/* ============================================================
+   DROPDOWNS — refined luxury look (used by Map + Form)
+   ============================================================ */
+.reports-page .ui.dropdown,
+.reports-page .ui.selection.dropdown {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(228,220,200,0.7) !important;
+  border-radius: 10px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.92rem !important;
+  color: #14213D !important;
+  min-height: 48px !important;
+  padding: 14px 18px !important;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.reports-page .ui.selection.dropdown:hover {
+  border-color: rgba(58,158,199,0.4) !important;
+}
+.reports-page .ui.selection.dropdown:focus,
+.reports-page .ui.selection.active.dropdown {
+  border-color: #2DA597 !important;
+  box-shadow: 0 0 0 3px rgba(45,165,151,0.15) !important;
+}
+.reports-page .ui.dropdown .menu {
+  border: 1px solid rgba(228,220,200,0.7) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 20px 40px rgba(20,33,61,0.12) !important;
+  margin-top: 6px !important;
+}
+.reports-page .ui.dropdown .menu .item {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.9rem !important;
+  color: #14213D !important;
+  padding: 12px 16px !important;
+}
+.reports-page .ui.dropdown .menu .item:hover {
+  background: rgba(58,158,199,0.08) !important;
+}
+.reports-page .ui.dropdown .default.text,
+.reports-page .ui.dropdown:not(.button) > .default.text {
+  color: #9CA5B8 !important;
+}
+.reports-page .ui.multiple.dropdown > .label {
+  background: rgba(45,165,151,0.12) !important;
+  color: #1D7068 !important;
+  border: 1px solid rgba(45,165,151,0.25) !important;
+  border-radius: 100px !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  padding: 6px 12px !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   FORM REPORT — luxury form layout
+   ============================================================ */
+.report-form-intro {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.report-form-intro h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #14213D;
+  margin: 0 0 8px;
+}
+.report-form-intro p {
+  font-size: 0.92rem;
+  color: #6B7790;
+  margin: 0;
+}
+
+.reports-page .ui.form {
+  font-family: 'Inter', sans-serif !important;
+  width: 100%;
+}
+.reports-page .ui.form .field {
+  margin-bottom: 16px !important;
+}
+.reports-page .ui.form .field > label {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: #6B7790 !important;
+  margin-bottom: 10px !important;
+}
+.reports-page .ui.form input[type="text"],
+.reports-page .ui.form input[type="number"],
+.reports-page .ui.form textarea {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(228,220,200,0.7) !important;
+  border-radius: 10px !important;
+  padding: 14px 18px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.95rem !important;
+  color: #14213D !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+.reports-page .ui.form input::placeholder,
+.reports-page .ui.form textarea::placeholder {
+  color: #9CA5B8 !important;
+}
+.reports-page .ui.form input:focus,
+.reports-page .ui.form textarea:focus {
+  border-color: #2DA597 !important;
+  box-shadow: 0 0 0 3px rgba(45,165,151,0.15) !important;
+  outline: none !important;
+}
+.reports-page .ui.form textarea {
+  min-height: 110px !important;
+  resize: vertical !important;
+}
+
+/* Success / error messages */
+.reports-page .ui.message {
+  border-radius: 10px !important;
+  font-family: 'Inter', sans-serif !important;
+  padding: 14px 18px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.reports-page .ui.success.message {
+  background: rgba(45,165,151,0.10) !important;
+  color: #1D7068 !important;
+  border-left: 3px solid #2DA597 !important;
+}
+.reports-page .ui.error.message {
+  background: rgba(217,87,87,0.08) !important;
+  color: #9A3B3B !important;
+  border-left: 3px solid #D95757 !important;
+}
+
+/* Submit button takes full width on form */
+.report-form .ui.button[type="submit"] {
+  width: 100%;
+  margin-top: 12px !important;
+  justify-content: center;
+}
+
+/* ============================================================
+   LEAFLET POPUP — sync with brand
+   ============================================================ */
+.reports-page .leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(20,33,61,0.18);
+  font-family: 'Inter', sans-serif;
+}
+.reports-page .leaflet-popup-content {
+  font-size: 0.85rem;
+  color: #14213D;
+  margin: 12px 14px;
+  line-height: 1.55;
+}
+.reports-page .leaflet-popup-content strong {
+  color: #2DA597;
+  font-weight: 700;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 880px) {
+  .reports-page { padding: 40px 4vw 64px; }
+  .reports-page .ui.tab.menu.tabular,
+  .reports-page .ui.vertical.tabular.menu {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 16px;
+    flex-direction: row !important;
+  }
+  .reports-page .ui.vertical.tabular.menu .item {
+    flex: 1;
+    text-align: center;
+  }
+  .reports-page .ui.tab.segment { padding: 24px !important; }
+  .report-filters { grid-template-columns: 1fr; }
 }

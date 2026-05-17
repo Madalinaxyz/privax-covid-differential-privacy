@@ -41,8 +41,19 @@ function Report() {
       ]
 
     return (
-        <div className='report-container'>
-            <Tab menu={{ fluid: true, vertical: true, tabular: true }} panes={panes} />
+        <div className='reports-page'>
+            <div className='reports-header'>
+                <div className='reports-header-left'>
+                    <span className='reports-eyebrow'>Live data</span>
+                    <h1 className='reports-title'>Reports</h1>
+                </div>
+                <p className='reports-sub'>
+                    Explore anonymized vaccine experiences from across the network — or submit yours.
+                </p>
+            </div>
+            <div className='reports-tabs-wrap'>
+                <Tab menu={{ fluid: true, vertical: true, tabular: true }} panes={panes} />
+            </div>
         </div>
     )
 }

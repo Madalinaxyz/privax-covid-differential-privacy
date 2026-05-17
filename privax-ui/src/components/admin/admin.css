@@ -1,0 +1,200 @@
+/* ============================================================
+   ADMIN PAGE — Privax design system (luxury light)
+   Pure styling, no logic change.
+   ============================================================ */
+
+.admin-page {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(58,158,199,0.05) 0%, transparent 50%),
+    #F7F3EA;
+  min-height: calc(100vh - 92px);
+  padding: 28px 3vw 56px;
+  color: #14213D;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* ── Header (matches Reports pattern) ── */
+.admin-header {
+  max-width: 1280px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 0 4px;
+  flex-wrap: wrap;
+}
+.admin-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.admin-eyebrow {
+  color: #2DA597;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+.admin-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #14213D;
+  margin: 0;
+  line-height: 1;
+}
+.admin-sub {
+  font-size: 0.88rem;
+  color: #6B7790;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 20px;
+  border-left: 1px solid rgba(20,33,61,0.12);
+  flex: 0 1 auto;
+  max-width: 520px;
+}
+@media (max-width: 720px) {
+  .admin-sub { border-left: none; padding-left: 0; }
+}
+
+/* ── Outer container holding the tab ── */
+.admin-tabs-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ── Hide single-tab menu (only one tab exists, no need to show it) ── */
+.admin-page .ui.attached.menu,
+.admin-page .ui.menu.attached {
+  display: none !important;
+}
+
+/* ── Pane content — the white card ── */
+.admin-page .ui.tab.segment,
+.admin-page .ui.bottom.attached.segment,
+.admin-page .ui.attached.segment {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(228,220,200,0.7) !important;
+  border-radius: 16px !important;
+  border-top: 1px solid rgba(228,220,200,0.7) !important;
+  box-shadow: 0 4px 8px rgba(20,33,61,0.03), 0 20px 48px rgba(20,33,61,0.06) !important;
+  padding: 28px !important;
+  margin: 0 !important;
+}
+
+/* ============================================================
+   SEARCH INPUT
+   ============================================================ */
+.admin-page form {
+  margin-bottom: 20px;
+}
+.admin-page .ui.input {
+  width: 100%;
+  max-width: 420px;
+}
+.admin-page .ui.input > input {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(228,220,200,0.7) !important;
+  border-radius: 10px 0 0 10px !important;
+  padding: 12px 16px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.92rem !important;
+  color: #14213D !important;
+  height: 44px !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+.admin-page .ui.input > input::placeholder {
+  color: #9CA5B8 !important;
+}
+.admin-page .ui.input > input:focus {
+  border-color: #2DA597 !important;
+  box-shadow: 0 0 0 3px rgba(45,165,151,0.15) !important;
+  outline: none !important;
+}
+/* The "action" button on the right of the input */
+.admin-page .ui.action.input > .button,
+.admin-page .ui.input > .button {
+  background: linear-gradient(135deg, #3A9EC7, #4FB6D9) !important;
+  color: #0A0E16 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 0 18px !important;
+  height: 44px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+  transition: filter 0.2s !important;
+}
+.admin-page .ui.input > .button:hover {
+  filter: brightness(1.08) !important;
+}
+
+/* ============================================================
+   TABLE — same editorial style as Reports
+   ============================================================ */
+.admin-page .ui.table,
+.admin-page .ui.striped.table,
+.admin-page .ui.compact.table {
+  border: 1px solid rgba(228,220,200,0.6) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  font-family: 'Inter', sans-serif !important;
+  margin: 0 !important;
+}
+.admin-page .ui.table thead th {
+  background: #FBF8F1 !important;
+  color: #14213D !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid rgba(228,220,200,0.7) !important;
+}
+.admin-page .ui.table tbody td {
+  font-size: 0.88rem !important;
+  color: #2C3950 !important;
+  padding: 12px 16px !important;
+  border-top: 1px solid rgba(228,220,200,0.4) !important;
+  vertical-align: middle !important;
+}
+.admin-page .ui.table.selectable tbody tr:hover {
+  background: rgba(58,158,199,0.04) !important;
+  cursor: default;
+}
+.admin-page .ui.striped.table tbody tr:nth-child(2n) td {
+  background: rgba(247,243,234,0.4) !important;
+}
+
+/* ── Delete button (circular red) — soften to match the brand ── */
+.admin-page .ui.button.red,
+.admin-page .ui.red.button {
+  background: rgba(217,87,87,0.10) !important;
+  color: #D95757 !important;
+  border: 1px solid rgba(217,87,87,0.3) !important;
+  box-shadow: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+.admin-page .ui.button.red:hover,
+.admin-page .ui.red.button:hover {
+  background: #D95757 !important;
+  color: #FFFFFF !important;
+}
+.admin-page .ui.button.red:disabled,
+.admin-page .ui.button.red.disabled {
+  background: rgba(20,33,61,0.04) !important;
+  color: #9CA5B8 !important;
+  border-color: rgba(20,33,61,0.08) !important;
+  opacity: 1 !important;
+}
+.admin-page .ui.button.red .icon {
+  margin: 0 !important;
+}
