@@ -15,26 +15,13 @@ function AdminPage() {
   const [userUsernameSearch, setUserUsernameSearch] = useState('')
   const [isUsersLoading, setIsUsersLoading] = useState(false)
 
-  const [books, setBooks] = useState([])
-  const [bookIsbn, setBookIsbn] = useState('')
-  const [bookTitle, setBookTitle] = useState('')
-  const [bookTextSearch, setBookTextSearch] = useState('')
-  const [isBooksLoading, setIsBooksLoading] = useState(false)
-
   useEffect(() => {
     handleGetUsers()
-    handleGetBooks()
   }, [])
 
   const handleInputChange = (e, { name, value }) => {
     if (name === 'userUsernameSearch') {
       setUserUsernameSearch(value)
-    } else if (name === 'bookIsbn') {
-      setBookIsbn(value)
-    } else if (name === 'bookTitle') {
-      setBookTitle(value)
-    } else if (name === 'bookTextSearch') {
-      setBookTextSearch(value)
     }
   }
 
@@ -72,57 +59,6 @@ function AdminPage() {
     }
   }
 
-  const handleGetBooks = async () => {
-    try {
-      setIsBooksLoading(true)
-      const response = await privaxApi.getBooks(user)
-      setBooks(response.data)
-    } catch (error) {
-      handleLogError(error)
-    } finally {
-      setIsBooksLoading(false)
-    }
-  }
-
-  const handleDeleteBook = async (isbn) => {
-    try {
-      await privaxApi.deleteBook(user, isbn)
-      await handleGetBooks()
-    } catch (error) {
-      handleLogError(error)
-    }
-  }
-
-  const handleAddBook = async () => {
-    try {
-      const book = { isbn: bookIsbn.trim(), title: bookTitle.trim() }
-      if (!(book.isbn && book.title)) {
-        return
-      }
-      await privaxApi.addBook(user, book)
-      clearBookForm()
-      await handleGetBooks()
-    } catch (error) {
-      handleLogError(error)
-    }
-  }
-
-  const handleSearchBook = async () => {
-    try {
-      const response = await privaxApi.getBooks(user, bookTextSearch)
-      const books = response.data
-      setBooks(books)
-    } catch (error) {
-      handleLogError(error)
-      setBooks([])
-    }
-  }
-
-  const clearBookForm = () => {
-    setBookIsbn('')
-    setBookTitle('')
-  }
-
   if (!isAdmin) {
     return <Navigate to='/' />
   }
@@ -135,14 +71,6 @@ function AdminPage() {
         userUsernameSearch={userUsernameSearch}
         handleDeleteUser={handleDeleteUser}
         handleSearchUser={handleSearchUser}
-        isBooksLoading={isBooksLoading}
-        books={books}
-        bookIsbn={bookIsbn}
-        bookTitle={bookTitle}
-        bookTextSearch={bookTextSearch}
-        handleAddBook={handleAddBook}
-        handleDeleteBook={handleDeleteBook}
-        handleSearchBook={handleSearchBook}
         handleInputChange={handleInputChange}
       />
     </Container>

@@ -27,12 +27,8 @@ export const privaxApi = {
   authenticate,
   signup,
   numberOfUsers,
-  numberOfBooks,
   getUsers,
   deleteUser,
-  getBooks,
-  deleteBook,
-  addBook,
   test,
   getSideEffectReports,
   getAllSideEffectReports,
@@ -62,10 +58,6 @@ function signup(user) {
 // Public Endpoints
 function numberOfUsers() {
   return instance.get('/public/numberOfUsers')
-}
-
-function numberOfBooks() {
-  return instance.get('/public/numberOfBooks')
 }
 
 // Protected Endpoints (No Need to Manually Pass User)
@@ -109,21 +101,6 @@ function getUsers(username) {
 
 function deleteUser(username) {
   return instance.delete(`/api/users/${username}`)
-}
-
-function getBooks(text) {
-  const url = text ? `/api/books?text=${text}` : '/api/books'
-  return instance.get(url)
-}
-
-function deleteBook(isbn) {
-  return instance.delete(`/api/books/${isbn}`)
-}
-
-function addBook(book) {
-  return instance.post('/api/books', book, {
-    headers: { 'Content-type': 'application/json' }
-  })
 }
 
 export default privaxApi

@@ -1,66 +1,40 @@
-import React, { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import React from 'react'
+import { Navigate, Link } from 'react-router-dom'
 import { Container } from 'semantic-ui-react'
-import BookList from './BookList'
 import { useAuth } from '../context/AuthContext'
-import { privaxApi } from '../misc/BookApi'
-import { handleLogError } from '../misc/Helpers'
 
 function UserPage() {
   const Auth = useAuth()
   const user = Auth.getUser()
   const isUser = user.role === 'USER'
 
-  const [books, setBooks] = useState([])
-  const [bookTextSearch, setBookTextSearch] = useState('')
-  const [isBooksLoading, setIsBooksLoading] = useState(false)
-
-  useEffect(() => {
-    handleGetBooks()
-  }, [])
-
-  const handleInputChange = (e, { name, value }) => {
-    if (name === 'bookTextSearch') {
-      setBookTextSearch(value)
-    }
-  }
-
-  const handleGetBooks = async () => {
-    try {
-      setIsBooksLoading(true)
-      const response = await privaxApi.getBooks(user)
-      setBooks(response.data)
-    } catch (error) {
-      handleLogError(error)
-    } finally {
-      setIsBooksLoading(false)
-    }
-  }
-
-  const handleSearchBook = async () => {
-    try {
-      const response = await privaxApi.getBooks(user, bookTextSearch)
-      const books = response.data
-      setBooks(books)
-    } catch (error) {
-      handleLogError(error)
-      setBooks([])
-    }
-  }
-
   if (!isUser) {
     return <Navigate to='/' />
   }
 
   return (
-    <Container>
-      <BookList
-        isBooksLoading={isBooksLoading}
-        bookTextSearch={bookTextSearch}
-        books={books}
-        handleInputChange={handleInputChange}
-        handleSearchBook={handleSearchBook}
-      />
+    <Container text style={{ padding: '80px 20px', textAlign: 'center' }}>
+      <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, color: '#14213D' }}>
+        Hi, {user.name}.
+      </h1>
+      <p style={{ fontSize: '1.05rem', color: '#6B7790', lineHeight: 1.6, maxWidth: 520, margin: '16px auto 32px' }}>
+        Your private space inside Privax. Submit a new report, browse the data, or update your previous entries.
+      </p>
+      <Link
+        to='/reports'
+        style={{
+          display: 'inline-block',
+          background: 'linear-gradient(135deg, #3A9EC7, #4FB6D9)',
+          color: '#0A0E16',
+          textDecoration: 'none',
+          fontWeight: 700,
+          padding: '14px 32px',
+          borderRadius: '100px',
+          boxShadow: '0 8px 28px rgba(58,158,199,0.4)'
+        }}
+      >
+        Go to Reports →
+      </Link>
     </Container>
   )
 }
