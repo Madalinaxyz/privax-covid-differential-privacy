@@ -33,7 +33,13 @@ export const privaxApi = {
   getSideEffectReports,
   getAllSideEffectReports,
   createSideEffectReport,
-  getGroupedSideEffectReports
+  getGroupedSideEffectReports,
+  // ── Blog
+  getBlogPosts,
+  getBlogPost,
+  createBlogPost,
+  updateBlogPost,
+  deleteBlogPost,
 }
 
 // Authentication Functions
@@ -112,6 +118,32 @@ function getUsers(username) {
 
 function deleteUser(username) {
   return instance.delete(`/api/users/${username}`)
+}
+
+/* ── Blog ────────────────────────────────────────────────── */
+
+function getBlogPosts({ page = 0, size = 12 } = {}) {
+  return instance.get('/api/blog', { params: { page, size } });
+}
+
+function getBlogPost(slug) {
+  return instance.get(`/api/blog/${slug}`);
+}
+
+function createBlogPost(data) {
+  return instance.post('/api/blog', data, {
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+function updateBlogPost(id, data) {
+  return instance.put(`/api/blog/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+function deleteBlogPost(id) {
+  return instance.delete(`/api/blog/${id}`);
 }
 
 export default privaxApi

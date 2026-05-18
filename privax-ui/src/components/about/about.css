@@ -1,0 +1,472 @@
+/* ============================================================
+   ABOUT PAGE — Privax design system
+   Mixes luxury light editorial with one dark cinematic block
+   ============================================================ */
+
+.about-page {
+  background: #F7F3EA;
+  color: #14213D;
+  font-family: 'Inter', -apple-system, sans-serif;
+  min-height: calc(100vh - 92px);
+}
+
+/* ── Hero ── */
+.about-hero {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 96px 6vw 48px;
+  text-align: center;
+}
+.about-eyebrow {
+  display: inline-block;
+  color: #2DA597;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.about-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(2.2rem, 4.6vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: #14213D;
+  line-height: 1.08;
+  margin: 0 0 24px;
+}
+.about-glow {
+  background: linear-gradient(135deg, #2DA597, #3A9EC7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.about-lead {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  line-height: 1.65;
+  color: #2C3950;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ── Section base ── */
+.about-section {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 80px 6vw;
+  border-top: 1px solid rgba(228,220,200,0.7);
+  text-align: center;          /* center the heading row by default */
+}
+.about-section:first-of-type { border-top: none; }
+.about-section-label {
+  display: inline-block;
+  color: #2DA597;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.about-section h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #14213D;
+  margin: 0 0 32px;
+  line-height: 1.15;
+}
+.about-section h2 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #2DA597, #3A9EC7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.about-section-sub {
+  font-size: 1.02rem;
+  color: #6B7790;
+  line-height: 1.75;
+  margin: -16px auto 32px;     /* centered column */
+  max-width: 760px;
+}
+.about-section-sub a,
+.about-prose a {
+  color: #2DA597;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.about-section-sub a:hover,
+.about-prose a:hover { color: #1D7068; }
+
+/* Editorial prose blocks */
+.about-prose {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.78;
+  color: #1A2438;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;            /* paragraphs read naturally; column itself is centered */
+}
+.about-prose p { margin: 0 0 1.3em; }
+.about-prose strong {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #14213D;
+}
+.about-prose em {
+  font-style: italic;
+  color: #2C3950;
+}
+
+/* ============================================================
+   DOES / DOESN'T comparison
+   ============================================================ */
+.about-binary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 8px;
+  text-align: left;            /* card content reads left-aligned */
+}
+.about-binary-col {
+  background: #FFFFFF;
+  border: 1px solid rgba(228,220,200,0.7);
+  border-radius: 18px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 1px 3px rgba(20,33,61,0.03);
+}
+.about-binary-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6B7790;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(228,220,200,0.7);
+}
+.about-binary-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(45,165,151,0.14);
+  color: #2DA597;
+  flex-shrink: 0;
+}
+.about-binary-icon svg { width: 14px; height: 14px; }
+.about-binary-icon-x {
+  background: rgba(184,135,145,0.16);
+  color: #B58791;
+}
+.about-binary-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.about-binary-col li {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #2C3950;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(228,220,200,0.4);
+  position: relative;
+  padding-left: 24px;
+}
+.about-binary-col li:last-child { border-bottom: none; }
+.about-binary-col li::before {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.about-does li::before {
+  content: '✓';
+  color: #2DA597;
+}
+.about-doesnt li::before {
+  content: '×';
+  color: #B58791;
+  font-size: 1.05rem;
+  top: 10px;
+}
+
+/* ============================================================
+   Steps (methodology)
+   ============================================================ */
+.about-steps {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+.about-step {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 28px;
+  padding: 26px 0;
+  border-bottom: 1px solid rgba(228,220,200,0.6);
+}
+.about-step:last-child { border-bottom: none; }
+.about-step-num {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background: linear-gradient(180deg, #2DA597, #1D7068);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+}
+.about-step h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #14213D;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+.about-step p {
+  font-size: 0.96rem;
+  line-height: 1.65;
+  color: #6B7790;
+  margin: 0;
+}
+
+/* ============================================================
+   DARK SECTION — Privacy by design
+   ============================================================ */
+.about-section-dark {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(45,165,151,0.18) 0%, transparent 55%),
+    linear-gradient(180deg, #091e2e 0%, #0F1A2E 55%, #091e2e 100%);
+  color: #E5F1F8;
+  max-width: none;
+  padding: 100px 6vw;
+  border-top: none;
+  margin: 24px 0;
+  border-radius: 0;
+}
+.about-section-dark > * {
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.about-label-light {
+  color: #56C0B3;
+}
+.about-h2-light {
+  color: #E5F1F8 !important;
+  text-align: left;
+}
+.about-h2-light .about-glow {
+  background: linear-gradient(135deg, #56C0B3, #7AC7DD);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.about-prose-light {
+  color: rgba(229,241,248,0.85);
+}
+.about-prose-light strong { color: #E5F1F8; }
+.about-prose-light em { color: rgba(229,241,248,0.7); }
+.about-link-light {
+  color: #56C0B3 !important;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.about-link-light:hover { color: #7AC7DD !important; }
+
+/* ============================================================
+   Roadmap
+   ============================================================ */
+.about-roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 8px;
+  text-align: left;
+}
+.about-roadmap-item {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 24px;
+  padding: 22px 0;
+  border-bottom: 1px solid rgba(228,220,200,0.6);
+  align-items: start;
+}
+.about-roadmap-item:last-child { border-bottom: none; }
+.about-roadmap-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 100px;
+  white-space: nowrap;
+  height: fit-content;
+}
+.about-status-shipped {
+  background: rgba(45,165,151,0.14);
+  color: #1D7068;
+  border: 1px solid rgba(45,165,151,0.3);
+}
+.about-status-progress {
+  background: rgba(58,158,199,0.12);
+  color: #1E5A7A;
+  border: 1px solid rgba(58,158,199,0.3);
+}
+.about-status-planned {
+  background: rgba(20,33,61,0.06);
+  color: #6B7790;
+  border: 1px solid rgba(20,33,61,0.12);
+}
+.about-roadmap-item h4 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #14213D;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.about-roadmap-item p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #6B7790;
+  margin: 0;
+}
+
+/* ============================================================
+   Personal section — warm, intimate
+   ============================================================ */
+.about-section-personal {
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(45,165,151,0.06) 0%, transparent 60%),
+    #FBF8F1;
+  max-width: none;
+  padding: 80px 6vw;
+  border-top: none;
+}
+.about-section-personal > * {
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.about-signature {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #2DA597;
+  margin: 24px 0 0;
+  max-width: 760px;
+}
+
+/* ============================================================
+   Closing CTA
+   ============================================================ */
+.about-finale {
+  text-align: center;
+  padding: 100px 6vw 120px;
+  max-width: 840px;
+  margin: 0 auto;
+  border-top: 1px solid rgba(228,220,200,0.7);
+}
+.about-finale h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #14213D;
+  margin: 0 0 18px;
+}
+.about-finale p {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: #6B7790;
+  margin: 0 0 36px;
+}
+
+/* ============================================================
+   Buttons (consistent with site)
+   ============================================================ */
+.about-cta-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;     /* center in section by default */
+  flex-wrap: wrap;
+}
+.about-cta-center { justify-content: center; }
+
+.about-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 14px 26px;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: transform 0.18s, box-shadow 0.2s, filter 0.2s, background 0.2s;
+}
+.about-btn svg { width: 16px; height: 16px; }
+.about-btn-primary {
+  background: linear-gradient(135deg, #3A9EC7 0%, #4FB6D9 100%);
+  color: #0A0E16 !important;
+  box-shadow: 0 0 0 1px rgba(79,182,217,0.5), 0 8px 24px rgba(58,158,199,0.4);
+}
+.about-btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px rgba(79,182,217,0.7), 0 14px 36px rgba(58,158,199,0.55);
+}
+.about-btn-ghost {
+  background: #FFFFFF;
+  color: #14213D !important;
+  border: 1px solid rgba(228,220,200,0.8);
+}
+.about-btn-ghost:hover {
+  border-color: rgba(45,165,151,0.5);
+  color: #2DA597 !important;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 720px) {
+  .about-hero { padding: 64px 5vw 32px; }
+  .about-section { padding: 56px 5vw; }
+  .about-section-dark { padding: 72px 5vw; }
+  .about-section-personal { padding: 56px 5vw; }
+  .about-binary { grid-template-columns: 1fr; }
+  .about-step { grid-template-columns: 64px 1fr; gap: 18px; }
+  .about-step-num { font-size: 1.8rem; }
+  .about-roadmap-item { grid-template-columns: 1fr; gap: 10px; }
+  .about-roadmap-status { width: fit-content; }
+  .about-cta-row { flex-direction: column; align-items: stretch; }
+  .about-btn { justify-content: center; }
+}

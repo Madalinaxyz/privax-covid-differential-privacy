@@ -10,6 +10,10 @@ import AdminPage from './components/admin/AdminPage'
 import UserPage from './components/user/UserPage'
 import Schedule from './components/schedule/Schedule'
 import Report from './components/reports/Report'
+import BlogIndex from './components/blog/BlogIndex'
+import BlogPostView from './components/blog/BlogPostView'
+import BlogEditor from './components/blog/BlogEditor'
+import About from './components/about/About'
 
 function App() {
   return (
@@ -20,6 +24,11 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route path='/vaccine-schedule' element={<Schedule />} />
           <Route path='/reports' element={<Report />} />
+          <Route path='/blog' element={<BlogIndex />} />
+          <Route path='/blog/new' element={<PrivateRoute><BlogEditor /></PrivateRoute>} />
+          <Route path='/blog/:slug' element={<BlogPostView />} />
+          <Route path='/blog/:slug/edit' element={<PrivateRoute><BlogEditor /></PrivateRoute>} />
+          <Route path='/about' element={<About />} />
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
           <Route path="/adminpage" element={<PrivateRoute><AdminPage /></PrivateRoute>} />

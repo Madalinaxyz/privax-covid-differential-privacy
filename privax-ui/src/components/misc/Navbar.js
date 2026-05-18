@@ -27,7 +27,9 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'Home',     to: '/' },
+    { label: 'About',    to: '/about' },
     { label: 'Reports',  to: '/reports' },
+    { label: 'Blog',     to: '/blog' },
     ...(isAdmin ? [{ label: 'Admin',   to: '/adminpage' }] : []),
     ...(isUser  ? [{ label: 'My Page', to: '/userpage'  }] : []),
   ]
