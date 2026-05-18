@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { NavLink, Navigate } from 'react-router-dom'
 import { Button, Form, Grid, Segment, Message } from 'semantic-ui-react'
 import { useAuth } from '../context/AuthContext'
-import { privaxApi } from '../misc/BookApi'
+import { privaxApi } from '../misc/PrivaxApi'
 import { handleLogError } from '../misc/Helpers'
 
 function Signup() {

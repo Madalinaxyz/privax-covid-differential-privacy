@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { privaxApi } from '../misc/BookApi'
+import { privaxApi } from '../misc/PrivaxApi'
 import AdminTab from './AdminTab'
 import { handleLogError } from '../misc/Helpers'
 import './admin.css'

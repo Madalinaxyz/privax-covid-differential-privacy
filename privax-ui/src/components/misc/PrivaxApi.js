@@ -71,10 +71,21 @@ function test() {
 //   });
 // }
 
-function getSideEffectReports({ page = 0, size = 30, epsilon = 1.0 }) {
-  return instance.get('/api/side-effects', {
-    params: { page, size, epsilon },
-  });
+function getSideEffectReports({
+  page = 0,
+  size = 10,
+  epsilon = 1.0,
+  sort = null,          // e.g. "age,desc" or ["age,desc","city,asc"]
+  vaccineName = null,
+  severity = null,
+  city = null
+} = {}) {
+  const params = { page, size, epsilon };
+  if (sort)        params.sort        = sort;
+  if (vaccineName) params.vaccineName = vaccineName;
+  if (severity && severity !== 'ALL') params.severity = severity;
+  if (city)        params.city        = city;
+  return instance.get('/api/side-effects', { params });
 }
 
 function getAllSideEffectReports() {

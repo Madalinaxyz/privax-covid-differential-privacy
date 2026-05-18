@@ -1,7 +1,7 @@
 // import React, { useEffect, useState } from "react";
 // import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
 // import "leaflet/dist/leaflet.css";
-// import { privaxApi } from "../misc/BookApi";
+// import { privaxApi } from "../misc/PrivaxApi";
 // import { Dropdown } from "semantic-ui-react";
 // import { cityCoordinates } from "../misc/Helpers";
 
@@ -130,7 +130,7 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { privaxApi } from "../misc/BookApi";
+import { privaxApi } from "../misc/PrivaxApi";
 import { Dropdown } from "semantic-ui-react";
 import { cityCoordinates } from "../misc/Helpers";
 import { debounce } from "lodash";

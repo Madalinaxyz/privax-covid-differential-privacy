@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Statistic, Icon, Grid, Container, Image, Segment, Dimmer, Loader } from 'semantic-ui-react'
-import { privaxApi } from '../misc/BookApi'
+import { privaxApi } from '../misc/PrivaxApi'
 import { handleLogError } from '../misc/Helpers'
 
 function Schedule() {
@@ -18,7 +18,7 @@ function Schedule() {
             <Grid.Column textAlign='center'>
                 <Segment color='blue'>
                 <Statistic>
-                    <Statistic.Label>Books</Statistic.Label>
+                    <Statistic.Label>Reports</Statistic.Label>
                 </Statistic>
                 </Segment>
             </Grid.Column>

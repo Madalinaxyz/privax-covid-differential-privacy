@@ -35,7 +35,6 @@ public class DatabaseInitializer implements CommandLineRunner {
     private VaccinationRecordRepository vaccinationRecordRepository;
     private final SideEffectReportRepository sideEffectReportRepository;
     private final UserService userService;
-    // private final BookService bookService;
     private final PasswordEncoder passwordEncoder;
     private final VaccineRepository vaccineRepository;
 
@@ -61,7 +60,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     );
 
     private static final int NUMBER_OF_RECORDS = 10_000;
-    private static final int NUMBER_OF_REPORTS = 15_000;
+    private static final int NUMBER_OF_REPORTS = 3_000;
 
     private final Random random = new Random();
 
@@ -72,21 +71,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         insertVaccinationRecords();
         insertSideEffectReports();
         log.info("Database initialized");
-        
-
-        // // BOOKS
-        // if (!userService.getUsers().isEmpty()) {
-        //     return;
-        // }
-        // getBooks().forEach(bookService::saveBook);
     }
-
-    // private List<Book> getBooks() {
-    //     return Arrays.stream(BOOKS_STR.split("\n"))
-    //             .map(bookInfoStr -> bookInfoStr.split(";"))
-    //             .map(bookInfoArr -> new Book(bookInfoArr[0], bookInfoArr[1]))
-    //             .collect(Collectors.toList());
-    // }
 
     private void insertUsers() {
         USERS.forEach(user -> {
@@ -178,7 +163,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             for (int i = 0; i < NUMBER_OF_REPORTS; i++) {
                 int age = 16 + random.nextInt(85); // Random age between 16-100
                 List<String> symptoms = generateRandomSymptoms();
-                SeverityLevel severity = SeverityLevel.values()[random.nextInt(SeverityLevel.values().length)];
+                SeverityLevel severity = weightedRandomSeverity();
                 String additionalInfo = random.nextBoolean() ? "Patient had mild symptoms but recovered quickly." : "";
                 LocalDateTime reportedAt = startDate.plusDays(random.nextInt((int) daysBetween + 1))
                                                     .plusHours(random.nextInt(24))
@@ -209,79 +194,22 @@ public class DatabaseInitializer implements CommandLineRunner {
         return selectedSymptoms;
     }
 
+    /**
+     * Realistic post-vaccine severity distribution.
+     * Real-world vaccine adverse-event registries (VAERS, EudraVigilance) show
+     * the vast majority of reports are mild, with fatalities being extraordinarily rare.
+     *
+     *   MILD     ~80%   (typical: arm soreness, fatigue, mild fever)
+     *   MODERATE ~14%   (more pronounced symptoms, but resolved without hospitalization)
+     *   SEVERE    ~5%   (hospitalization or persistent symptoms)
+     *   FATAL     ~1%   (rare in real life — slightly elevated here so the data point exists)
+     */
+    private SeverityLevel weightedRandomSeverity() {
+        double r = random.nextDouble();           // 0.0 inclusive, 1.0 exclusive
+        if (r < 0.80) return SeverityLevel.MILD;       // 80%
+        if (r < 0.94) return SeverityLevel.MODERATE;   // +14% → 94%
+        if (r < 0.99) return SeverityLevel.SEVERE;     // +5%  → 99%
+        return SeverityLevel.FATAL;                    // +1%  → 100%
+    }
 
-    // private static final String BOOKS_STR =
-    //         """
-    //                 9781603090773;Any Empire
-    //                 9781603090698;August Moon
-    //                 9781891830372;The Barefoot Serpent (softcover) by Scott Morse
-    //                 9781603090292;BB Wolf and the 3 LP's
-    //                 9781891830402;Beach Safari by Mawil
-    //                 9781603094429;Belzebubs
-    //                 9781891830563;Bighead by Jeffrey Brown
-    //                 9781603094320;Bodycount
-    //                 9781891830198;Box Office Poison
-    //                 9780958578349;From Hell
-    //                 9781603094221;Cat'n'Bat
-    //                 9781603091008;Crater XV
-    //                 9781891830815;Cry Yourself to Sleep by Jeremy Tinder
-    //                 9781603092715;Dear Beloved Stranger
-    //                 9781891830129;Dear Julia
-    //                 9781891830921;Death by Chocolate - Redux
-    //                 9781603090575;Dragon Puncher (Book 1)
-    //                 9781603090858;Dragon Puncher (Book 2): Island
-    //                 9781603093873;Eddie Campbell's Omnibox: The Complete ALEC and BACCHUS (3 Volume Slipcase)
-    //                 9781603090360;Far Arden
-    //                 9781603090537;Fingerprints
-    //                 9781891830976;Fox Bunny Funny
-    //                 9780958578349;From Hell
-    //                 9781603093866;God Is Disappointed / Apocrypha Now — SLIPCASE SET
-    //                 9781603090988;God Is Disappointed in You
-    //                 9781603090087;Hieronymus B.
-    //                 9781603094412;Highwayman
-    //                 9781891830174;Hutch Owen (Vol 1): The Collected by Tom Hart
-    //                 9781891830556;Hutch Owen (Vol 2): Unmarketable by Tom Hart
-    //                 9781603090865;Hutch Owen (Vol 3): Let's Get Furious!
-    //                 9781891830839;Infinite Kung Fu
-    //                 9781891830655;The King by Rich Koslowski
-    //                 9781603090001;The League of Extraordinary Gentlemen (Vol III): Century #1 - 1910
-    //                 9781603090063;The League of Extraordinary Gentlemen (Vol III): Century #2 - 1969
-    //                 9781603090070;The League of Extraordinary Gentlemen (Vol III): Century #3 - 2009
-    //                 9781603094375;The League of Extraordinary Gentlemen (Vol III): Century
-    //                 9781891830518;Less Than Heroes by David Yurkovich
-    //                 9781603090704;Liar's Kiss
-    //                 9781891830693;Lone Racer by Nicolas Mahler
-    //                 9781603091527;The Lovely Horrible Stuff
-    //                 9781603090094;Lower Regions
-    //                 9781891830334;Magic Boy and the Robot Elf by James Kochalka
-    //                 9781891830365;Monkey Vs. Robot (Vol 2): Crystal of Power by Koch.
-    //                 9781603090759;Monster on the Hill (Book 1)
-    //                 9781891830686;Mosquito by Dan James
-    //                 9781603090490;Moving Pictures
-    //                 9781603094092;Nate Powell's OMNIBOX
-    //                 9781603090681;Okie Dokie Donuts (Story 1): Open for Business!
-    //                 9781891830297;Pinky & Stinky by James Kochalka
-    //                 9781603090711;Pirate Penguin vs Ninja Chicken (Book 1): Troublems with Frenemies
-    //                 9781603093675;Pirate Penguin vs Ninja Chicken (Book 2): Escape from Skull-Fragment Island!
-    //                 9781603094139;Return of the Dapper Men (Deluxe Edition)
-    //                 9781603090896;Scene But Not Heard
-    //                 9781603094450;A Shining Beacon
-    //                 9781891830143;Speechless
-    //                 9781891830501;Spiral-Bound by Aaron Renier
-    //                 9781603090209;Sulk (Vol 1): Bighead and Friends
-    //                 9781603090315;Sulk (Vol 2): Deadly Awesome
-    //                 9781603090551;Sulk (Vol 3): The Kind of Strength...
-    //                 9781891830969;Super Spy
-    //                 9781603090438;Super Spy (Vol 2): The Lost Dossiers
-    //                 9781603090339;Swallow Me Whole
-    //                 9781603090056;That Salty Air
-    //                 9781603094504;They Called Us Enemy
-    //                 9781891830310;Three Fingers by Rich Koslowski
-    //                 9781891830983;Too Cool to Be Forgotten
-    //                 9781603090742;The Underwater Welder
-    //                 9781603090889;Upside Down (Book 1): A Vampire Tale
-    //                 9781603093712;Upside Down (Book 2): A Hat Full of Spells
-    //                 9781891830723;Will You Still Love Me If I Wet the Bed by Liz Prince
-    //                 9781603094405;Ye
-    //                 """;
 }

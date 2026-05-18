@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Container, Button, Label, TabPane, Tab  } from 'semantic-ui-react'
-import { privaxApi } from '../misc/BookApi'
+import { privaxApi } from '../misc/PrivaxApi'
 import { handleLogError } from '../misc/Helpers'
 
 
