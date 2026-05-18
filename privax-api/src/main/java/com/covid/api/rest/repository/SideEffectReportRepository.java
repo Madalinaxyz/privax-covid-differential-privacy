@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,8 +15,10 @@ import com.covid.api.rest.dto.GroupedReportDTO;
 import com.covid.api.rest.model.SideEffectReport;
 
 @Repository
-public interface SideEffectReportRepository extends JpaRepository<SideEffectReport, Long> {
-    // You can add custom query methods here if needed.
+public interface SideEffectReportRepository
+        extends JpaRepository<SideEffectReport, Long>,
+                JpaSpecificationExecutor<SideEffectReport> {
+    // findAll(Pageable) + findAll(Specification, Pageable) are inherited.
     Page<SideEffectReport> findAll(Pageable pageable);
 
     // @Query("SELECT new com.covid.api.rest.dto.GroupedReportDTO(r.city, r.vaccineName, " +

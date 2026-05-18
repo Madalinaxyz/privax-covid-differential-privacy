@@ -50,11 +50,15 @@ public class SideEffectController {
 
     @GetMapping
     public ResponseEntity<Page<SideEffectReport>> getReports(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(value = "epsilon", required = false) Double epsilon
+        Pageable pageable,
+        @RequestParam(value = "epsilon",     required = false) Double epsilon,
+        @RequestParam(value = "vaccineName", required = false) String vaccineName,
+        @RequestParam(value = "severity",    required = false) String severity,
+        @RequestParam(value = "city",        required = false) String city
     ) {
-        Page<SideEffectReport> reports = sideEffectService.getSideEffectReports(page, size, epsilon);
+        Page<SideEffectReport> reports = sideEffectService.getSideEffectReports(
+            pageable, vaccineName, severity, city
+        );
         return ResponseEntity.ok(reports);
     }
 

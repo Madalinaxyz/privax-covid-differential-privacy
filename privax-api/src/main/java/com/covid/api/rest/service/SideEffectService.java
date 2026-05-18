@@ -66,6 +66,39 @@ public class SideEffectService {
         return reports;
     }
 
+    /**
+     * Filterable + sortable paginated reports. Each filter is optional.
+     * Uses a JPA Specification so we only emit SQL clauses for filters that are actually set —
+     * this avoids PostgreSQL's "function lower(bytea) does not exist" error from null parameters.
+     */
+    public Page<SideEffectReport> getSideEffectReports(
+        Pageable pageable,
+        String vaccineName,
+        String severity,
+        String city
+    ) {
+        org.springframework.data.jpa.domain.Specification<SideEffectReport> spec =
+            org.springframework.data.jpa.domain.Specification.where(null);
+
+        if (vaccineName != null && !vaccineName.isBlank()) {
+            final String v = vaccineName.trim().toLowerCase();
+            spec = spec.and((root, q, cb) ->
+                cb.like(cb.lower(root.get("vaccineName")), "%" + v + "%"));
+        }
+        if (city != null && !city.isBlank()) {
+            final String c = city.trim().toLowerCase();
+            spec = spec.and((root, q, cb) ->
+                cb.like(cb.lower(root.get("city")), "%" + c + "%"));
+        }
+        if (severity != null && !severity.isBlank() && !"ALL".equalsIgnoreCase(severity)) {
+            try {
+                final SeverityLevel sev = SeverityLevel.valueOf(severity.toUpperCase());
+                spec = spec.and((root, q, cb) -> cb.equal(root.get("severity"), sev));
+            } catch (IllegalArgumentException ignored) { /* invalid severity → ignore filter */ }
+        }
+        return sideEffectReportRepository.findAll(spec, pageable);
+    }
+
 
     public List<GroupedReportDTO> getGroupedReports(String vaccineName, String severityLevel) {
         return sideEffectReportRepository.findGroupedReports(vaccineName, severityLevel);

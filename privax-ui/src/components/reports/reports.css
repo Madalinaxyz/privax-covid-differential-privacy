@@ -224,11 +224,159 @@
   overflow: visible;
 }
 .report-table-wrap {
-  max-height: 56vh;
-  overflow-y: auto;
+  max-height: 60vh;
+  overflow: auto;
   border: 1px solid rgba(228,220,200,0.6);
   border-radius: 10px;
   margin-bottom: 16px;
+}
+
+/* ── Toolbar above the table (total count + page size) ── */
+.report-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+  color: #6B7790;
+  flex-wrap: wrap;
+}
+.report-count strong { color: #14213D; font-weight: 700; }
+.report-page-size {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.report-page-size label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6B7790;
+}
+.report-page-size .ui.compact.selection.dropdown {
+  min-height: 36px !important;
+  padding: 8px 32px 8px 14px !important;
+  font-size: 0.85rem !important;
+}
+
+/* ── Sortable header click affordance ── */
+.report-table-wrap .ui.table thead th {
+  cursor: default;
+  user-select: none;
+}
+.report-table-wrap .ui.table thead th:has(.th-content) {
+  cursor: pointer;
+}
+.report-table-wrap .ui.table thead th:hover .th-content {
+  color: #2DA597;
+}
+.th-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #14213D;
+  transition: color 0.18s;
+}
+.th-content .icon {
+  font-size: 0.85rem !important;
+  color: #9CA5B8;
+  margin: 0 !important;
+}
+
+/* ── Filter row beneath header ── */
+.report-filter-row th {
+  background: #FFFFFF !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid rgba(228,220,200,0.7) !important;
+  position: sticky !important;
+  top: 44px !important;
+  z-index: 1;
+}
+.report-filter-row .ui.input > input {
+  background: #F7F3EA !important;
+  border: 1px solid rgba(228,220,200,0.8) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px 8px 32px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.82rem !important;
+  height: auto !important;
+  min-height: 34px !important;
+}
+.report-filter-row .ui.input > i.icon {
+  color: #9CA5B8 !important;
+  font-size: 0.85rem !important;
+}
+.report-filter-row .ui.input > input:focus {
+  border-color: #2DA597 !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 0 0 2px rgba(45,165,151,0.15) !important;
+}
+.report-filter-row .ui.selection.dropdown {
+  min-height: 34px !important;
+  padding: 8px 30px 8px 12px !important;
+  font-size: 0.82rem !important;
+  background: #F7F3EA !important;
+  border: 1px solid rgba(228,220,200,0.8) !important;
+  border-radius: 8px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.report-empty {
+  padding: 48px 16px !important;
+  color: #9CA5B8 !important;
+  font-style: italic;
+}
+
+/* ── Pagination ── */
+.report-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.page-btn {
+  background: #FFFFFF;
+  border: 1px solid rgba(228,220,200,0.8);
+  color: #14213D;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.page-btn:hover:not(:disabled):not(.active) {
+  background: #F7F3EA;
+  border-color: rgba(45,165,151,0.4);
+  color: #2DA597;
+}
+.page-btn.active {
+  background: linear-gradient(135deg, #3A9EC7, #2DA597);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(45,165,151,0.35);
+  cursor: default;
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.page-btn-arrow { padding: 0 14px; gap: 4px; }
+.page-btn-arrow .icon { margin: 0 !important; font-size: 0.85rem !important; }
+.page-ellipsis {
+  color: #9CA5B8;
+  padding: 0 4px;
+  user-select: none;
 }
 
 .reports-page .ui.striped.table,
@@ -431,6 +579,21 @@
   border-color: #2DA597 !important;
   box-shadow: 0 0 0 3px rgba(45,165,151,0.15) !important;
   outline: none !important;
+}
+.reports-page .ui.form .field.error input {
+  border-color: #D95757 !important;
+  background: rgba(217,87,87,0.04) !important;
+}
+.reports-page .ui.form .field.error input:focus {
+  box-shadow: 0 0 0 3px rgba(217,87,87,0.18) !important;
+}
+.reports-page .form-field-error {
+  display: block;
+  margin-top: 6px;
+  color: #D95757;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 .reports-page .ui.form textarea {
   min-height: 110px !important;

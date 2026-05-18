@@ -43,14 +43,24 @@ export const cityCoordinates = {
 
 
 
-export const applyDifferentialPrivacy = (data, epsilon) => {
+/**
+ * Adds Laplace noise / randomization to report fields for client-side DP.
+ *
+ * @param {Array}  data            the array of reports from the API
+ * @param {number} epsilon         privacy budget (lower = more noise)
+ * @param {Array}  preserveFields  list of field names to leave untouched
+ *                                 (typically the columns the user is filtering on,
+ *                                 so the displayed values match the active filter).
+ */
+export const applyDifferentialPrivacy = (data, epsilon, preserveFields = []) => {
+  const keep = new Set(preserveFields);
   return data.map(report => ({
     ...report,
-    age: clamp(Math.floor(report.age + laplaceNoise(epsilon)), 18, 80), // ✅ Ensures age stays between 18-80
-    severity: randomizeSeverity(report.severity, epsilon),
-    vaccineName: randomizeVaccine(report.vaccineName, epsilon),
-    city: randomizeCity(report.city, epsilon),
-    symptoms: randomizeSymptoms(report.symptoms, epsilon),
+    age:         keep.has('age')         ? report.age         : clamp(Math.floor(report.age + laplaceNoise(epsilon)), 18, 80),
+    severity:    keep.has('severity')    ? report.severity    : randomizeSeverity(report.severity, epsilon),
+    vaccineName: keep.has('vaccineName') ? report.vaccineName : randomizeVaccine(report.vaccineName, epsilon),
+    city:        keep.has('city')        ? report.city        : randomizeCity(report.city, epsilon),
+    symptoms:    keep.has('symptoms')    ? report.symptoms    : randomizeSymptoms(report.symptoms, epsilon),
   }));
 };
 

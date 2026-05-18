@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, FormField, Button, Dropdown, TextArea, Message } from "semantic-ui-react";
-import { privaxApi } from "../misc/BookApi";
+import { privaxApi } from "../misc/PrivaxApi";
 
 // ✅ Severity options
 const severityOptions = [
@@ -58,6 +58,9 @@ const cityOptions = [
   { key: "bistrita", text: "Bistrița", value: "Bistrița" }
 ];
 
+const MIN_AGE = 0;
+const MAX_AGE = 120;
+
 const FormReport = () => {
   const [formData, setFormData] = useState({
     age: "",
@@ -72,6 +75,7 @@ const FormReport = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [ageError, setAgeError] = useState("");
 
   // ✅ Handles input changes
   const handleChange = (e, data) => {
@@ -79,7 +83,18 @@ const FormReport = () => {
       setFormData({ ...formData, [data.name]: data.value });
     } else {
       setFormData({ ...formData, [e.target.name]: e.target.value });
+      if (e.target.name === "age") setAgeError("");
     }
+  };
+
+  // ✅ Validate age inline
+  const validateAge = (value) => {
+    if (value === "" || value === null) return "Age is required.";
+    const n = Number(value);
+    if (!Number.isFinite(n) || Number.isNaN(n)) return "Age must be a number.";
+    if (!Number.isInteger(n)) return "Age must be a whole number.";
+    if (n < MIN_AGE || n > MAX_AGE) return `Age must be between ${MIN_AGE} and ${MAX_AGE}.`;
+    return "";
   };
 
   // ✅ Handles multi-select dropdown for symptoms
@@ -88,9 +103,17 @@ const FormReport = () => {
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
     setSuccessMessage("");
     setErrorMessage("");
+
+    // Age validation gate — block submission if out of range
+    const ageErr = validateAge(formData.age);
+    if (ageErr) {
+      setAgeError(ageErr);
+      return;
+    }
+
+    setLoading(true);
 
     try {
       console.log("Submitting report:", formData); // ✅ Debug submission data
@@ -115,16 +138,23 @@ const FormReport = () => {
 
   return (
     <Form onSubmit={handleSubmit} loading={loading} success={!!successMessage} error={!!errorMessage}>
-      <FormField>
+      <FormField error={!!ageError}>
         <label>Age</label>
         <input
           type="number"
           name="age"
-          placeholder="Enter age"
+          min={MIN_AGE}
+          max={MAX_AGE}
+          step={1}
+          placeholder={`Enter age (${MIN_AGE}–${MAX_AGE})`}
           value={formData.age}
           onChange={handleChange}
+          onBlur={(e) => setAgeError(validateAge(e.target.value))}
           required
         />
+        {ageError && (
+          <small className="form-field-error">{ageError}</small>
+        )}
       </FormField>
 
       <FormField>
