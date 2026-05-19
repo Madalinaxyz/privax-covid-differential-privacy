@@ -51,8 +51,16 @@ public class DatabaseInitializer implements CommandLineRunner {
     };
 
     private static final List<String> SYMPTOMS = Arrays.asList(
-            "Fever", "Headache", "Fatigue", "Muscle Pain", "Nausea", "Chills",
-            "Dizziness", "Shortness of Breath", "Chest Pain", "Swelling"
+            // Common / mild
+            "Fever", "Fatigue", "Headache", "Muscle Pain", "Chills", "Nausea",
+            "Dizziness", "Joint Pain", "Injection Site Pain", "Swollen Lymph Nodes", "Rash",
+            // Moderate
+            "Vomiting", "Brain Fog", "Insomnia", "Anxiety", "Heart Palpitations",
+            "Chest Pain", "Shortness of Breath", "Numbness / Tingling", "Tinnitus",
+            // Severe / rare
+            "Myocarditis", "Anaphylaxis", "Guillain-Barré Syndrome", "Bell's Palsy",
+            "Blood Clots", "Seizures", "Encephalitis", "Psychosis",
+            "Transverse Myelitis", "Immune Thrombocytopenia", "POTS", "Paralysis"
     );
 
     private static final List<Vaccine> VACCINES = Arrays.asList(
@@ -425,13 +433,13 @@ I can't go back and write it down for the person who came before me. But I can w
                 int age = 16 + random.nextInt(85); // Random age between 16-100
                 List<String> symptoms = generateRandomSymptoms();
                 SeverityLevel severity = weightedRandomSeverity();
-                String additionalInfo = random.nextBoolean() ? "Patient had mild symptoms but recovered quickly." : "";
+                String additionalInfo = generateAdditionalInfo(severity);
                 LocalDateTime reportedAt = startDate.plusDays(random.nextInt((int) daysBetween + 1))
                                                     .plusHours(random.nextInt(24))
                                                     .plusMinutes(random.nextInt(60));
                 String vaccineName = VACCINE_TYPES[random.nextInt(VACCINE_TYPES.length)];
-                String city = cities.get(random.nextInt(cities.size()));  // ✅ Assign a random city
-    
+                String city = cities.get(random.nextInt(cities.size()));
+
                 SideEffectReport report = new SideEffectReport(age, symptoms, severity, additionalInfo, reportedAt, vaccineName, city);
                 reports.add(report);
             }
@@ -471,6 +479,50 @@ I can't go back and write it down for the person who came before me. But I can w
         if (r < 0.94) return SeverityLevel.MODERATE;   // +14% → 94%
         if (r < 0.99) return SeverityLevel.SEVERE;     // +5%  → 99%
         return SeverityLevel.FATAL;                    // +1%  → 100%
+    }
+
+    /** Severity-appropriate placeholder notes so the column reads like real-world data. */
+    private static final String[] NOTES_MILD = {
+        "Symptoms resolved within 48 hours.",
+        "Felt better after rest.",
+        "Mild discomfort, no medical attention needed.",
+        "Resolved after 3-4 days.",
+        "Symptoms cleared by the end of the week.",
+    };
+    private static final String[] NOTES_MODERATE = {
+        "Sought medical advice but no hospitalization.",
+        "Symptoms persisted for about a week.",
+        "Improved with over-the-counter medication.",
+        "Required time off work for recovery.",
+        "Doctor advised rest and fluids.",
+    };
+    private static final String[] NOTES_SEVERE = {
+        "Hospitalized for observation.",
+        "Required emergency room visit.",
+        "Long-term follow-up scheduled.",
+        "Symptoms persisted for several weeks.",
+        "Referred to a specialist.",
+    };
+    private static final String[] NOTES_FATAL = {
+        "Patient had significant pre-existing conditions.",
+        "Report submitted by family member.",
+        "Outcome occurred several weeks after vaccination.",
+        "Underlying health issues complicated recovery.",
+    };
+
+    private String generateAdditionalInfo(SeverityLevel severity) {
+        // 40% of reports have no note at all
+        if (random.nextDouble() < 0.40) return "";
+
+        String[] options;
+        switch (severity) {
+            case MILD:     options = NOTES_MILD;     break;
+            case MODERATE: options = NOTES_MODERATE; break;
+            case SEVERE:   options = NOTES_SEVERE;   break;
+            case FATAL:    options = NOTES_FATAL;    break;
+            default:       return "";
+        }
+        return options[random.nextInt(options.length)];
     }
 
 }

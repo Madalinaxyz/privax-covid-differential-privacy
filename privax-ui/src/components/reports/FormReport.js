@@ -9,12 +9,42 @@ const severityOptions = [
   { key: "severe", text: "Severe", value: "SEVERE" },
 ];
 
-// ✅ Symptoms options
 const symptomOptions = [
-  { key: "fever", text: "Fever", value: "Fever" },
-  { key: "fatigue", text: "Fatigue", value: "Fatigue" },
-  { key: "headache", text: "Headache", value: "Headache" },
-  { key: "nausea", text: "Nausea", value: "Nausea" },
+  // Common / mild
+  { key: "fever",                   text: "Fever",                    value: "Fever" },
+  { key: "fatigue",                 text: "Fatigue",                  value: "Fatigue" },
+  { key: "headache",                text: "Headache",                 value: "Headache" },
+  { key: "muscle-pain",             text: "Muscle Pain",              value: "Muscle Pain" },
+  { key: "chills",                  text: "Chills",                   value: "Chills" },
+  { key: "nausea",                  text: "Nausea",                   value: "Nausea" },
+  { key: "dizziness",               text: "Dizziness",                value: "Dizziness" },
+  { key: "joint-pain",              text: "Joint Pain",               value: "Joint Pain" },
+  { key: "injection-site-pain",     text: "Injection Site Pain",      value: "Injection Site Pain" },
+  { key: "swollen-lymph-nodes",     text: "Swollen Lymph Nodes",      value: "Swollen Lymph Nodes" },
+  { key: "rash",                    text: "Rash",                     value: "Rash" },
+  // Moderate
+  { key: "vomiting",                text: "Vomiting",                 value: "Vomiting" },
+  { key: "brain-fog",               text: "Brain Fog",                value: "Brain Fog" },
+  { key: "insomnia",                text: "Insomnia",                 value: "Insomnia" },
+  { key: "anxiety",                 text: "Anxiety",                  value: "Anxiety" },
+  { key: "heart-palpitations",      text: "Heart Palpitations",       value: "Heart Palpitations" },
+  { key: "chest-pain",              text: "Chest Pain",               value: "Chest Pain" },
+  { key: "shortness-of-breath",     text: "Shortness of Breath",      value: "Shortness of Breath" },
+  { key: "numbness-tingling",       text: "Numbness / Tingling",      value: "Numbness / Tingling" },
+  { key: "tinnitus",                text: "Tinnitus",                 value: "Tinnitus" },
+  // Severe / rare
+  { key: "myocarditis",             text: "Myocarditis",              value: "Myocarditis" },
+  { key: "anaphylaxis",             text: "Anaphylaxis",              value: "Anaphylaxis" },
+  { key: "guillain-barre",          text: "Guillain-Barré Syndrome",  value: "Guillain-Barré Syndrome" },
+  { key: "bells-palsy",             text: "Bell's Palsy",             value: "Bell's Palsy" },
+  { key: "blood-clots",             text: "Blood Clots",              value: "Blood Clots" },
+  { key: "seizures",                text: "Seizures",                 value: "Seizures" },
+  { key: "encephalitis",            text: "Encephalitis",             value: "Encephalitis" },
+  { key: "psychosis",               text: "Psychosis",                value: "Psychosis" },
+  { key: "transverse-myelitis",     text: "Transverse Myelitis",      value: "Transverse Myelitis" },
+  { key: "immune-thrombocytopenia", text: "Immune Thrombocytopenia",  value: "Immune Thrombocytopenia" },
+  { key: "pots",                    text: "POTS",                     value: "POTS" },
+  { key: "paralysis",               text: "Paralysis",                value: "Paralysis" },
 ];
 
 // ✅ Vaccine options
@@ -150,6 +180,8 @@ const FormReport = () => {
           value={formData.age}
           onChange={handleChange}
           onBlur={(e) => setAgeError(validateAge(e.target.value))}
+          onInvalid={(e) => e.currentTarget.setCustomValidity(validateAge(e.currentTarget.value) || 'Please complete this field.')}
+          onInput={(e) => e.currentTarget.setCustomValidity('')}
           required
         />
         {ageError && (

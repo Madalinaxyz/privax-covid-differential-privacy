@@ -100,7 +100,15 @@ const randomizeCity = (original, epsilon) => {
 };
 
 const randomizeSymptoms = (originalSymptoms, epsilon) => {
-  const symptomsList = ["Fatigue", "Fever", "Headache", "Muscle Pain", "Chills", "Dizziness"];
+  const symptomsList = [
+    "Fever", "Fatigue", "Headache", "Muscle Pain", "Chills", "Nausea",
+    "Dizziness", "Joint Pain", "Injection Site Pain", "Swollen Lymph Nodes", "Rash",
+    "Vomiting", "Brain Fog", "Insomnia", "Anxiety", "Heart Palpitations",
+    "Chest Pain", "Shortness of Breath", "Numbness / Tingling", "Tinnitus",
+    "Myocarditis", "Anaphylaxis", "Guillain-Barré Syndrome", "Bell's Palsy",
+    "Blood Clots", "Seizures", "Encephalitis", "Psychosis",
+    "Transverse Myelitis", "Immune Thrombocytopenia", "POTS", "Paralysis",
+  ];
   let newSymptoms = [...originalSymptoms];
 
   if (Math.random() < (1 / epsilon)) {
