@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.covid.api.rest.dto.GroupedReportDTO;
+import com.covid.api.rest.model.SeverityLevel;
 import com.covid.api.rest.model.SideEffectReport;
 
 @Repository
@@ -55,4 +56,9 @@ public interface SideEffectReportRepository
         @Param("severityLevel") String severityLevel
     );
 
+    /** Distinct count of all symptom strings across all reports (the @ElementCollection table). */
+    @Query("SELECT COUNT(DISTINCT s) FROM SideEffectReport r JOIN r.symptoms s")
+    long countDistinctSymptoms();
+
+    long countBySeverity(SeverityLevel severity);
 }

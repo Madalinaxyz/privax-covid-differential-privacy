@@ -28,7 +28,7 @@ function AdminPage() {
   const handleGetUsers = async () => {
     try {
       setIsUsersLoading(true)
-      const response = await privaxApi.getUsers(user)
+      const response = await privaxApi.getUsers()
       const users = response.data
       setUsers(users)
     } catch (error) {
@@ -40,7 +40,7 @@ function AdminPage() {
 
   const handleDeleteUser = async (username) => {
     try {
-      await privaxApi.deleteUser(user, username)
+      await privaxApi.deleteUser(username)
       await handleGetUsers()
     } catch (error) {
       handleLogError(error)
@@ -49,7 +49,7 @@ function AdminPage() {
 
   const handleSearchUser = async () => {
     try {
-      const response = await privaxApi.getUsers(user, userUsernameSearch)
+      const response = await privaxApi.getUsers(userUsernameSearch)
       const data = response.data
       const users = data instanceof Array ? data : [data]
       setUsers(users)

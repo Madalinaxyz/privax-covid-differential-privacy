@@ -1,5 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" preserveAspectRatio="xMidYMid slice">
   <defs>
+    <style>
+      /* Try to load the exact navbar wordmark font.
+         When the SVG is rendered as background-image, this @import may be
+         blocked by browser sandboxing — the system-font fallback chain handles
+         that case while preserving identical weight + spacing. */
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&amp;display=swap');
+      .privax-p {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, Helvetica, Arial, sans-serif;
+        font-weight: 800;
+        letter-spacing: -8.25px;   /* equivalent to -0.025em at 330px — same ratio as the navbar */
+        fill: #E5F1F8;
+      }
+    </style>
+
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%"  stop-color="#091E2E"/>
       <stop offset="55%" stop-color="#0F2D45"/>
@@ -18,6 +32,10 @@
       <stop offset="60%" stop-color="#4FB6D9" stop-opacity="0.10"/>
       <stop offset="100%" stop-color="#4FB6D9" stop-opacity="0"/>
     </radialGradient>
+    <!-- Cyan glow filter for the brand dot — mirrors the navbar's text-shadow on the period -->
+    <filter id="dotGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="6" />
+    </filter>
   </defs>
 
   <!-- Background -->
@@ -69,23 +87,16 @@
   </g>
 
   <!-- ──────────────────────────────────────────────────────────
-       CENTERED "P." MARK
-       The "P" uses SVG <text> rendered with the system's bold sans-serif.
-       The dot is a separate circle for predictable styling + halo.
-       Positioned so the P+dot pair feels balanced around horizontal center.
+       PRIVAX P + DOT — styled to match the navbar wordmark exactly
        ────────────────────────────────────────────────────────── -->
 
-  <!-- Big "P" — shifted slightly left of center to make room for the dot -->
-  <text x="568" y="455"
+  <!-- The "P" — Plus Jakarta Sans 800, same weight + spacing as the navbar wordmark -->
+  <text class="privax-p" x="568" y="455"
         text-anchor="middle"
-        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Plus Jakarta Sans', Roboto, system-ui, Helvetica, Arial, sans-serif"
-        font-size="330"
-        font-weight="900"
-        letter-spacing="-12"
-        fill="#E5F1F8">P</text>
+        font-size="330">P</text>
 
-  <!-- The brand dot, placed at the bottom-right of the P like the wordmark "Privax." -->
-  <circle cx="688" cy="442" r="24" fill="#4FB6D9"/>
-  <circle cx="688" cy="442" r="33"
-          fill="none" stroke="#4FB6D9" stroke-opacity="0.5" stroke-width="2.5"/>
+  <!-- Glow behind the dot (mirrors the navbar's text-shadow: 0 0 14px on the period) -->
+  <circle cx="688" cy="442" r="28" fill="#4FB6D9" opacity="0.5" filter="url(#dotGlow)"/>
+  <!-- The cyan dot itself -->
+  <circle cx="688" cy="442" r="22" fill="#4FB6D9"/>
 </svg>

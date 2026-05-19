@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { privaxApi } from '../misc/PrivaxApi'
 import './Home.css'
 
 /* ─── Count-up hook ─── */
@@ -72,8 +73,8 @@ const STEPS = [
 
 const VOICES = [
   { tag: 'Neurological',          text: 'I had tremors for weeks after my second dose. My doctor told me it was anxiety. Finding a place where my experience was finally documented changed something inside me.', meta: 'Anonymous · 34 · Romania' },
-  { tag: 'Joint pain & fatigue',  text: 'I was afraid to report because I did not want to seem anti-vaccine. This made me realize: reporting is not against vaccines. It is what makes them safer.',            meta: 'Anonymous · 28 · Germany' },
-  { tag: 'Post-vaccination fatigue', text: 'The data showed me that my fatigue peak on day 2 was completely normal. That single piece of information reduced my anxiety more than anything else.',              meta: 'Anonymous · 41 · France' },
+  { tag: 'Joint pain & fatigue',  text: 'I was afraid to report because I did not want to seem anti-vaccine. This made me realize: reporting is not against vaccines. It is what makes them safer.',            meta: 'Anonymous · 28 · Romania' },
+  { tag: 'Post-vaccination fatigue', text: 'The data showed me that my fatigue peak on day 2 was completely normal. That single piece of information reduced my anxiety more than anything else.',              meta: 'Anonymous · 41 · Romania' },
 ]
 
 const FAQS = [
@@ -87,15 +88,27 @@ const FAQS = [
 /* ─── Component ─── */
 export default function Home() {
   const [openFaq, setOpenFaq] = useState(null)
-  const [dataActive, setDataActive] = useState(false)
+  // Default to true so the counters animate on page load (not on scroll).
+  // Prevents the "screenshot shows 0" bug when the section is below the fold.
+  const [dataActive, setDataActive] = useState(true)
   const [silenceActive, setSilenceActive] = useState(false)
+  const [stats, setStats] = useState(null)
   const dataRef = useRef(null)
   const silenceRef = useRef(null)
 
-  const cReports  = useCountUp(12847, 2200, dataActive)
-  const cVaccines = useCountUp(6,     1200, dataActive)
-  const cSymptoms = useCountUp(94,    1800, dataActive)
-  const cResolved = useCountUp(89,    1600, dataActive)
+  // Targets reflect real DB-derived numbers once /public/stats responds,
+  // with sensible fallbacks that match the current seed if the API call fails.
+  const targets = stats || { totalReports: 3000, vaccinesTracked: 4, symptomsDocumented: 10, resolvedPercentage: 94 }
+  const cReports  = useCountUp(targets.totalReports,       2200, dataActive)
+  const cVaccines = useCountUp(targets.vaccinesTracked,    1200, dataActive)
+  const cSymptoms = useCountUp(targets.symptomsDocumented, 1800, dataActive)
+  const cResolved = useCountUp(targets.resolvedPercentage, 1600, dataActive)
+
+  useEffect(() => {
+    privaxApi.getPublicStats()
+      .then((r) => setStats(r.data))
+      .catch((e) => console.warn('Could not fetch live stats — using fallbacks.', e))
+  }, [])
 
   useEffect(() => {
     const dataObs = new IntersectionObserver(
@@ -363,7 +376,7 @@ export default function Home() {
             <div className="data-card reveal reveal-delay-1">
               <div className="data-num">{cVaccines}</div>
               <div className="data-label">Vaccines tracked</div>
-              <div className="data-sub">Pfizer, Moderna, AstraZeneca, J&amp;J, Novavax, growing.</div>
+              <div className="data-sub">Pfizer, Moderna, AstraZeneca, Johnson &amp; Johnson.</div>
               <div className="data-pulse"><span/><span/><span/><span/><span/><span/><span/></div>
             </div>
             <div className="data-card reveal reveal-delay-2">
