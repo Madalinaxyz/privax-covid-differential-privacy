@@ -27,6 +27,7 @@ export const privaxApi = {
   authenticate,
   signup,
   numberOfUsers,
+  getPublicStats,
   getUsers,
   deleteUser,
   test,
@@ -66,6 +67,10 @@ function numberOfUsers() {
   return instance.get('/public/numberOfUsers')
 }
 
+function getPublicStats() {
+  return instance.get('/public/stats')
+}
+
 // Protected Endpoints (No Need to Manually Pass User)
 function test() {
   return instance.get('/api/vaccinations/test')
@@ -81,16 +86,18 @@ function getSideEffectReports({
   page = 0,
   size = 10,
   epsilon = 1.0,
-  sort = null,          // e.g. "age,desc" or ["age,desc","city,asc"]
+  sort = null,
   vaccineName = null,
   severity = null,
-  city = null
+  city = null,
+  symptom = null
 } = {}) {
   const params = { page, size, epsilon };
   if (sort)        params.sort        = sort;
   if (vaccineName) params.vaccineName = vaccineName;
   if (severity && severity !== 'ALL') params.severity = severity;
   if (city)        params.city        = city;
+  if (symptom)     params.symptom     = symptom;
   return instance.get('/api/side-effects', { params });
 }
 
