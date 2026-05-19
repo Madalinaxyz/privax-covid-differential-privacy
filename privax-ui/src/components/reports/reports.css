@@ -461,6 +461,154 @@
   box-shadow: 0 1px 3px rgba(20,33,61,0.04);
 }
 
+/* ============================================================
+   Map stat cards — premium glassy summary above the map
+   ============================================================ */
+.map-stats {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.map-stat-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1px solid rgba(228,220,200,0.7);
+  border-radius: 12px;
+  padding: 12px 14px 10px;
+  box-shadow: 0 1px 3px rgba(20,33,61,0.04);
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  isolation: isolate;
+}
+/* Thin colored top stripe */
+.map-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--map-stat-color);
+  border-radius: 16px 16px 0 0;
+  z-index: 1;
+}
+/* Subtle severity-tinted radial glow in the corner */
+.map-stat-glow {
+  position: absolute;
+  top: -16px; right: -16px;
+  width: 80px; height: 80px;
+  background: radial-gradient(circle, var(--map-stat-color) 0%, transparent 65%);
+  opacity: 0.10;
+  pointer-events: none;
+  z-index: 0;
+}
+.map-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(20,33,61,0.10), 0 1px 0 rgba(255,255,255,0.6) inset;
+  border-color: var(--map-stat-color);
+}
+.map-stat-card:hover .map-stat-glow { opacity: 0.18; }
+
+/* Header row: glowing dot + label */
+.map-stat-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+.map-stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--map-stat-color);
+  position: relative;
+  flex-shrink: 0;
+}
+.map-stat-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.2px solid var(--map-stat-color);
+  opacity: 0.32;
+}
+.map-stat-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6B7790;
+}
+
+/* The number */
+.map-stat-num {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #14213D;
+  line-height: 1;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 2;
+}
+.map-stat-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  color: #9CA5B8;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Thin progress bar at bottom */
+.map-stat-bar {
+  height: 3px;
+  background: rgba(228,220,200,0.55);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+.map-stat-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--map-stat-color), color-mix(in srgb, var(--map-stat-color) 60%, white));
+  border-radius: 4px;
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--map-stat-color) 50%, transparent);
+}
+
+/* Hero (Total) card — gets a larger number and gradient background */
+.map-stat-hero {
+  background:
+    radial-gradient(circle at top right, rgba(58,158,199,0.10), transparent 60%),
+    linear-gradient(160deg, #FFFFFF, #F7F3EA);
+}
+.map-stat-hero .map-stat-num { font-size: 1.8rem; }
+.map-stat-hero .map-stat-sub { color: #6B7790; font-weight: 500; }
+
+/* Severity color tokens — match the map circles */
+.map-stat-hero     { --map-stat-color: #3A9EC7; }   /* primary cyan */
+.map-stat-mild     { --map-stat-color: #2DA597; }   /* verdigris */
+.map-stat-moderate { --map-stat-color: #E5A23A; }   /* warm orange */
+.map-stat-severe   { --map-stat-color: #D95757; }   /* coral red */
+.map-stat-fatal    { --map-stat-color: #2C3950; }   /* deep navy */
+
+@media (max-width: 1024px) {
+  .map-stats { grid-template-columns: repeat(2, 1fr); }
+  .map-stat-hero { grid-column: 1 / -1; }   /* hero spans full width on tablet */
+}
+@media (max-width: 520px) {
+  .map-stats { grid-template-columns: 1fr; }
+  .map-stat-hero { grid-column: 1; }
+  .map-stat-num { font-size: 1.7rem; }
+  .map-stat-hero .map-stat-num { font-size: 2rem; }
+}
+
 /* Override the inline 800px height — fits inside one viewport */
 .reports-page .leaflet-container {
   height: 540px !important;

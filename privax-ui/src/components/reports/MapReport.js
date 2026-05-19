@@ -231,7 +231,79 @@ const MapReport = () => {
         />
       </div>
 
+      {(() => {
+        const totals = filteredReports.reduce(
+          (acc, r) => ({
+            mild:     acc.mild     + (r.mildCount     || 0),
+            moderate: acc.moderate + (r.moderateCount || 0),
+            severe:   acc.severe   + (r.severeCount   || 0),
+            fatal:    acc.fatal    + (r.fatalCount    || 0),
+          }),
+          { mild: 0, moderate: 0, severe: 0, fatal: 0 }
+        );
+        const total = totals.mild + totals.moderate + totals.severe + totals.fatal;
+        const citiesAffected = filteredReports.filter(r =>
+          (r.mildCount || 0) + (r.moderateCount || 0) + (r.severeCount || 0) + (r.fatalCount || 0) > 0
+        ).length;
+        const pct = (n) => total > 0 ? Math.round((n / total) * 1000) / 10 : 0;
+        return (
+          <div className="map-stats">
+            <div className="map-stat-card map-stat-hero">
+              <div className="map-stat-glow" />
+              <div className="map-stat-head">
+                <span className="map-stat-dot" />
+                <span className="map-stat-label">Total cases</span>
+              </div>
+              <div className="map-stat-num">{total.toLocaleString()}</div>
+              <div className="map-stat-sub">across {citiesAffected} {citiesAffected === 1 ? 'city' : 'cities'}</div>
+            </div>
 
+            <div className="map-stat-card map-stat-mild">
+              <div className="map-stat-glow" />
+              <div className="map-stat-head">
+                <span className="map-stat-dot" />
+                <span className="map-stat-label">Mild</span>
+              </div>
+              <div className="map-stat-num">{totals.mild.toLocaleString()}</div>
+              <div className="map-stat-sub">{pct(totals.mild)}% of total</div>
+              <div className="map-stat-bar"><i style={{ width: `${pct(totals.mild)}%` }} /></div>
+            </div>
+
+            <div className="map-stat-card map-stat-moderate">
+              <div className="map-stat-glow" />
+              <div className="map-stat-head">
+                <span className="map-stat-dot" />
+                <span className="map-stat-label">Moderate</span>
+              </div>
+              <div className="map-stat-num">{totals.moderate.toLocaleString()}</div>
+              <div className="map-stat-sub">{pct(totals.moderate)}% of total</div>
+              <div className="map-stat-bar"><i style={{ width: `${pct(totals.moderate)}%` }} /></div>
+            </div>
+
+            <div className="map-stat-card map-stat-severe">
+              <div className="map-stat-glow" />
+              <div className="map-stat-head">
+                <span className="map-stat-dot" />
+                <span className="map-stat-label">Severe</span>
+              </div>
+              <div className="map-stat-num">{totals.severe.toLocaleString()}</div>
+              <div className="map-stat-sub">{pct(totals.severe)}% of total</div>
+              <div className="map-stat-bar"><i style={{ width: `${pct(totals.severe)}%` }} /></div>
+            </div>
+
+            <div className="map-stat-card map-stat-fatal">
+              <div className="map-stat-glow" />
+              <div className="map-stat-head">
+                <span className="map-stat-dot" />
+                <span className="map-stat-label">Fatal</span>
+              </div>
+              <div className="map-stat-num">{totals.fatal.toLocaleString()}</div>
+              <div className="map-stat-sub">{pct(totals.fatal)}% of total</div>
+              <div className="map-stat-bar"><i style={{ width: `${pct(totals.fatal)}%` }} /></div>
+            </div>
+          </div>
+        );
+      })()}
 
       <MapContainer center={[45.9432, 24.9668]} zoom={6} style={{ height: "800px", width: "100%", zIndex: "3" }}>
         <TileLayer
