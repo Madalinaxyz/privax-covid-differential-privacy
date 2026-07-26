@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.covid.api.blog.BlogPost;
 import com.covid.api.blog.BlogPostRepository;
+import com.covid.api.rest.model.ReporterType;
 import com.covid.api.rest.model.SeverityLevel;
 import com.covid.api.rest.model.SideEffectReport;
 import com.covid.api.rest.model.VaccinationRecord;
@@ -50,18 +51,33 @@ public class DatabaseInitializer implements CommandLineRunner {
         "Pfizer", "Moderna", "AstraZeneca", "Johnson & Johnson"
     };
 
-    private static final List<String> SYMPTOMS = Arrays.asList(
-            // Common / mild
+    // Symptoms grouped by clinical severity tier, so generated reports stay plausible
+    // (a MILD report never lists a severe symptom like Myocarditis).
+    private static final List<String> MILD_SYMPTOMS = Arrays.asList(
             "Fever", "Fatigue", "Headache", "Muscle Pain", "Chills", "Nausea",
-            "Dizziness", "Joint Pain", "Injection Site Pain", "Swollen Lymph Nodes", "Rash",
-            // Moderate
+            "Dizziness", "Joint Pain", "Injection Site Pain", "Swollen Lymph Nodes", "Rash"
+    );
+    private static final List<String> MODERATE_SYMPTOMS = Arrays.asList(
             "Vomiting", "Brain Fog", "Insomnia", "Anxiety", "Heart Palpitations",
-            "Chest Pain", "Shortness of Breath", "Numbness / Tingling", "Tinnitus",
-            // Severe / rare
+            "Chest Pain", "Shortness of Breath", "Numbness / Tingling", "Tinnitus"
+    );
+    private static final List<String> SEVERE_SYMPTOMS = Arrays.asList(
             "Myocarditis", "Anaphylaxis", "Guillain-Barré Syndrome", "Bell's Palsy",
             "Blood Clots", "Seizures", "Encephalitis", "Psychosis",
             "Transverse Myelitis", "Immune Thrombocytopenia", "POTS", "Paralysis"
     );
+
+    /** Symptoms a report of the given severity may plausibly list (this tier and milder). */
+    private static List<String> allowedSymptomsFor(SeverityLevel severity) {
+        List<String> pool = new ArrayList<>(MILD_SYMPTOMS);
+        if (severity == SeverityLevel.MODERATE || severity == SeverityLevel.SEVERE || severity == SeverityLevel.FATAL) {
+            pool.addAll(MODERATE_SYMPTOMS);
+        }
+        if (severity == SeverityLevel.SEVERE || severity == SeverityLevel.FATAL) {
+            pool.addAll(SEVERE_SYMPTOMS);
+        }
+        return pool;
+    }
 
     private static final List<Vaccine> VACCINES = Arrays.asList(
         new Vaccine("Pfizer", "Pfizer Inc.", 10000),
@@ -383,8 +399,9 @@ I can't go back and write it down for the person who came before me. But I can w
     }
 
     private static final List<User> USERS = Arrays.asList(
-            new User("admin", "admin", "Admin", "admin@mycompany.com", SecurityConfig.ADMIN),
-            new User("user", "user", "User", "user@mycompany.com", SecurityConfig.USER)
+            new User("admin",  "admin",  "Admin",          "admin@mycompany.com",  SecurityConfig.ADMIN),
+            new User("user",   "user",   "User",           "user@mycompany.com",   SecurityConfig.USER),
+            new User("doctor", "doctor", "Dr. Ana Popescu","doctor@mycompany.com", SecurityConfig.DOCTOR)
     );
 
 
@@ -431,8 +448,8 @@ I can't go back and write it down for the person who came before me. But I can w
     
             for (int i = 0; i < NUMBER_OF_REPORTS; i++) {
                 int age = 16 + random.nextInt(85); // Random age between 16-100
-                List<String> symptoms = generateRandomSymptoms();
                 SeverityLevel severity = weightedRandomSeverity();
+                List<String> symptoms = generateRandomSymptoms(severity); // symptoms consistent with severity
                 String additionalInfo = generateAdditionalInfo(severity);
                 LocalDateTime reportedAt = startDate.plusDays(random.nextInt((int) daysBetween + 1))
                                                     .plusHours(random.nextInt(24))
@@ -441,6 +458,7 @@ I can't go back and write it down for the person who came before me. But I can w
                 String city = cities.get(random.nextInt(cities.size()));
 
                 SideEffectReport report = new SideEffectReport(age, symptoms, severity, additionalInfo, reportedAt, vaccineName, city);
+                report.setReporterType(reporterTypeFor(severity)); // a deceased person can't self-report
                 reports.add(report);
             }
     
@@ -451,11 +469,26 @@ I can't go back and write it down for the person who came before me. But I can w
         }
     }
 
-    private List<String> generateRandomSymptoms() {
+    /**
+     * Realistic provenance for seeded data: fatal outcomes are reported by a clinician or a
+     * family member (never the deceased); other reports are mostly self-reported.
+     */
+    private ReporterType reporterTypeFor(SeverityLevel severity) {
+        if (severity == SeverityLevel.FATAL) {
+            return random.nextBoolean() ? ReporterType.CLINICIAN : ReporterType.FAMILY;
+        }
+        double r = random.nextDouble();
+        if (r < 0.85) return ReporterType.SELF;
+        if (r < 0.95) return ReporterType.FAMILY;
+        return ReporterType.CLINICIAN;
+    }
+
+    private List<String> generateRandomSymptoms(SeverityLevel severity) {
+        List<String> pool = allowedSymptomsFor(severity);
         int numberOfSymptoms = 1 + random.nextInt(3); // Randomly pick 1-3 symptoms
         List<String> selectedSymptoms = new ArrayList<>();
         for (int i = 0; i < numberOfSymptoms; i++) {
-            String symptom = SYMPTOMS.get(random.nextInt(SYMPTOMS.size()));
+            String symptom = pool.get(random.nextInt(pool.size()));
             if (!selectedSymptoms.contains(symptom)) {
                 selectedSymptoms.add(symptom);
             }

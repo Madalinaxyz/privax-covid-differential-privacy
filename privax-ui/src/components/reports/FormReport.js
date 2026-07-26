@@ -7,6 +7,12 @@ const severityOptions = [
   { key: "mild", text: "Mild", value: "MILD" },
   { key: "moderate", text: "Moderate", value: "MODERATE" },
   { key: "severe", text: "Severe", value: "SEVERE" },
+  { key: "fatal", text: "Fatal", value: "FATAL" },
+];
+
+const reporterOptions = [
+  { key: "self", text: "Myself", value: "SELF" },
+  { key: "family", text: "A family member / someone I care for", value: "FAMILY" },
 ];
 
 const symptomOptions = [
@@ -100,6 +106,7 @@ const FormReport = () => {
     reportedAt: new Date().toISOString(),
     vaccineName: "",
     city: "",
+    reporterType: "SELF",
   });
 
   const [loading, setLoading] = useState(false);
@@ -158,6 +165,7 @@ const FormReport = () => {
         reportedAt: new Date().toISOString(),
         vaccineName: "",
         city: "",
+        reporterType: "SELF",
       });
     } catch (error) {
       console.error("Error submitting report:", error);
@@ -168,6 +176,22 @@ const FormReport = () => {
 
   return (
     <Form onSubmit={handleSubmit} loading={loading} success={!!successMessage} error={!!errorMessage}>
+      <FormField>
+        <label>Who is this report for?</label>
+        <Dropdown
+          placeholder="Select"
+          fluid
+          selection
+          options={reporterOptions}
+          name="reporterType"
+          value={formData.reporterType}
+          onChange={handleChange}
+        />
+        <small className="form-note">
+          Anyone can report — for themselves or on behalf of someone else. Clinicians should use the Doctor page instead.
+        </small>
+      </FormField>
+
       <FormField error={!!ageError}>
         <label>Age</label>
         <input
@@ -215,6 +239,11 @@ const FormReport = () => {
           onChange={handleChange}
           required
         />
+        {formData.severity === "FATAL" && (
+          <small className="form-note">
+            Reporting a death? Please choose “A family member” above and add any context below. We're sorry for your loss.
+          </small>
+        )}
       </FormField>
 
       <FormField>
@@ -249,7 +278,7 @@ const FormReport = () => {
         <label>Additional Info</label>
         <TextArea
           name="additionalInfo"
-          placeholder="Provide any additional details..."
+          placeholder="Any context — onset, duration, treatment. If you're reporting for someone else, please note your relationship to them."
           value={formData.additionalInfo}
           onChange={handleChange}
         />

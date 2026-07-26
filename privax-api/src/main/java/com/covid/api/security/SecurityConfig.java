@@ -26,6 +26,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,   "/api/blog/**").hasAuthority(ADMIN)
                         .requestMatchers(HttpMethod.PUT,    "/api/blog/**").hasAuthority(ADMIN)
                         .requestMatchers(HttpMethod.DELETE, "/api/blog/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.POST,   "/api/side-effects/clinician").hasAuthority(DOCTOR)
+                        .requestMatchers(HttpMethod.GET,    "/api/side-effects/clinician/**").hasAuthority(DOCTOR)
+                        // Reading reports + the aggregated map is public (the project's showcase).
+                        // Note: clinician GETs are matched above, so they stay DOCTOR-only.
+                        // Submitting a report (POST /api/side-effects) still requires a login via anyRequest() below.
+                        .requestMatchers(HttpMethod.GET,    "/api/side-effects", "/api/side-effects/**").permitAll()
                         .requestMatchers("/", "/error", "/csrf", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
@@ -39,6 +45,7 @@ public class SecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    public static final String ADMIN = "ADMIN";
-    public static final String USER = "USER";
+    public static final String ADMIN  = "ADMIN";
+    public static final String USER   = "USER";
+    public static final String DOCTOR = "DOCTOR";
 }

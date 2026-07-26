@@ -44,6 +44,18 @@ public class SideEffectReport {
     @Column(name = "city", nullable = false)
     private String city;
 
+    /** Who submitted the report (self / family member / clinician) — the provenance signal. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reporter_type", nullable = false, length = 20)
+    private ReporterType reporterType = ReporterType.SELF;
+
+    /**
+     * Optional opaque patient reference used by the clinician for their own
+     * internal tracking. Stored as-is — Privax never resolves it to a person.
+     */
+    @Column(name = "patient_code", length = 64)
+    private String patientCode;
+
     public SideEffectReport() {
     }
 

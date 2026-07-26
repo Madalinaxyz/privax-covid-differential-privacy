@@ -13,6 +13,7 @@ function Signup() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [role, setRole] = useState('USER')
   const [isError, setIsError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -25,6 +26,8 @@ function Signup() {
       setName(value)
     } else if (name === 'email') {
       setEmail(value)
+    } else if (name === 'role') {
+      setRole(value)
     }
   }
 
@@ -37,7 +40,7 @@ function Signup() {
       return
     }
 
-    const user = { username, password, name, email }
+    const user = { username, password, name, email, role }
 
     try {
       const response = await privaxApi.signup(user)
@@ -115,6 +118,17 @@ function Signup() {
               placeholder='Email'
               value={email}
               onChange={handleInputChange}
+            />
+            <Form.Select
+              fluid
+              name='role'
+              options={[
+                { key: 'user',   text: 'I am a patient',     value: 'USER'   },
+                { key: 'doctor', text: 'I am a clinician',   value: 'DOCTOR' },
+              ]}
+              value={role}
+              onChange={handleInputChange}
+              placeholder='Account type'
             />
             <Button color='blue' fluid size='large'>Signup</Button>
           </Segment>

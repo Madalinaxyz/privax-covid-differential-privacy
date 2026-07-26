@@ -34,7 +34,10 @@ export const privaxApi = {
   getSideEffectReports,
   getAllSideEffectReports,
   createSideEffectReport,
+  createClinicianReport,
+  getRecentClinicianReports,
   getGroupedSideEffectReports,
+  getSymptomStats,
   // ── Blog
   getBlogPosts,
   getBlogPost,
@@ -111,10 +114,28 @@ function createSideEffectReport(reportData) {
   });
 }
 
+function createClinicianReport(reportData) {
+  return instance.post("/api/side-effects/clinician", reportData, {
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function getRecentClinicianReports(limit = 20) {
+  return instance.get("/api/side-effects/clinician/recent", { params: { limit } });
+}
+
 function getGroupedSideEffectReports(vaccineName, severityLevel, epsilon) {
   return instance.get("/api/side-effects/grouped", {
     params: { vaccineName, severityLevel, epsilon },
   });
+}
+
+function getSymptomStats({ epsilon = 1.0, city = null, severity = null, vaccineName = null } = {}) {
+  const params = { epsilon };
+  if (city) params.city = city;
+  if (severity && severity !== "ALL") params.severity = severity;
+  if (vaccineName && vaccineName !== "ALL") params.vaccineName = vaccineName;
+  return instance.get("/api/side-effects/symptom-stats", { params });
 }
 
 

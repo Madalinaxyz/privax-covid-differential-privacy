@@ -1,13 +1,17 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './components/context/AuthContext'
 import PrivateRoute from './components/misc/PrivateRoute'
 import Navbar from './components/misc/Navbar'
+import Footer from './components/misc/Footer'
+import NotFound from './components/misc/NotFound'
+import Privacy from './components/misc/Privacy'
 import Home from './components/home/Home'
 import Login from './components/home/Login'
 import Signup from './components/home/Signup'
 import AdminPage from './components/admin/AdminPage'
 import UserPage from './components/user/UserPage'
+import DoctorPage from './components/doctor/DoctorPage'
 import Schedule from './components/schedule/Schedule'
 import Report from './components/reports/Report'
 import BlogIndex from './components/blog/BlogIndex'
@@ -29,12 +33,15 @@ function App() {
           <Route path='/blog/:slug' element={<BlogPostView />} />
           <Route path='/blog/:slug/edit' element={<PrivateRoute><BlogEditor /></PrivateRoute>} />
           <Route path='/about' element={<About />} />
+          <Route path='/privacy' element={<Privacy />} />
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
           <Route path="/adminpage" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
           <Route path="/userpage" element={<PrivateRoute><UserPage /></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/doctorpage" element={<PrivateRoute><DoctorPage /></PrivateRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
+        <Footer />
       </Router>
     </AuthProvider>
   )

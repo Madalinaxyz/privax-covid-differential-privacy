@@ -812,3 +812,69 @@
   .reports-page .ui.tab.segment { padding: 24px !important; }
   .report-filters { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   SYMPTOM PREVALENCE — DP-noised per-symptom counts
+   ============================================================ */
+.symptom-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.symptom-bars {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.symptom-bar-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 64px;
+  align-items: center;
+  gap: 14px;
+}
+.symptom-bar-name {
+  font-size: 0.88rem;
+  color: #14213D;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.symptom-bar-track {
+  position: relative;
+  height: 16px;
+  background: rgba(15, 26, 46, 0.05);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.symptom-bar-track > i {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, #2DA597 0%, #4FB6D9 100%);
+  border-radius: 100px;
+  transition: width 0.35s ease;
+}
+.symptom-bar-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #0F1A2E;
+  text-align: right;
+}
+@media (max-width: 720px) {
+  .symptom-bar-row { grid-template-columns: 120px 1fr 52px; gap: 8px; }
+  .symptom-bar-name { font-size: 0.8rem; }
+}
+
+/* Small helper note under a form field (public report form) */
+.reports-page .ui.form .form-note {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #6B7790;
+  font-style: italic;
+}

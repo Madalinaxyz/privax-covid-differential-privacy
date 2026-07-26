@@ -1,0 +1,114 @@
+import React, { useEffect, useState, useCallback } from "react";
+import { Select, Loader, Dimmer } from "semantic-ui-react";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
+import { privaxApi } from "../misc/PrivaxApi";
+import { cityCoordinates } from "../misc/Helpers";
+
+const SEVERITY_OPTIONS = [
+  { key: "ALL", value: "ALL", text: "All severities" },
+  { key: "MILD", value: "MILD", text: "Mild" },
+  { key: "MODERATE", value: "MODERATE", text: "Moderate" },
+  { key: "SEVERE", value: "SEVERE", text: "Severe" },
+  { key: "FATAL", value: "FATAL", text: "Fatal" },
+];
+
+const VACCINE_OPTIONS = [
+  { key: "ALL", value: "ALL", text: "All vaccines" },
+  { key: "Pfizer", value: "Pfizer", text: "Pfizer" },
+  { key: "Moderna", value: "Moderna", text: "Moderna" },
+  { key: "AstraZeneca", value: "AstraZeneca", text: "AstraZeneca" },
+  { key: "Johnson & Johnson", value: "Johnson & Johnson", text: "Johnson & Johnson" },
+];
+
+const CITY_OPTIONS = [
+  { key: "ALL", value: "", text: "All cities" },
+  ...Object.keys(cityCoordinates).sort().map((c) => ({ key: c, value: c, text: c })),
+];
+
+const SymptomStats = () => {
+  const [rows, setRows] = useState([]);
+  const [epsilon, setEpsilon] = useState(1.0);
+  const [filters, setFilters] = useState({ severity: "ALL", vaccineName: "ALL", city: "" });
+  const [loading, setLoading] = useState(false);
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await privaxApi.getSymptomStats({
+        epsilon,
+        city: filters.city || null,
+        severity: filters.severity,
+        vaccineName: filters.vaccineName,
+      });
+      setRows(res.data || []);
+    } catch (error) {
+      console.error("Error fetching symptom stats:", error);
+      setRows([]);
+    }
+    setLoading(false);
+  }, [epsilon, filters]);
+
+  /* Debounced so dragging the slider doesn't spam the API. */
+  useEffect(() => {
+    const t = setTimeout(fetchStats, 300);
+    return () => clearTimeout(t);
+  }, [epsilon, filters, fetchStats]);
+
+  const setFilter = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
+
+  const max = rows.reduce((m, r) => Math.max(m, r.count), 0) || 1;
+  const total = rows.reduce((sum, r) => sum + r.count, 0);
+
+  return (
+    <div className="report-card">
+      {/* Epsilon control */}
+      <div className="report-epsilon">
+        <div className="report-epsilon-label">
+          <span>Privacy budget (epsilon)</span>
+          <span className="report-epsilon-value">{epsilon.toFixed(1)}</span>
+        </div>
+        <Slider min={0.1} max={10} step={0.1} value={epsilon} onChange={setEpsilon} />
+        <p className="report-epsilon-hint">
+          Each bar is a noised count of how many reports listed that symptom. Lower ε = more
+          noise / more privacy · Higher ε = sharper counts.
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="report-toolbar">
+        <div className="symptom-filters">
+          <Select compact options={SEVERITY_OPTIONS} value={filters.severity}
+                  onChange={(_, { value }) => setFilter("severity", value)} />
+          <Select compact options={VACCINE_OPTIONS} value={filters.vaccineName}
+                  onChange={(_, { value }) => setFilter("vaccineName", value)} />
+          <Select compact search options={CITY_OPTIONS} value={filters.city}
+                  onChange={(_, { value }) => setFilter("city", value || "")} />
+        </div>
+        <div className="report-count">
+          {loading ? "Loading…" : <>≈ <strong>{total.toLocaleString()}</strong> symptom mentions</>}
+        </div>
+      </div>
+
+      <Dimmer.Dimmable as="div" dimmed={loading}>
+        <Dimmer active={loading} inverted><Loader /></Dimmer>
+        <ul className="symptom-bars">
+          {rows.map((r) => (
+            <li className="symptom-bar-row" key={r.symptom}>
+              <span className="symptom-bar-name">{r.symptom}</span>
+              <span className="symptom-bar-track">
+                <i style={{ width: `${Math.max(2, (r.count / max) * 100)}%` }} />
+              </span>
+              <span className="symptom-bar-count">{r.count.toLocaleString()}</span>
+            </li>
+          ))}
+          {!loading && rows.length === 0 && (
+            <li className="report-empty">No symptoms match the current filters.</li>
+          )}
+        </ul>
+      </Dimmer.Dimmable>
+    </div>
+  );
+};
+
+export default SymptomStats;

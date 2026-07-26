@@ -34,6 +34,20 @@ public class SideEffectController {
         return sideEffectService.reportSideEffect(reportDTO);
     }
 
+    /** Clinician-only: submits a report on behalf of a patient. */
+    @PostMapping("/clinician")
+    public SideEffectReport reportSideEffectAsClinician(@RequestBody SideEffectReportDTO reportDTO) {
+        return sideEffectService.reportSideEffectAsClinician(reportDTO);
+    }
+
+    /** Clinician-only: recent clinician-submitted reports for the doctor dashboard. */
+    @GetMapping("/clinician/recent")
+    public List<SideEffectReport> getRecentClinicianReports(
+        @RequestParam(value = "limit", required = false, defaultValue = "20") int limit
+    ) {
+        return sideEffectService.getRecentClinicianReports(limit);
+    }
+
     @GetMapping("/all")
     public List<SideEffectReport> getAllSideEffects() {
         return sideEffectService.getAllSideEffects();
@@ -54,10 +68,11 @@ public class SideEffectController {
         @RequestParam(value = "epsilon",     required = false) Double epsilon,
         @RequestParam(value = "vaccineName", required = false) String vaccineName,
         @RequestParam(value = "severity",    required = false) String severity,
-        @RequestParam(value = "city",        required = false) String city
+        @RequestParam(value = "city",        required = false) String city,
+        @RequestParam(value = "symptom",     required = false) String symptom
     ) {
         Page<SideEffectReport> reports = sideEffectService.getSideEffectReports(
-            pageable, vaccineName, severity, city
+            pageable, vaccineName, severity, city, epsilon, symptom
         );
         return ResponseEntity.ok(reports);
     }
@@ -69,5 +84,16 @@ public class SideEffectController {
         @RequestParam(value = "epsilon", required = false) Double epsilon
     ) {
         return ResponseEntity.ok(sideEffectService.getGroupedReports(vaccineName, severityLevel, epsilon));
+    }
+
+    /** DP-noised per-symptom prevalence counts (the privacy-preserving way to release symptom data). */
+    @GetMapping("/symptom-stats")
+    public ResponseEntity<List<com.covid.api.rest.dto.SymptomCountDTO>> getSymptomStats(
+        @RequestParam(value = "epsilon",     required = false) Double epsilon,
+        @RequestParam(value = "city",        required = false) String city,
+        @RequestParam(value = "severity",    required = false) String severity,
+        @RequestParam(value = "vaccineName", required = false) String vaccineName
+    ) {
+        return ResponseEntity.ok(sideEffectService.getSymptomStats(city, severity, vaccineName, epsilon));
     }
 }

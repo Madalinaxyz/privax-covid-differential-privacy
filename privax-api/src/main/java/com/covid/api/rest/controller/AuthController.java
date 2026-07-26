@@ -59,7 +59,14 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(signUpRequest.password()));
         user.setName(signUpRequest.name());
         user.setEmail(signUpRequest.email());
-        user.setRole(SecurityConfig.USER);
+        // Doctor accounts may self-register from the dedicated signup form.
+        // Admin is always assigned manually — never via public signup.
+        String requested = signUpRequest.role();
+        if (SecurityConfig.DOCTOR.equalsIgnoreCase(requested)) {
+            user.setRole(SecurityConfig.DOCTOR);
+        } else {
+            user.setRole(SecurityConfig.USER);
+        }
         return user;
     }
 }

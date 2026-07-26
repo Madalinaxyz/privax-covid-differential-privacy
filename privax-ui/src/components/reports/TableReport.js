@@ -6,7 +6,7 @@ import {
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { privaxApi } from "../misc/PrivaxApi";
-import { applyDifferentialPrivacy, cityCoordinates } from "../misc/Helpers";
+import { cityCoordinates } from "../misc/Helpers";
 
 const PAGE_SIZE_OPTIONS = [
   { key: 10,  value: 10,  text: "10 per page"  },
@@ -24,7 +24,7 @@ const SEVERITY_OPTIONS = [
 ];
 
 const VACCINE_OPTIONS = [
-  { key: "ALL",                value: "",                  text: "All vaccines"     },
+  { key: "ALL",                value: "ALL",               text: "All vaccines"     },
   { key: "Pfizer",             value: "Pfizer",            text: "Pfizer"           },
   { key: "Moderna",            value: "Moderna",           text: "Moderna"          },
   { key: "AstraZeneca",        value: "AstraZeneca",       text: "AstraZeneca"      },
@@ -38,31 +38,56 @@ const CITY_OPTIONS = [
     .map((c) => ({ key: c, value: c, text: c })),
 ];
 
+const SYMPTOM_OPTIONS = [
+  { key: "",                        value: "",                        text: "All symptoms"             },
+  { key: "Fever",                   value: "Fever",                   text: "Fever"                    },
+  { key: "Fatigue",                 value: "Fatigue",                 text: "Fatigue"                  },
+  { key: "Headache",                value: "Headache",                text: "Headache"                 },
+  { key: "Muscle Pain",             value: "Muscle Pain",             text: "Muscle Pain"              },
+  { key: "Chills",                  value: "Chills",                  text: "Chills"                   },
+  { key: "Nausea",                  value: "Nausea",                  text: "Nausea"                   },
+  { key: "Dizziness",               value: "Dizziness",               text: "Dizziness"                },
+  { key: "Joint Pain",              value: "Joint Pain",              text: "Joint Pain"               },
+  { key: "Injection Site Pain",     value: "Injection Site Pain",     text: "Injection Site Pain"      },
+  { key: "Swollen Lymph Nodes",     value: "Swollen Lymph Nodes",     text: "Swollen Lymph Nodes"      },
+  { key: "Rash",                    value: "Rash",                    text: "Rash"                     },
+  { key: "Vomiting",                value: "Vomiting",                text: "Vomiting"                 },
+  { key: "Brain Fog",               value: "Brain Fog",               text: "Brain Fog"                },
+  { key: "Insomnia",                value: "Insomnia",                text: "Insomnia"                 },
+  { key: "Anxiety",                 value: "Anxiety",                 text: "Anxiety"                  },
+  { key: "Heart Palpitations",      value: "Heart Palpitations",      text: "Heart Palpitations"       },
+  { key: "Chest Pain",              value: "Chest Pain",              text: "Chest Pain"               },
+  { key: "Shortness of Breath",     value: "Shortness of Breath",     text: "Shortness of Breath"      },
+  { key: "Numbness / Tingling",     value: "Numbness / Tingling",     text: "Numbness / Tingling"      },
+  { key: "Tinnitus",                value: "Tinnitus",                text: "Tinnitus"                 },
+  { key: "Myocarditis",             value: "Myocarditis",             text: "Myocarditis"              },
+  { key: "Anaphylaxis",             value: "Anaphylaxis",             text: "Anaphylaxis"              },
+  { key: "Guillain-Barré Syndrome", value: "Guillain-Barré Syndrome", text: "Guillain-Barré Syndrome"  },
+  { key: "Bell's Palsy",            value: "Bell's Palsy",            text: "Bell's Palsy"             },
+  { key: "Blood Clots",             value: "Blood Clots",             text: "Blood Clots"              },
+  { key: "Seizures",                value: "Seizures",                text: "Seizures"                 },
+  { key: "Encephalitis",            value: "Encephalitis",            text: "Encephalitis"             },
+  { key: "Psychosis",               value: "Psychosis",               text: "Psychosis"                },
+  { key: "Transverse Myelitis",     value: "Transverse Myelitis",     text: "Transverse Myelitis"      },
+  { key: "Immune Thrombocytopenia", value: "Immune Thrombocytopenia", text: "Immune Thrombocytopenia"  },
+  { key: "POTS",                    value: "POTS",                    text: "POTS"                     },
+  { key: "Paralysis",               value: "Paralysis",               text: "Paralysis"                },
+];
+
 const SORTABLE = ["age", "severity", "vaccineName", "reportedAt", "city"];
 
 const TableReport = ({ handleLogError }) => {
   /* ── State ── */
   const [reports, setReports]     = useState([]);
-  const [original, setOriginal]   = useState([]);
   const [totalElements, setTotal] = useState(0);
   const [totalPages, setTotalPgs] = useState(0);
   const [page, setPage]           = useState(0);
   const [size, setSize]           = useState(10);
   const [sortField, setSortField] = useState(null);
   const [sortDir, setSortDir]     = useState(null);
-  const [filters, setFilters]     = useState({ severity: "ALL", vaccineName: "", city: "" });
-  const [epsilon, setEpsilon]     = useState(10.0);
+  const [filters, setFilters]     = useState({ severity: "ALL", vaccineName: "ALL", city: "", symptom: "" });
+  const [epsilon, setEpsilon]     = useState(1.0);
   const [loading, setLoading]     = useState(false);
-
-  /* ── Which columns are actively filtered? Those are preserved (not noised)
-        so the displayed values match the active filter. ── */
-  const getPreservedFields = () => {
-    const preserved = [];
-    if (filters.severity && filters.severity !== 'ALL') preserved.push('severity');
-    if (filters.vaccineName) preserved.push('vaccineName');
-    if (filters.city)        preserved.push('city');
-    return preserved;
-  };
 
   /* ── Fetcher ── */
   const fetchReports = useCallback(async () => {
@@ -72,35 +97,35 @@ const TableReport = ({ handleLogError }) => {
       const response = await privaxApi.getSideEffectReports({
         page,
         size,
+        epsilon,                                                              // ← now actually sent
         sort: sortParam,
-        vaccineName: filters.vaccineName || null,
+        vaccineName: filters.vaccineName && filters.vaccineName !== 'ALL' ? filters.vaccineName : null,
         severity:    filters.severity,
         city:        filters.city || null,
+        symptom:     filters.symptom || null,
       });
       const data = response.data;
-      setOriginal(data.content || []);
-      setReports(applyDifferentialPrivacy(data.content || [], epsilon, getPreservedFields()));
+      // Noise is applied server-side now; display the response verbatim.
+      setReports(data.content || []);
       setTotal(data.totalElements || 0);
       setTotalPgs(data.totalPages || 0);
     } catch (error) {
       console.error("Error fetching reports:", error);
       handleLogError?.(error);
       setReports([]);
-      setOriginal([]);
       setTotal(0);
       setTotalPgs(0);
     }
     setLoading(false);
   }, [page, size, sortField, sortDir, filters, epsilon, handleLogError]);
 
-  /* Fetch on every dependency change (auto-load first page on mount) */
-  useEffect(() => { fetchReports(); /* eslint-disable-next-line */ }, [page, size, sortField, sortDir, filters]);
-
-  /* Re-apply DP locally when epsilon changes (no re-fetch needed) */
+  /* Fetch on every dependency change (incl. epsilon — noise is applied server-side now).
+     Debounced so dragging the epsilon slider doesn't spam the API. */
   useEffect(() => {
-    if (original.length > 0) setReports(applyDifferentialPrivacy(original, epsilon, getPreservedFields()));
+    const t = setTimeout(fetchReports, 300);
+    return () => clearTimeout(t);
     /* eslint-disable-next-line */
-  }, [epsilon, original, filters]);
+  }, [page, size, sortField, sortDir, filters, epsilon]);
 
   /* ── Sort handler — cycles asc → desc → none on repeated clicks ── */
   const toggleSort = (field) => {
@@ -212,7 +237,18 @@ const TableReport = ({ handleLogError }) => {
                     onChange={(_, { value }) => setFilter("vaccineName", value)}
                   />
                 </TableHeaderCell>
-                <TableHeaderCell />
+                <TableHeaderCell>
+                  <Dropdown
+                    fluid
+                    selection
+                    search
+                    clearable
+                    options={SYMPTOM_OPTIONS}
+                    value={filters.symptom}
+                    placeholder="All symptoms"
+                    onChange={(_, { value }) => setFilter("symptom", value || "")}
+                  />
+                </TableHeaderCell>
                 <TableHeaderCell />
                 <TableHeaderCell>
                   <Dropdown

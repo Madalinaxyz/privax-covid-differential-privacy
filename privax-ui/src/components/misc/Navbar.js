@@ -21,17 +21,19 @@ export default function Navbar() {
     navigate('/')
   }
 
-  const user    = getUser()
-  const isAdmin = user?.role === 'ADMIN'
-  const isUser  = user?.role === 'USER'
+  const user     = getUser()
+  const isAdmin  = user?.role === 'ADMIN'
+  const isUser   = user?.role === 'USER'
+  const isDoctor = user?.role === 'DOCTOR'
 
   const navLinks = [
     { label: 'Home',     to: '/' },
     { label: 'About',    to: '/about' },
     { label: 'Reports',  to: '/reports' },
     { label: 'Blog',     to: '/blog' },
-    ...(isAdmin ? [{ label: 'Admin',   to: '/adminpage' }] : []),
-    ...(isUser  ? [{ label: 'My Page', to: '/userpage'  }] : []),
+    ...(isDoctor ? [{ label: 'Doctor',  to: '/doctorpage' }] : []),
+    ...(isAdmin  ? [{ label: 'Admin',   to: '/adminpage'  }] : []),
+    ...(isUser   ? [{ label: 'My Page', to: '/userpage'   }] : []),
   ]
 
   const isHome = location.pathname === '/'

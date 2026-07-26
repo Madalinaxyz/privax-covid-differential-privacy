@@ -60,5 +60,24 @@ public interface SideEffectReportRepository
     @Query("SELECT COUNT(DISTINCT s) FROM SideEffectReport r JOIN r.symptoms s")
     long countDistinctSymptoms();
 
+    /** Per-symptom report counts, optionally filtered by vaccine / severity / city. Newest counts first. */
+    @Query("SELECT new com.covid.api.rest.dto.SymptomCountDTO(s, COUNT(r)) " +
+           "FROM SideEffectReport r JOIN r.symptoms s " +
+           "WHERE (:vaccineName IS NULL OR :vaccineName = 'ALL' OR UPPER(r.vaccineName) = UPPER(:vaccineName)) " +
+           "AND (:severity IS NULL OR :severity = 'ALL' OR UPPER(r.severity) = UPPER(:severity)) " +
+           "AND (:city IS NULL OR :city = '' OR :city = 'ALL' OR UPPER(r.city) = UPPER(:city)) " +
+           "GROUP BY s ORDER BY COUNT(r) DESC")
+    List<com.covid.api.rest.dto.SymptomCountDTO> countBySymptom(
+        @Param("vaccineName") String vaccineName,
+        @Param("severity") String severity,
+        @Param("city") String city
+    );
+
     long countBySeverity(SeverityLevel severity);
+
+    /** Recent reports of a given provenance (e.g. CLINICIAN) — backs the doctor dashboard. */
+    Page<SideEffectReport> findByReporterTypeOrderByReportedAtDesc(
+        com.covid.api.rest.model.ReporterType reporterType, Pageable pageable);
+
+    long countByReporterType(com.covid.api.rest.model.ReporterType reporterType);
 }

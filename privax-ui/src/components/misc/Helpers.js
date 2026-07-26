@@ -56,7 +56,7 @@ export const applyDifferentialPrivacy = (data, epsilon, preserveFields = []) => 
   const keep = new Set(preserveFields);
   return data.map(report => ({
     ...report,
-    age:         keep.has('age')         ? report.age         : clamp(Math.floor(report.age + laplaceNoise(epsilon)), 18, 80),
+    age:         keep.has('age')         ? report.age         : clamp(Math.floor(report.age + laplaceNoise(epsilon)), 0, 120),
     severity:    keep.has('severity')    ? report.severity    : randomizeSeverity(report.severity, epsilon),
     vaccineName: keep.has('vaccineName') ? report.vaccineName : randomizeVaccine(report.vaccineName, epsilon),
     city:        keep.has('city')        ? report.city        : randomizeCity(report.city, epsilon),

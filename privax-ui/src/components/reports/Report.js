@@ -1,42 +1,18 @@
-import React, { useState } from 'react'
-import { Container, Button, Label, TabPane, Tab  } from 'semantic-ui-react'
-import { privaxApi } from '../misc/PrivaxApi'
+import React from 'react'
+import { TabPane, Tab } from 'semantic-ui-react'
 import { handleLogError } from '../misc/Helpers'
-
-
-
-import {
-    CardMeta,
-    CardHeader,
-    CardDescription,
-    CardContent,
-    Card,
-    Icon,
-    Image,
-  } from 'semantic-ui-react'
 
 import "./reports.css"
 import TableReport from './TableReport'
 import FormReport from './FormReport'
 import MapReport from './MapReport'
-
+import SymptomStats from './SymptomStats'
 
 function Report() {
-    const [test, setTest] = useState("Not Assigned")
-
-    const fetchData = async () => {
-        try {
-            const responseUsers = await privaxApi.test()
-            console.log(responseUsers)
-            setTest(responseUsers.data)
-        } catch (error) {
-            handleLogError(error)
-        }
-    }
-
     const panes = [
         { menuItem: 'View Reports', render: () => <TabPane><TableReport  handleLogError={handleLogError}/></TabPane> },
         { menuItem: 'View Map', render: () => <TabPane><MapReport/></TabPane> },
+        { menuItem: 'Symptom prevalence', render: () => <TabPane><SymptomStats/></TabPane> },
         { menuItem: 'Add Report', render: () => <TabPane><FormReport/></TabPane> },
       ]
 
