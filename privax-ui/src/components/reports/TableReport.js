@@ -3,9 +3,8 @@ import {
   Table, TableRow, TableHeaderCell, TableHeader, TableCell, TableBody,
   Icon, Select, Dropdown, Loader, Dimmer
 } from "semantic-ui-react";
-import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
 import { privaxApi } from "../misc/PrivaxApi";
+import EpsilonSlider from "./EpsilonSlider";
 import { cityCoordinates } from "../misc/Helpers";
 
 const PAGE_SIZE_OPTIONS = [
@@ -164,15 +163,7 @@ const TableReport = ({ handleLogError }) => {
 
   return (
     <div className="report-card">
-      {/* Epsilon control */}
-      <div className="report-epsilon">
-        <div className="report-epsilon-label">
-          <span>Privacy budget (epsilon)</span>
-          <span className="report-epsilon-value">{epsilon.toFixed(1)}</span>
-        </div>
-        <Slider min={0.1} max={10} step={0.1} value={epsilon} onChange={setEpsilon} />
-        <p className="report-epsilon-hint">Lower value = more privacy · Higher value = more accuracy</p>
-      </div>
+      <EpsilonSlider value={epsilon} onChange={setEpsilon} />
 
       {/* Toolbar: total count + page size */}
       <div className="report-toolbar">

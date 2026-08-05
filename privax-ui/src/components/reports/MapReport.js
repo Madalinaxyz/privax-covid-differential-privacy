@@ -134,9 +134,7 @@ import { privaxApi } from "../misc/PrivaxApi";
 import { Dropdown } from "semantic-ui-react";
 import { cityCoordinates } from "../misc/Helpers";
 import { debounce } from "lodash";
-
-import Slider from "rc-slider";
-import "rc-slider/assets/index.css"; // Import styles
+import EpsilonSlider from "./EpsilonSlider";
 
 
 // Define severity colors
@@ -221,14 +219,7 @@ const MapReport = () => {
       />
 
       <div style={{ marginBottom: "20px" }}>
-        <p>Epsilon: {epsilon.toFixed(1)} (Lower = More Privacy, Higher = More Accuracy)</p>
-        <Slider
-          min={0.1}
-          max={10}
-          step={0.1}
-          value={epsilon}
-          onChange={(value) => setEpsilon(value)}
-        />
+        <EpsilonSlider value={epsilon} onChange={setEpsilon} />
       </div>
 
       {(() => {

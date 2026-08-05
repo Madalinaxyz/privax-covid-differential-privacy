@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import './Privacy.css'
 
 const Privacy = () => {
-  const lastUpdated = 'June 2026'
+  const lastUpdated = 'August 2026'
 
   return (
     <main className="privacy">

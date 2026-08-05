@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Select, Loader, Dimmer } from "semantic-ui-react";
-import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
 import { privaxApi } from "../misc/PrivaxApi";
 import { cityCoordinates } from "../misc/Helpers";
+import EpsilonSlider from "./EpsilonSlider";
 
 const SEVERITY_OPTIONS = [
   { key: "ALL", value: "ALL", text: "All severities" },
@@ -62,18 +61,11 @@ const SymptomStats = () => {
 
   return (
     <div className="report-card">
-      {/* Epsilon control */}
-      <div className="report-epsilon">
-        <div className="report-epsilon-label">
-          <span>Privacy budget (epsilon)</span>
-          <span className="report-epsilon-value">{epsilon.toFixed(1)}</span>
-        </div>
-        <Slider min={0.1} max={10} step={0.1} value={epsilon} onChange={setEpsilon} />
-        <p className="report-epsilon-hint">
-          Each bar is a noised count of how many reports listed that symptom. Lower ε = more
-          noise / more privacy · Higher ε = sharper counts.
-        </p>
-      </div>
+      <EpsilonSlider
+        value={epsilon}
+        onChange={setEpsilon}
+        hint="Each bar is a noised count of how many reports listed that symptom. Lower ε = more noise / more privacy · Higher ε = sharper counts."
+      />
 
       {/* Filters */}
       <div className="report-toolbar">
