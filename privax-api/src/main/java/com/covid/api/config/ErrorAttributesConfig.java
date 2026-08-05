@@ -18,7 +18,9 @@ public class ErrorAttributesConfig {
         return new DefaultErrorAttributes() {
             @Override
             public Map<String, Object> getErrorAttributes(WebRequest webRequest, ErrorAttributeOptions options) {
-                return super.getErrorAttributes(webRequest, options.including(Include.EXCEPTION, Include.MESSAGE, Include.BINDING_ERRORS));
+                // Include the message and validation binding errors (the UI uses these), but NOT
+                // the exception class name — that leaks internal framework/implementation details.
+                return super.getErrorAttributes(webRequest, options.including(Include.MESSAGE, Include.BINDING_ERRORS));
             }
         };
     }
