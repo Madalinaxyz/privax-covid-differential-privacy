@@ -12,7 +12,6 @@ import Signup from './components/home/Signup'
 import AdminPage from './components/admin/AdminPage'
 import UserPage from './components/user/UserPage'
 import DoctorPage from './components/doctor/DoctorPage'
-import Schedule from './components/schedule/Schedule'
 import Report from './components/reports/Report'
 import BlogIndex from './components/blog/BlogIndex'
 import BlogPostView from './components/blog/BlogPostView'
@@ -26,7 +25,6 @@ function App() {
         <Navbar />
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='/vaccine-schedule' element={<Schedule />} />
           <Route path='/reports' element={<Report />} />
           <Route path='/blog' element={<BlogIndex />} />
           <Route path='/blog/new' element={<PrivateRoute><BlogEditor /></PrivateRoute>} />

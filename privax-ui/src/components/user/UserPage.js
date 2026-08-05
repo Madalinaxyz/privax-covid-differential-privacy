@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 function UserPage() {
   const Auth = useAuth()
   const user = Auth.getUser()
-  const isUser = user.role === 'USER'
+  const isUser = user?.role === 'USER'
 
   if (!isUser) {
     return <Navigate to='/' />
@@ -18,7 +18,7 @@ function UserPage() {
         Hi, {user.name}.
       </h1>
       <p style={{ fontSize: '1.05rem', color: '#6B7790', lineHeight: 1.6, maxWidth: 520, margin: '16px auto 32px' }}>
-        Your private space inside Privax. Submit a new report, browse the data, or update your previous entries.
+        Your private space inside Privax. Submit a new report or browse the anonymized data from across the network.
       </p>
       <Link
         to='/reports'
