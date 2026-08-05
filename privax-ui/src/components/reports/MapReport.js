@@ -242,9 +242,13 @@ const MapReport = () => {
           { mild: 0, moderate: 0, severe: 0, fatal: 0 }
         );
         const total = totals.mild + totals.moderate + totals.severe + totals.fatal;
-        const citiesAffected = filteredReports.filter(r =>
-          (r.mildCount || 0) + (r.moderateCount || 0) + (r.severeCount || 0) + (r.fatalCount || 0) > 0
-        ).length;
+        // Rows are grouped by city × vaccine, so count DISTINCT cities that have any cases,
+        // not the number of grouped rows.
+        const citiesAffected = new Set(
+          filteredReports
+            .filter(r => (r.mildCount || 0) + (r.moderateCount || 0) + (r.severeCount || 0) + (r.fatalCount || 0) > 0)
+            .map(r => r.city)
+        ).size;
         const pct = (n) => total > 0 ? Math.round((n / total) * 1000) / 10 : 0;
         return (
           <div className="map-stats">

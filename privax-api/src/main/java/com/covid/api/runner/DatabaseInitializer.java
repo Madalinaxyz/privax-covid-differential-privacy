@@ -453,7 +453,9 @@ I can't go back and write it down for the person who came before me. But I can w
                 String additionalInfo = generateAdditionalInfo(severity);
                 LocalDateTime reportedAt = startDate.plusDays(random.nextInt((int) daysBetween + 1))
                                                     .plusHours(random.nextInt(24))
-                                                    .plusMinutes(random.nextInt(60));
+                                                    .plusMinutes(random.nextInt(60))
+                                                    .plusSeconds(random.nextInt(60))
+                                                    .withNano(0);
                 String vaccineName = VACCINE_TYPES[random.nextInt(VACCINE_TYPES.length)];
                 String city = cities.get(random.nextInt(cities.size()));
 
