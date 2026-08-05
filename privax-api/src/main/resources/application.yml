@@ -1,6 +1,12 @@
 spring:
   application:
     name: covid-api
+  data:
+    web:
+      pageable:
+        # Cap page size so a single request can't pull the whole table at once
+        # (matches the largest option in the UI).
+        max-page-size: 100
   jpa:
     hibernate:
       ddl-auto: create

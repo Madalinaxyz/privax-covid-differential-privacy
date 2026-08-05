@@ -113,11 +113,6 @@ public class SideEffectService {
     }
 
 
-    public Page<SideEffectReport> getSideEffectReports(int page, int size, Double epsilon) {
-        Page<SideEffectReport> reports = sideEffectReportRepository.findAll(PageRequest.of(page, size));
-
-        return reports;
-    }
 
     /**
      * Filterable + sortable paginated reports. Each filter is optional.
