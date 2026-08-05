@@ -9,7 +9,7 @@ import './admin.css'
 function AdminPage() {
   const Auth = useAuth()
   const user = Auth.getUser()
-  const isAdmin = user.role === 'ADMIN'
+  const isAdmin = user?.role === 'ADMIN'
 
   const [users, setUsers] = useState([])
   const [userUsernameSearch, setUserUsernameSearch] = useState('')

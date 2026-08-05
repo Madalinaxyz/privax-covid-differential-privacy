@@ -32,6 +32,16 @@ public class SecurityConfig {
                         // Note: clinician GETs are matched above, so they stay DOCTOR-only.
                         // Submitting a report (POST /api/side-effects) still requires a login via anyRequest() below.
                         .requestMatchers(HttpMethod.GET,    "/api/side-effects", "/api/side-effects/**").permitAll()
+                        // User management is ADMIN-only. /me is the one exception: any
+                        // authenticated user may look up their own account.
+                        .requestMatchers(HttpMethod.GET,    "/api/users/me").authenticated()
+                        .requestMatchers("/api/users", "/api/users/**").hasAuthority(ADMIN)
+                        // Catalogue + appointment mutations are ADMIN-only (reads stay open to
+                        // any authenticated user). Without this, any logged-in user could add,
+                        // edit, or delete vaccines and appointments.
+                        .requestMatchers(HttpMethod.POST,   "/api/vaccines", "/api/vaccines/**", "/api/appointments", "/api/appointments/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.PUT,    "/api/vaccines/**", "/api/appointments/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.DELETE, "/api/vaccines/**", "/api/appointments/**").hasAuthority(ADMIN)
                         .requestMatchers("/", "/error", "/csrf", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
