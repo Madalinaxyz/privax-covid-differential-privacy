@@ -79,9 +79,9 @@ const VOICES = [
 
 const FAQS = [
   { q: 'Is my report completely anonymous?',              a: 'Yes. We never store personally identifying information alongside your reports. You can submit without an account at all, and aggregated data is protected by differential privacy before being displayed.' },
-  { q: 'How is my data used — and by whom?',              a: 'Only aggregated, mathematically-anonymized patterns are made public. Researchers and journalists can access summary statistics; individual reports are never visible to anyone. You can delete your record at any time.' },
+  { q: 'How is my data used — and by whom?',              a: 'Public views show individual reports only after differential-privacy noise has been applied, plus aggregated statistics by city, vaccine, and severity. Nothing that could identify you is ever stored or shown, and your data is never sold, shared, or used for advertising.' },
   { q: 'Are the statistics scientifically credible?',     a: 'All numbers are derived from real submissions. We use differential privacy — a peer-reviewed mathematical guarantee — to balance privacy and statistical accuracy. Our methodology is documented and open.' },
-  { q: 'Can I update or delete my report later?',         a: 'Yes, at any time. Log into your account to edit severity, duration, or resolution status — or remove your report entirely. No questions asked.' },
+  { q: 'Can I update or delete my report later?',         a: 'Because reports are anonymized the moment they are submitted — with nothing stored that links a report back to you or to an account — there is normally no way to find your specific report again to change or remove it. That is a deliberate privacy trade-off: we cannot edit what we can never trace to a person. It is the same reason your report can never be used against you.' },
   { q: 'Which vaccines are tracked — only COVID?',        a: 'We launched focused on COVID-19 vaccines, but the platform is built to be vaccine-agnostic. Flu, HPV, mpox, and future pandemic vaccines can all be added.' },
 ]
 

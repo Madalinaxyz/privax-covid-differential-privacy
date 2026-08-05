@@ -31,7 +31,7 @@ const Footer = () => {
             <Link to="/privacy" className="site-footer-link">Privacy &amp; data</Link>
             <Link to="/about" className="site-footer-link">Methodology</Link>
             <a
-              href="https://github.com"
+              href="https://github.com/Madalinaxyz/privax-differential-privacy-reporting"
               target="_blank"
               rel="noopener noreferrer"
               className="site-footer-link"

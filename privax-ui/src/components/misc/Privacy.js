@@ -172,7 +172,7 @@ const Privacy = () => {
               Read the methodology →
             </Link>
             <a
-              href="https://github.com"
+              href="https://github.com/Madalinaxyz/privax-differential-privacy-reporting"
               target="_blank"
               rel="noopener noreferrer"
               className="privacy-btn privacy-btn--ghost"
