@@ -34,7 +34,6 @@ export const privaxApi = {
   getSideEffectReports,
   createSideEffectReport,
   createClinicianReport,
-  getRecentClinicianReports,
   getGroupedSideEffectReports,
   getSymptomStats,
   // ── Blog
@@ -113,10 +112,6 @@ function createClinicianReport(reportData) {
   return instance.post("/api/side-effects/clinician", reportData, {
     headers: { "Content-Type": "application/json" },
   });
-}
-
-function getRecentClinicianReports(limit = 20) {
-  return instance.get("/api/side-effects/clinician/recent", { params: { limit } });
 }
 
 function getGroupedSideEffectReports(vaccineName, severityLevel, epsilon) {

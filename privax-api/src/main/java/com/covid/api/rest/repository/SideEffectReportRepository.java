@@ -74,10 +74,4 @@ public interface SideEffectReportRepository
     );
 
     long countBySeverity(SeverityLevel severity);
-
-    /** Recent reports of a given provenance (e.g. CLINICIAN) — backs the doctor dashboard. */
-    Page<SideEffectReport> findByReporterTypeOrderByReportedAtDesc(
-        com.covid.api.rest.model.ReporterType reporterType, Pageable pageable);
-
-    long countByReporterType(com.covid.api.rest.model.ReporterType reporterType);
 }

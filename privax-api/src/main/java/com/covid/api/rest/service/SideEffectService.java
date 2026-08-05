@@ -90,15 +90,6 @@ public class SideEffectService {
         return sideEffectReportRepository.save(report);
     }
 
-    /** Recent clinician-verified rows, newest first. Backs the doctor dashboard. */
-    public List<SideEffectReport> getRecentClinicianReports(int limit) {
-        return sideEffectReportRepository
-            .findByReporterTypeOrderByReportedAtDesc(
-                ReporterType.CLINICIAN, PageRequest.of(0, Math.max(1, limit))
-            )
-            .getContent();
-    }
-
     public Page<SideEffectReport> findAll(Pageable pageable) {
         return sideEffectReportRepository.findAll(pageable);
     }

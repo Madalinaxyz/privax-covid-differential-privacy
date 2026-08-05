@@ -21,6 +21,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/public/**", "/auth/**").permitAll()
+                        // The compare endpoint returns the RAW (un-noised) count next to the noisy
+                        // one — useful only for demonstrating the trade-off, never for the public.
+                        .requestMatchers("/api/vaccinations/region/compare").hasAuthority(ADMIN)
                         .requestMatchers("/api/vaccinations/**").permitAll()
                         .requestMatchers(HttpMethod.GET,    "/api/blog/**").permitAll()
                         .requestMatchers(HttpMethod.POST,   "/api/blog/**").hasAuthority(ADMIN)

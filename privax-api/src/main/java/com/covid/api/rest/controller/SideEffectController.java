@@ -40,14 +40,6 @@ public class SideEffectController {
         return sideEffectService.reportSideEffectAsClinician(reportDTO);
     }
 
-    /** Clinician-only: recent clinician-submitted reports for the doctor dashboard. */
-    @GetMapping("/clinician/recent")
-    public List<SideEffectReport> getRecentClinicianReports(
-        @RequestParam(value = "limit", required = false, defaultValue = "20") int limit
-    ) {
-        return sideEffectService.getRecentClinicianReports(limit);
-    }
-
     // @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
     // @GetMapping
     // public Page<SideEffectReport> getSideEffects(
