@@ -35,6 +35,17 @@ public class SideEffectService {
     // while stable across requests (the DB reseeds on restart anyway).
     private final long seedSalt = new Random().nextLong();
 
+    // Differential privacy is never optional. A missing/invalid epsilon defaults to 1.0, and
+    // epsilon is capped so it cannot be inflated to effectively disable the noise. This closes
+    // the "omit the epsilon param to get raw data" bypass.
+    private static final double DEFAULT_EPSILON = 1.0;
+    private static final double MAX_EPSILON = 10.0;
+
+    private static double effectiveEpsilon(Double epsilon) {
+        if (epsilon == null || epsilon <= 0) return DEFAULT_EPSILON;
+        return Math.min(epsilon, MAX_EPSILON);
+    }
+
     @Autowired
     public SideEffectService(SideEffectReportRepository sideEffectReportRepository) {
         this.sideEffectReportRepository = sideEffectReportRepository;
@@ -86,10 +97,6 @@ public class SideEffectService {
                 ReporterType.CLINICIAN, PageRequest.of(0, Math.max(1, limit))
             )
             .getContent();
-    }
-
-    public List<SideEffectReport> getAllSideEffects() {
-        return sideEffectReportRepository.findAll();
     }
 
     public Page<SideEffectReport> findAll(Pageable pageable) {
@@ -157,18 +164,16 @@ public class SideEffectService {
         Page<SideEffectReport> page = sideEffectReportRepository.findAll(spec, pageable);
 
         // Differential privacy is applied HERE, on the server (the trusted boundary),
-        // so the raw values never leave the backend. The client displays the response as-is.
+        // so the raw values never leave the backend. It is ALWAYS applied (effectiveEpsilon
+        // defaults/caps epsilon), so raw rows can't be obtained by dropping the param.
         // Fields the user is actively filtering on are preserved, so the shown values
         // stay consistent with the active filter (e.g. filtering City=Sibiu keeps Sibiu).
-        if (epsilon != null && epsilon > 0) {
-            Set<String> preserve = new HashSet<>();
-            if (vaccineName != null && !vaccineName.isBlank() && !"ALL".equalsIgnoreCase(vaccineName)) preserve.add("vaccineName");
-            if (city != null && !city.isBlank()) preserve.add("city");
-            if (severity != null && !severity.isBlank() && !"ALL".equalsIgnoreCase(severity)) preserve.add("severity");
-            if (symptom != null && !symptom.isBlank()) preserve.add("symptoms");
-            page = applyDifferentialPrivacy(page, epsilon, preserve);
-        }
-        return page;
+        Set<String> preserve = new HashSet<>();
+        if (vaccineName != null && !vaccineName.isBlank() && !"ALL".equalsIgnoreCase(vaccineName)) preserve.add("vaccineName");
+        if (city != null && !city.isBlank()) preserve.add("city");
+        if (severity != null && !severity.isBlank() && !"ALL".equalsIgnoreCase(severity)) preserve.add("severity");
+        if (symptom != null && !symptom.isBlank()) preserve.add("symptoms");
+        return applyDifferentialPrivacy(page, effectiveEpsilon(epsilon), preserve);
     }
 
 
@@ -179,12 +184,8 @@ public class SideEffectService {
 
     public List<GroupedReportDTO> getGroupedReports(String vaccineName, String severityLevel, Double epsilon) {
         List<GroupedReportDTO> reports = sideEffectReportRepository.findGroupedReports(vaccineName, severityLevel);
-
-        if (epsilon != null && epsilon > 0) {
-            reports = applyDifferentialPrivacy(reports, epsilon, severityLevel);
-        }
-
-        return reports;
+        // Always noise the map counts (effectiveEpsilon defaults/caps epsilon).
+        return applyDifferentialPrivacy(reports, effectiveEpsilon(epsilon), severityLevel);
     }
 
     /**
@@ -197,15 +198,14 @@ public class SideEffectService {
     public List<SymptomCountDTO> getSymptomStats(String city, String severity, String vaccineName, Double epsilon) {
         List<SymptomCountDTO> counts = sideEffectReportRepository.countBySymptom(vaccineName, severity, city);
 
-        if (epsilon != null && epsilon > 0) {
-            double scale = 1.0 / epsilon; // counting query: sensitivity = 1
-            for (SymptomCountDTO c : counts) {
-                // Seed by symptom + the exact filter slice, so re-issuing the same query is stable.
-                long seed = seedFor(c.getSymptom(), city, severity, vaccineName);
-                c.setCount(Math.max(0, Math.round(c.getCount() + laplaceNoise(scale, seed))));
-            }
-            counts.sort((a, b) -> Long.compare(b.getCount(), a.getCount()));
+        // Always noise the counts (effectiveEpsilon defaults/caps epsilon).
+        double scale = 1.0 / effectiveEpsilon(epsilon); // counting query: sensitivity = 1
+        for (SymptomCountDTO c : counts) {
+            // Seed by symptom + the exact filter slice, so re-issuing the same query is stable.
+            long seed = seedFor(c.getSymptom(), city, severity, vaccineName);
+            c.setCount(Math.max(0, Math.round(c.getCount() + laplaceNoise(scale, seed))));
         }
+        counts.sort((a, b) -> Long.compare(b.getCount(), a.getCount()));
         return counts;
     }
 

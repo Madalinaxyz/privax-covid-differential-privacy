@@ -32,7 +32,6 @@ export const privaxApi = {
   deleteUser,
   test,
   getSideEffectReports,
-  getAllSideEffectReports,
   createSideEffectReport,
   createClinicianReport,
   getRecentClinicianReports,
@@ -102,10 +101,6 @@ function getSideEffectReports({
   if (city)        params.city        = city;
   if (symptom)     params.symptom     = symptom;
   return instance.get('/api/side-effects', { params });
-}
-
-function getAllSideEffectReports() {
-  return instance.get('/api/side-effects/all')
 }
 
 function createSideEffectReport(reportData) {

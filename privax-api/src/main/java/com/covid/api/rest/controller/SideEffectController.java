@@ -48,11 +48,6 @@ public class SideEffectController {
         return sideEffectService.getRecentClinicianReports(limit);
     }
 
-    @GetMapping("/all")
-    public List<SideEffectReport> getAllSideEffects() {
-        return sideEffectService.getAllSideEffects();
-    }
-
     // @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
     // @GetMapping
     // public Page<SideEffectReport> getSideEffects(
