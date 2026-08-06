@@ -355,7 +355,217 @@ I can't go back and write it down for the person who came before me. But I can w
         p5.setPublishedAt(LocalDateTime.now().minusDays(1));
         blogPostRepository.save(p5);
 
-        log.info("Inserted 4 long-form blog posts.");
+        // ────────────────────────────────────────────────────────────
+        // Article 6 — A field guide to reading the reports
+        // ────────────────────────────────────────────────────────────
+        BlogPost p6 = new BlogPost();
+        p6.setSlug("a-field-guide-to-reading-the-reports");
+        p6.setTitle("A field guide to reading the reports");
+        p6.setExcerpt("Three views, one privacy dial, and a few things to keep in mind before you " +
+                      "draw conclusions. Here's how to actually read what Privax shows you.");
+        p6.setAuthor("The patient who built Privax");
+        p6.setContent("""
+# A field guide to reading the reports
+
+The [Reports page](/reports) has three tabs and a slider. Here's what each one is for, and how to read it honestly.
+
+## The table
+
+Each row is one anonymized report, passed through the differential-privacy layer before it reaches you. Individual rows are **illustrative** — think of them as "what a plausible report looks like," not as a specific person's record. If you filter by a column, that column is shown as-is so the filter makes sense; the others carry noise.
+
+## The map
+
+Circles sit on Romanian cities, sized by how many reports came from there, split by severity. The counts are noised in proportion to the epsilon slider — so a city showing "20" might truly be 18 or 23. Look at **shape and relative size**, not exact numbers.
+
+## Symptom prevalence
+
+A ranked bar chart of how common each symptom is. This is the most statistically trustworthy view, because a count over thousands of people barely moves when you add privacy noise — while a single person stays hidden inside it.
+
+## Three honest cautions
+
+1. **Reports are voluntary.** People with symptoms are more motivated to submit than people without — so raw prevalence overstates how common side effects are in the general population.
+2. **Correlation isn't causation.** A symptom appearing after a vaccine is a timing, not a mechanism.
+3. **Small numbers are noisy on purpose.** When a count is tiny, the privacy noise dominates — that's the system protecting the handful of people the number represents.
+
+> Read Privax the way you'd read a weather map, not a bank statement: the pattern is real, the last digit is not.
+""");
+        p6.setTags(Arrays.asList("guide", "differential-privacy"));
+        p6.setPublishedAt(LocalDateTime.now().minusDays(2));
+        blogPostRepository.save(p6);
+
+        // ────────────────────────────────────────────────────────────
+        // Article 7 — What differential privacy is *not*
+        // ────────────────────────────────────────────────────────────
+        BlogPost p7 = new BlogPost();
+        p7.setSlug("what-differential-privacy-is-not");
+        p7.setTitle("What differential privacy is not");
+        p7.setExcerpt("The term gets used loosely. Here are five things people assume differential " +
+                      "privacy means that it doesn't — and what it actually promises.");
+        p7.setAuthor("The patient who built Privax");
+        p7.setContent("""
+# What differential privacy is not
+
+Differential privacy is a precise mathematical promise, and precise promises are easy to overstate. Five clarifications.
+
+## It is not "anonymization"
+
+Classic anonymization removes names and hopes for the best. It has failed repeatedly — people have been re-identified from "anonymous" data using a birthday and a zip code. Differential privacy makes a guarantee that holds **no matter what outside information an attacker has**.
+
+## It is not encryption
+
+Encryption protects data *in transit or at rest* from people who shouldn't see it. Differential privacy protects individuals *inside published statistics* that everyone is allowed to see. Different problem, different tool.
+
+## It is not "the data is fake"
+
+The underlying reports are real. The noise is added to the **published answers**, calibrated to be small relative to the signal but large relative to any single person's contribution.
+
+## It is not free
+
+Every query spends a little "privacy budget." Answer unlimited questions and the guarantee erodes — which is exactly why serious deployments cap how much can be asked. (Privax's per-row table is deliberately illustrative for this reason; the aggregate views are the rigorous ones.)
+
+## It is not all-or-nothing
+
+Privacy isn't a switch, it's the **epsilon dial**. Low epsilon, strong privacy, blurrier stats. High epsilon, the reverse. The honest move is to make that trade-off visible — which is the whole point of the slider.
+""");
+        p7.setTags(Arrays.asList("explainer", "differential-privacy"));
+        p7.setPublishedAt(LocalDateTime.now().minusDays(3));
+        blogPostRepository.save(p7);
+
+        // ────────────────────────────────────────────────────────────
+        // Article 8 — The curse of dimensionality
+        // ────────────────────────────────────────────────────────────
+        BlogPost p8 = new BlogPost();
+        p8.setSlug("the-curse-of-dimensionality");
+        p8.setTitle("Why we don't privatize your symptoms one by one");
+        p8.setExcerpt("A short, honest story about a mechanism that was mathematically correct and " +
+                      "completely useless — and what it taught us about high-dimensional data.");
+        p8.setAuthor("The patient who built Privax");
+        p8.setContent("""
+# Why we don't privatize your symptoms one by one
+
+Early on, Privax tried to protect the symptom list the "obvious" way: treat each of the 32 possible symptoms as a yes/no bit, and flip each bit with a calibrated coin. Rigorous. Provably private. And, in practice, garbage.
+
+## The math that ruins it
+
+To protect all 32 symptom bits under one privacy budget, you have to split that budget across all 32 — by a rule called *composition*. Split a small budget 32 ways and each coin becomes almost fair. The result: nearly half of every report's symptoms flip. A person who reported "fever" comes out carrying fifteen random symptoms.
+
+At the strongest privacy setting the slider allows, the symptom column was **pure noise at every position**. Correct, unusable.
+
+## The lesson
+
+This is the **curse of dimensionality**, and it's not a bug — it's why real systems (the US Census, Apple, Google) never publish a privatized copy of each person's full high-dimensional record. They publish **aggregates**: how many people had fever, how many had fatigue.
+
+So that's what Privax does now. Individual symptoms are shown truthfully but only where they can't be tied back to you; the privacy-protected symptom view is the **prevalence chart**, where a count over thousands of people absorbs the noise gracefully.
+
+> The most useful thing a failed mechanism can do is teach you which question you should have been asking.
+""");
+        p8.setTags(Arrays.asList("explainer", "differential-privacy", "technical"));
+        p8.setPublishedAt(LocalDateTime.now().minusDays(5));
+        blogPostRepository.save(p8);
+
+        // ────────────────────────────────────────────────────────────
+        // Article 9 — Patients, families, and clinicians
+        // ────────────────────────────────────────────────────────────
+        BlogPost p9 = new BlogPost();
+        p9.setSlug("patients-families-and-clinicians");
+        p9.setTitle("Who gets to report? Patients, families, and clinicians");
+        p9.setExcerpt("A design decision about grief, trust, and who is allowed to speak for someone " +
+                      "who can no longer speak for themselves.");
+        p9.setAuthor("The patient who built Privax");
+        p9.setContent("""
+# Who gets to report? Patients, families, and clinicians
+
+A quiet but important question shaped Privax's data model: **who is allowed to file a report?**
+
+## The trap we avoided
+
+It's tempting to say "only the patient can report their own experience." Clean, until you hit the hardest case: a fatal outcome. The person it happened to cannot file it. If the form silently refused, a grieving family member would be turned away — and the most serious signal of all would go uncounted.
+
+## What real registries do
+
+The established adverse-event systems — VAERS in the US, EudraVigilance in the EU — don't gate *who* may report. They accept reports from patients, family members, and healthcare professionals alike, and they record a **reporter type** so the provenance is known.
+
+Privax follows the same principle. Anyone can report any outcome. Each report is stamped **self**, **family**, or **clinician**, and clinician reports go through a separate, verified channel.
+
+## Why provenance beats permission
+
+Restricting who can report doesn't actually improve trust — a bad actor can lie about a mild symptom just as easily. What helps is recording *on whose behalf* a report was filed, and being honest that voluntary reports are inherently unverifiable. That honesty is more useful than a false gate.
+
+> Sometimes the kindest design and the most rigorous design are the same design.
+""");
+        p9.setTags(Arrays.asList("methodology", "design"));
+        p9.setPublishedAt(LocalDateTime.now().minusDays(9));
+        blogPostRepository.save(p9);
+
+        // ────────────────────────────────────────────────────────────
+        // Article 10 — A security retrospective
+        // ────────────────────────────────────────────────────────────
+        BlogPost p10 = new BlogPost();
+        p10.setSlug("hardening-privax-a-security-retrospective");
+        p10.setTitle("Hardening Privax: a security retrospective");
+        p10.setExcerpt("A privacy platform that leaks raw data is a contradiction. Here's what a hard " +
+                       "look at our own code turned up — and what we changed.");
+        p10.setAuthor("The patient who built Privax");
+        p10.setContent("""
+# Hardening Privax: a security retrospective
+
+Building a privacy platform means holding yourself to the standard you advertise. A deliberate review of our own code found real problems. In the spirit of "audit anything," here's the honest list.
+
+## Differential privacy could be switched off
+
+The noise was only applied when the privacy parameter was present. Omit it from the request, and raw data came back. A separate endpoint returned the entire dataset un-noised. **Fix:** the privacy layer is now unconditional — a missing or inflated parameter can't disable it, and the raw endpoint is gone.
+
+## Non-admins could manage accounts
+
+Several endpoints had no authorization rule, so any logged-in user could list accounts, read emails, or delete the administrator. **Fix:** user, catalogue, and appointment management are restricted to admins, verified against a full role-by-endpoint matrix.
+
+## Errors overshared
+
+API error responses included internal exception class names — small, but it's free reconnaissance for an attacker. **Fix:** error bodies now carry a message and validation details, nothing more.
+
+## What review can't fix
+
+One honest limitation remains: a filterable table of individual records will always leak information under unlimited querying. That's not a bug to patch — it's why differential privacy needs a **query budget**, which is our next piece of work. The aggregate views already meet the bar.
+
+> The point of a security retrospective isn't to look flawless. It's to prove you actually looked.
+""");
+        p10.setTags(Arrays.asList("security", "engineering"));
+        p10.setPublishedAt(LocalDateTime.now().minusDays(11));
+        blogPostRepository.save(p10);
+
+        // ────────────────────────────────────────────────────────────
+        // Article 11 — On being believed (newest → featured)
+        // ────────────────────────────────────────────────────────────
+        BlogPost p11 = new BlogPost();
+        p11.setSlug("on-being-believed");
+        p11.setTitle("On being believed");
+        p11.setExcerpt("The opposite of being dismissed isn't being proven right. It's being written " +
+                       "down. A short note on why that matters more than it sounds.");
+        p11.setAuthor("The patient who built Privax");
+        p11.setContent("""
+# On being believed
+
+There's a specific kind of tiredness that comes from explaining the same thing to the same doctor and watching it not land. It isn't anger. It's something quieter — the slow realization that your experience isn't going anywhere, that it will end when the appointment does.
+
+## What Privax is really for
+
+People sometimes assume this platform is about proving a point. It isn't. Being **written down** is not the same as being **proven right**, and Privax only promises the first one. Your report doesn't win an argument. It just refuses to disappear.
+
+That turns out to matter more than it sounds. A single account is a story. Ten thousand accounts, counted honestly and protected mathematically, are the beginning of a question a researcher can actually ask.
+
+## The smallest useful act
+
+You don't have to be certain the vaccine caused what you felt. You don't have to have a diagnosis. You only have to be willing to write down *what happened, and when* — and to trust that the platform will keep the "who" to itself.
+
+> Every honest report is a small act of repair — not of the argument, but of the record.
+
+If you have a story, [add it](/reports). If you don't, read the ones that are already here. Either way, someone who felt what you felt is no longer standing in that appointment alone.
+""");
+        p11.setTags(Arrays.asList("personal", "manifesto"));
+        p11.setPublishedAt(LocalDateTime.now().minusHours(6));
+        blogPostRepository.save(p11);
+
+        log.info("Inserted 10 long-form blog posts.");
     }
 
     private void insertUsers() {
