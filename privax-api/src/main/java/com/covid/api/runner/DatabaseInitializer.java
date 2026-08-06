@@ -565,7 +565,218 @@ If you have a story, [add it](/reports). If you don't, read the ones that are al
         p11.setPublishedAt(LocalDateTime.now().minusHours(6));
         blogPostRepository.save(p11);
 
-        log.info("Inserted 10 long-form blog posts.");
+        // ────────────────────────────────────────────────────────────
+        // Severe-symptom guides. Note: general, non-prescriptive information,
+        // grounded in mainstream public-health understanding. Each carries a
+        // disclaimer and points to clinicians and official reporting systems.
+        // ────────────────────────────────────────────────────────────
+        String disclaimer = """
+
+---
+
+> **This is general information, not medical advice.** Privax is not a medical device or a doctor. If you think you are experiencing a serious reaction, contact a clinician — and for emergency warning signs, call your local emergency number. To contribute to official safety monitoring, report to your national system (VAERS in the US, EudraVigilance in the EU, or the WHO's VigiAccess). Nothing here establishes that a vaccine *caused* any individual's symptom.
+""";
+
+        // Article 12 — Myocarditis
+        BlogPost p12 = new BlogPost();
+        p12.setSlug("understanding-myocarditis-after-mrna-vaccines");
+        p12.setTitle("Myocarditis after mRNA vaccines: what we know");
+        p12.setExcerpt("Chest pain and palpitations in the days after a dose can be frightening. Here's " +
+                       "what myocarditis is, who it tends to affect, and what happens next.");
+        p12.setAuthor("Privax health notes");
+        p12.setContent("""
+# Myocarditis after mRNA vaccines: what we know
+
+**Myocarditis** is inflammation of the heart muscle. It has been recognised as a rare adverse event after mRNA COVID-19 vaccines (Pfizer, Moderna), most often in adolescent and young adult males, and more often after the second dose.
+
+## What people describe
+
+The accounts are strikingly consistent: **chest pain or pressure, shortness of breath, or a fluttering / pounding heartbeat**, usually within a few days of the dose. Many describe the hardest part as being unsure whether it was "serious enough" to go in — and the relief, later, of having it taken seriously.
+
+## What the evidence says, honestly
+
+Regulators including the EMA and CDC concluded there is a causal association, while also concluding that for most groups the benefits of vaccination still outweigh this rare risk. Importantly, **most reported cases are mild**, respond to standard treatment, and improve — though follow-up and individual variation matter, which is exactly why it's monitored.
+
+## What is typically done
+
+Care is directed by a clinician, usually a cardiologist. It commonly involves rest, anti-inflammatory medication, and follow-up imaging (ECG, echocardiogram, sometimes cardiac MRI) to track recovery. Strenuous exercise is usually paused until cleared.
+
+## When to seek help
+
+Seek **prompt medical evaluation** for chest pain, breathlessness, or palpitations after vaccination — and **emergency care** for severe or crushing chest pain, fainting, or difficulty breathing.
+""" + disclaimer);
+        p12.setTags(Arrays.asList("symptom-guide", "medical", "myocarditis"));
+        p12.setPublishedAt(LocalDateTime.now().minusDays(7));
+        blogPostRepository.save(p12);
+
+        // Article 13 — Anaphylaxis
+        BlogPost p13 = new BlogPost();
+        p13.setSlug("anaphylaxis-and-vaccines-the-first-fifteen-minutes");
+        p13.setTitle("Anaphylaxis and vaccines: the first fifteen minutes");
+        p13.setExcerpt("It's the reason you're asked to wait after your shot. What a severe allergic " +
+                       "reaction looks like, why it's so rare, and why the treatment works fast.");
+        p13.setAuthor("Privax health notes");
+        p13.setContent("""
+# Anaphylaxis and vaccines: the first fifteen minutes
+
+**Anaphylaxis** is a severe, whole-body allergic reaction that comes on quickly — typically within minutes to an hour. With vaccines it is **very rare**, which is precisely why you're asked to wait and be observed for 15–30 minutes afterwards: the window when it would most likely appear is the window you're being watched.
+
+## What it looks like
+
+Signs can include **hives or widespread rash, swelling of the face, lips or throat, difficulty breathing or wheezing, a sudden drop in blood pressure, dizziness or feeling faint**. It escalates fast, which is why recognising it early matters.
+
+## Why the waiting room is the plan
+
+Clinics that give vaccines are equipped to treat anaphylaxis on the spot. The first-line treatment is **epinephrine (adrenaline)**, given without delay, followed by emergency care and monitoring. Given early, it is highly effective.
+
+## If you're higher risk
+
+People with a history of severe allergic reactions — especially to a previous dose or a known vaccine component — should tell the person administering the vaccine beforehand, so the right precautions and observation time are in place.
+
+## When to seek help
+
+Any signs of a severe allergic reaction — throat tightness, trouble breathing, faintness — are a **medical emergency**: use an adrenaline auto-injector if prescribed and call emergency services immediately.
+""" + disclaimer);
+        p13.setTags(Arrays.asList("symptom-guide", "medical", "anaphylaxis"));
+        p13.setPublishedAt(LocalDateTime.now().minusDays(10));
+        blogPostRepository.save(p13);
+
+        // Article 14 — Blood clots / TTS
+        BlogPost p14 = new BlogPost();
+        p14.setSlug("unusual-blood-clots-and-adenovirus-vaccines");
+        p14.setTitle("Unusual blood clots (TTS) and adenovirus-vector vaccines");
+        p14.setExcerpt("A rare clotting syndrome linked to some viral-vector vaccines — what the warning " +
+                       "signs are, the timeline to watch, and why it changed how some vaccines are used.");
+        p14.setAuthor("Privax health notes");
+        p14.setContent("""
+# Unusual blood clots (TTS) and adenovirus-vector vaccines
+
+**Thrombosis with thrombocytopenia syndrome (TTS)** is a rare condition combining unusual blood clots with a low platelet count. It has been associated with **adenovirus-vector** COVID-19 vaccines (such as AstraZeneca and Johnson & Johnson) — **not** the mRNA vaccines.
+
+## The timeline to watch
+
+When it occurs, it has typically appeared **roughly 4 to 30 days after vaccination**. The clots are sometimes in unusual places, such as the veins draining the brain or the abdomen.
+
+## Warning signs people are told to watch for
+
+- A **severe or persistent headache** that doesn't ease with usual painkillers, or blurred vision
+- **Shortness of breath, chest pain**, leg swelling or persistent abdominal pain
+- **Tiny blood spots** under the skin beyond the injection site
+
+## What is typically done
+
+TTS is a specialist emergency. Treatment differs deliberately from ordinary clot care — it generally **avoids standard heparin** and may use alternative anticoagulants and immunoglobulin (IVIG), guided by haematology. Because of this risk, several countries restricted or prioritised alternative vaccines for certain age groups.
+
+## When to seek help
+
+The warning signs above in the days-to-weeks after an adenovirus-vector vaccine warrant **urgent medical assessment** — don't wait them out.
+""" + disclaimer);
+        p14.setTags(Arrays.asList("symptom-guide", "medical", "blood-clots"));
+        p14.setPublishedAt(LocalDateTime.now().minusDays(13));
+        blogPostRepository.save(p14);
+
+        // Article 15 — Guillain-Barré Syndrome
+        BlogPost p15 = new BlogPost();
+        p15.setSlug("guillain-barre-syndrome-what-to-watch-for");
+        p15.setTitle("Guillain-Barré syndrome: tingling that climbs");
+        p15.setExcerpt("A rare nerve condition flagged as a small safety signal with some vaccines. What " +
+                       "it feels like, why the timeline matters, and how it's treated.");
+        p15.setAuthor("Privax health notes");
+        p15.setContent("""
+# Guillain-Barré syndrome: tingling that climbs
+
+**Guillain-Barré syndrome (GBS)** is a rare condition in which the immune system attacks the peripheral nerves, causing weakness and abnormal sensation. A small increased-risk signal has been observed with some **adenovirus-vector** COVID-19 vaccines, echoing a signal seen historically with certain other vaccines. It remains **rare**.
+
+## What people describe
+
+A common pattern is **tingling or weakness starting in the feet or legs and gradually climbing upward**, sometimes with unsteadiness walking or weakness in the face. What people online most often say they wish they'd known: that the *progression* — symptoms spreading over hours to days — is the part to act on quickly.
+
+## Why the timeline matters
+
+GBS can worsen over days, and early hospital care improves outcomes. It is not something to monitor from home once it's spreading.
+
+## What is typically done
+
+GBS is managed in hospital. Standard treatments are **intravenous immunoglobulin (IVIG)** or **plasma exchange**, plus supportive care and monitoring of breathing and swallowing in more severe cases. **Many people recover** over weeks to months, though recovery varies and rehabilitation is often part of it.
+
+## When to seek help
+
+Progressive weakness or numbness — especially spreading upward, or affecting breathing, swallowing or the face — needs **prompt medical assessment**.
+""" + disclaimer);
+        p15.setTags(Arrays.asList("symptom-guide", "medical", "guillain-barre"));
+        p15.setPublishedAt(LocalDateTime.now().minusDays(16));
+        blogPostRepository.save(p15);
+
+        // Article 16 — Anxiety (immunization stress-related response)
+        BlogPost p16 = new BlogPost();
+        p16.setSlug("anxiety-around-vaccination");
+        p16.setTitle("Anxiety around vaccination: the stress the needle brings");
+        p16.setExcerpt("A racing heart, dizziness, a wave of panic. For many people the anxiety is real " +
+                       "— and mostly a response to the moment, not the medicine. Here's the honest picture.");
+        p16.setAuthor("Privax health notes");
+        p16.setContent("""
+# Anxiety around vaccination: the stress the needle brings
+
+A pounding heart, dizziness, sweating, a feeling of panic — plenty of people experience these around a vaccination, and they are genuinely unpleasant. Understanding *where* they come from helps.
+
+## Immunization stress-related responses
+
+The World Health Organization recognises a category called **immunization stress-related responses (ISRR)** — reactions triggered by the **experience** of being vaccinated rather than by the vaccine's ingredients. Anticipation, fear of needles, and the clinical setting can set off the body's stress response: **fainting (a vasovagal reaction), hyperventilation, dizziness, palpitations, tingling**. These tend to cluster right around the time of the injection, and can even spread through a group who see someone else react.
+
+## The honest framing
+
+This matters: ISRR is **real and worth taking seriously**, but it points to the *situation* being stressful, not to the vaccine causing an anxiety disorder. For most people these reactions are short-lived. Symptoms in the days afterward can also have ordinary causes — a mild fever, poor sleep, caffeine, or simply the background stress that a pandemic put everyone under.
+
+## What people describe
+
+Many say the hardest part wasn't the symptom itself but **not feeling believed** afterwards. Being anxious after a medical event doesn't make the anxiety imaginary.
+
+## What can help
+
+- Tell the clinician beforehand if needles frighten you — lying down, hydration, and a few minutes of observation help.
+- Slow, steady breathing counters hyperventilation.
+- If **anxiety or panic persists** well beyond the appointment, or interferes with daily life, that's a good reason to speak with a clinician or a mental-health professional — it's treatable.
+""" + disclaimer);
+        p16.setTags(Arrays.asList("symptom-guide", "medical", "mental-health", "anxiety"));
+        p16.setPublishedAt(LocalDateTime.now().minusDays(18));
+        blogPostRepository.save(p16);
+
+        // Article 17 — Psychosis (framed honestly: no established causal link)
+        BlogPost p17 = new BlogPost();
+        p17.setSlug("psychosis-and-vaccination-what-the-evidence-shows");
+        p17.setTitle("Psychosis and vaccination: coincidence, stress, and what the evidence shows");
+        p17.setExcerpt("A serious topic that deserves a careful answer. What psychosis is, why timing " +
+                       "isn't causation, and why — whatever the trigger — it needs urgent care.");
+        p17.setAuthor("Privax health notes");
+        p17.setContent("""
+# Psychosis and vaccination: coincidence, stress, and what the evidence shows
+
+**Psychosis** means losing contact with reality — hallucinations, delusions, or badly disorganised thinking. It is serious, frightening for everyone around it, and **treatable**. This post is about a question people do ask, and it deserves an honest answer rather than a comfortable one.
+
+## What the evidence actually shows
+
+There is **no established causal link** between COVID-19 vaccines and psychosis. What exists in the literature is a small number of **isolated case reports** — and case reports, by design, cannot show that one thing caused another.
+
+Two facts make coincidences inevitable:
+
+- New-onset psychosis has a **background rate** in the population that continues whether or not anyone is vaccinated. With millions of doses given, some new episodes will land near a vaccination purely by timing.
+- The pandemic itself brought **severe psychological stress, isolation, disrupted sleep, and — with COVID infection — direct neurological effects**. These are powerful confounders.
+
+So when someone experiences psychosis after a vaccine, the honest statement is *"this happened, and we cannot conclude the vaccine caused it."*
+
+## Why Privax still listens
+
+Being unable to prove causation is not the same as dismissing an experience. People and families who have lived through this often describe feeling unheard. The platform's job is to record what happened, honestly, without pretending to a certainty the evidence doesn't support.
+
+## What to do — this part is not ambiguous
+
+Regardless of any suspected trigger, psychosis is a situation that needs **prompt professional help**, and early treatment improves outcomes. Contact a GP or mental-health service; use a **crisis line** if things are escalating; and if there is any risk of harm to the person or others, treat it as an **emergency** and call emergency services.
+""" + disclaimer);
+        p17.setTags(Arrays.asList("symptom-guide", "medical", "mental-health", "psychosis"));
+        p17.setPublishedAt(LocalDateTime.now().minusDays(21));
+        blogPostRepository.save(p17);
+
+        log.info("Inserted 16 long-form blog posts.");
     }
 
     private void insertUsers() {
