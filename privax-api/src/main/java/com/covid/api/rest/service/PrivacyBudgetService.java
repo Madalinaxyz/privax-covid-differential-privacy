@@ -57,7 +57,7 @@ public class PrivacyBudgetService {
             if (total > TOTAL_EPSILON + 1e-9) {
                 throw new BudgetExhaustedException(String.format(
                     "Privacy budget exhausted: %.3f of %.3f already spent; this query needs %.3f. " +
-                    "No further queries can be answered for this researcher.",
+                    "No further queries can be answered until the budget resets.",
                     used, TOTAL_EPSILON, add));
             }
             return total;
