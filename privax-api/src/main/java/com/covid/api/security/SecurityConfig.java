@@ -44,12 +44,15 @@ public class SecurityConfig {
                         // public signup) — otherwise the budget could be defeated by registering
                         // unlimited fresh accounts.
                         .requestMatchers("/api/research/**").hasAuthority(DOCTOR)
-                        // Catalogue + appointment mutations are ADMIN-only (reads stay open to
-                        // any authenticated user). Without this, any logged-in user could add,
-                        // edit, or delete vaccines and appointments.
-                        .requestMatchers(HttpMethod.POST,   "/api/vaccines", "/api/vaccines/**", "/api/appointments", "/api/appointments/**").hasAuthority(ADMIN)
-                        .requestMatchers(HttpMethod.PUT,    "/api/vaccines/**", "/api/appointments/**").hasAuthority(ADMIN)
-                        .requestMatchers(HttpMethod.DELETE, "/api/vaccines/**", "/api/appointments/**").hasAuthority(ADMIN)
+                        // Appointments carry personal data (name, date, location), so the ENTIRE
+                        // appointment API is ADMIN-only — reads included. Without this, any
+                        // authenticated user could read everyone's appointments.
+                        .requestMatchers("/api/appointments", "/api/appointments/**").hasAuthority(ADMIN)
+                        // Vaccine catalogue MUTATIONS are ADMIN-only; GET /api/vaccines stays open to
+                        // any authenticated user (it is the vaccine list, not personal data).
+                        .requestMatchers(HttpMethod.POST,   "/api/vaccines", "/api/vaccines/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.PUT,    "/api/vaccines/**").hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.DELETE, "/api/vaccines/**").hasAuthority(ADMIN)
                         .requestMatchers("/", "/error", "/csrf", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
