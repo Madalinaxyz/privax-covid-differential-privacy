@@ -780,8 +780,18 @@ Regardless of any suspected trigger, psychosis is a situation that needs **promp
     }
 
     private void insertUsers() {
-        USERS.forEach(user -> {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Build a fresh User per seed (encoding the template's RAW password) instead of mutating the
+        // shared static USERS templates in place. Mutating them would double-encode the passwords —
+        // and break login — if run() ever executed twice in the same JVM (e.g. a devtools reload).
+        USERS.forEach(template -> {
+            User user = new User(
+                    template.getUsername(),
+                    passwordEncoder.encode(template.getPassword()),
+                    template.getName(),
+                    template.getEmail(),
+                    template.getRole()
+            );
+            user.setRequestedRole(template.getRequestedRole());
             userService.saveUser(user);
         });
     }

@@ -38,9 +38,4 @@ public class VaccinationDataController {
         CountComparison comparison = vaccinationService.getVaccinationCountComparisonByRegion(region, epsilon);
         return ResponseEntity.ok(comparison);
     }
-
-    @GetMapping("/test")
-    public String test() {
-        return "Scuccess";
-    }
 }
