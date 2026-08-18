@@ -1,5 +1,6 @@
 package com.covid.api.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,9 +51,12 @@ public class SideEffectReport {
     private ReporterType reporterType = ReporterType.SELF;
 
     /**
-     * Optional opaque patient reference used by the clinician for their own
-     * internal tracking. Stored as-is — Privax never resolves it to a person.
+     * Optional opaque patient reference used by the clinician for their own internal tracking.
+     * Stored as-is, but NEVER serialized to any API response ({@link JsonIgnore}) — it is a
+     * clinician-internal identifier and must not leak into the public reports feed. A future
+     * clinician-only read-back should expose it via a dedicated, authorized DTO instead.
      */
+    @JsonIgnore
     @Column(name = "patient_code", length = 64)
     private String patientCode;
 
