@@ -30,6 +30,10 @@ export const privaxApi = {
   getPublicStats,
   getUsers,
   deleteUser,
+  getCurrentUser,
+  getPendingUsers,
+  approveUser,
+  denyUser,
   test,
   getSideEffectReports,
   createSideEffectReport,
@@ -156,6 +160,24 @@ function getUsers(username) {
 
 function deleteUser(username) {
   return instance.delete(`/api/users/${username}`)
+}
+
+// Current authenticated user's live record (role + any pending requestedRole).
+function getCurrentUser() {
+  return instance.get('/api/users/me')
+}
+
+// Admin: pending privileged-access requests, and approve / deny.
+function getPendingUsers() {
+  return instance.get('/api/users/pending')
+}
+
+function approveUser(username) {
+  return instance.post(`/api/users/${username}/approve`)
+}
+
+function denyUser(username) {
+  return instance.post(`/api/users/${username}/deny`)
 }
 
 /* ── Blog ────────────────────────────────────────────────── */

@@ -213,6 +213,13 @@
   font-size: 0.72rem;
   flex-shrink: 0;
 }
+.auth-hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: rgba(184, 220, 232, 0.72);
+}
 
 /* Button */
 .auth-button {
@@ -285,4 +292,52 @@
   .auth-card { padding: 44px 28px 32px; border-radius: 20px; }
   .auth-title { font-size: 1.7rem; }
   .auth-logo { font-size: 1.55rem; margin-bottom: 32px; }
+}
+
+/* ============================================================
+   SELECT (account type on sign-up) — matches the dark inputs
+   ============================================================ */
+.auth-select-wrap {
+  position: relative;
+}
+.auth-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #7AC7DD;
+  border-bottom: 2px solid #7AC7DD;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.auth-field select.auth-select {
+  width: 100%;
+  padding: 14px 44px 14px 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(184,220,232,0.18);
+  border-radius: 12px;
+  color: #E5F1F8;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.96rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.25s;
+}
+.auth-field select.auth-select:hover {
+  border-color: rgba(184,220,232,0.32);
+}
+.auth-field select.auth-select:focus {
+  border-color: #4FB6D9;
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 0 0 3px rgba(79,182,217,0.18), 0 0 24px rgba(58,158,199,0.15);
+}
+.auth-field select.auth-select option {
+  color: #0A0E16;
 }

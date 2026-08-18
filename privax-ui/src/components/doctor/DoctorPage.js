@@ -16,7 +16,7 @@ function DoctorPage() {
       <div className="doctor-header">
         <div className="doctor-header-left">
           <span className="doctor-eyebrow">Clinician console</span>
-          <h1 className="doctor-title">Doctor</h1>
+          <h1 className="doctor-title">Submit a report</h1>
         </div>
         <p className="doctor-sub">
           Submit a side-effect report on behalf of a patient. The patient code

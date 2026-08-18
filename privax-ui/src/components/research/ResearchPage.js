@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { privaxApi } from '../misc/PrivaxApi'
+import EpsilonSlider from '../reports/EpsilonSlider'
 import './research.css'
 
 const VACCINES = ['ALL', 'Pfizer', 'Moderna', 'AstraZeneca', 'Johnson & Johnson']
@@ -17,6 +19,7 @@ function describeFilters(vaccineName, city, severity) {
 function ResearchPage() {
   const Auth = useAuth()
   const user = Auth.getUser()
+  const isDoctor = user?.role === 'DOCTOR'
 
   const [budget, setBudget] = useState({ total: null, remaining: null })
   const [epsilon, setEpsilon] = useState(0.5)
@@ -72,6 +75,11 @@ function ResearchPage() {
   const exhausted = hasBudget && budget.remaining <= 1e-9
   const low = hasBudget && !exhausted && budget.remaining < budget.total * 0.25
 
+  // The research console is a clinician (DOCTOR) capability, granted only by admin approval.
+  // A plain USER (including one whose request is still pending) never reaches it — the pending
+  // banner explains the wait.
+  if (!isDoctor) return <Navigate to="/" replace />
+
   return (
     <main className="research-page">
       <div className="research-header">
@@ -121,24 +129,16 @@ function ResearchPage() {
         </header>
 
         <form className="research-form" onSubmit={runQuery}>
-          <div className="research-field research-field--epsilon">
-            <label htmlFor="eps">
-              Epsilon (this query) <span className="research-hint">— higher ε = sharper answer, spends more budget · max 1.0</span>
-            </label>
-            <div className="research-eps-row">
-              <input
-                id="eps"
-                type="range"
-                min="0.1"
-                max="1.0"
-                step="0.1"
-                value={epsilon}
-                onChange={e => setEpsilon(e.target.value)}
-                disabled={exhausted}
-              />
-              <span className="research-eps-value">{Number(epsilon).toFixed(1)}</span>
-            </div>
-          </div>
+          <EpsilonSlider
+            value={Number(epsilon)}
+            onChange={setEpsilon}
+            min={0.1}
+            max={1.0}
+            step={0.1}
+            label="Epsilon (this query)"
+            hint="Higher ε = sharper answer · spends more budget · max 1.0"
+            disabled={exhausted}
+          />
 
           <div className="research-field-row">
             <div className="research-field">

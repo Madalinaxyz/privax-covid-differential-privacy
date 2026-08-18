@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { NavLink, Navigate } from 'react-router-dom'
-import { Button, Form, Grid, Segment, Message } from 'semantic-ui-react'
+import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { privaxApi } from '../misc/PrivaxApi'
 import { handleLogError } from '../misc/Helpers'
+import './Auth.css'
 
 function Signup() {
   const Auth = useAuth()
@@ -16,39 +16,25 @@ function Signup() {
   const [role, setRole] = useState('USER')
   const [isError, setIsError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-
-  const handleInputChange = (e, { name, value }) => {
-    if (name === 'username') {
-      setUsername(value)
-    } else if (name === 'password') {
-      setPassword(value)
-    } else if (name === 'name') {
-      setName(value)
-    } else if (name === 'email') {
-      setEmail(value)
-    } else if (name === 'role') {
-      setRole(value)
-    }
-  }
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!(username && password && name && email)) {
       setIsError(true)
-      setErrorMessage('Please, inform all fields!')
+      setErrorMessage('Please fill in all the fields.')
       return
     }
 
+    setIsLoading(true)
     const user = { username, password, name, email, role }
 
     try {
       const response = await privaxApi.signup(user)
-      const { id, name, role } = response.data
+      const { id, name: savedName, role: savedRole, requestedRole: savedRequestedRole } = response.data
       const authdata = window.btoa(username + ':' + password)
-      const authenticatedUser = { id, name, role, authdata }
-
-      Auth.userLogin(authenticatedUser)
+      Auth.userLogin({ id, name: savedName, role: savedRole, requestedRole: savedRequestedRole, authdata })
 
       setUsername('')
       setPassword('')
@@ -58,87 +44,133 @@ function Signup() {
       setErrorMessage('')
     } catch (error) {
       handleLogError(error)
+      let message = 'Something went wrong. Please check your details and try again.'
       if (error.response && error.response.data) {
-        const errorData = error.response.data
-        let errorMessage = 'Invalid fields'
-        if (errorData.status === 409) {
-          errorMessage = errorData.message
-        } else if (errorData.status === 400) {
-          errorMessage = errorData.errors[0].defaultMessage
-        }
-        setIsError(true)
-        setErrorMessage(errorMessage)
+        const data = error.response.data
+        if (data.status === 409) message = data.message
+        else if (data.status === 400 && data.errors && data.errors[0]) message = data.errors[0].defaultMessage
       }
+      setIsError(true)
+      setErrorMessage(message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  if (isLoggedIn) {
-    return <Navigate to='/' />
-  }
+  if (isLoggedIn) return <Navigate to="/" />
 
   return (
-    <Grid textAlign='center'>
-      <Grid.Column style={{ maxWidth: 450 }}>
-        <Form size='large' onSubmit={handleSubmit}>
-          <Segment>
-            <Form.Input
-              fluid
+    <div className="auth-page">
+      <div className="auth-bg" />
+      <div className="auth-veil" />
+
+      {/* Subtle starfield */}
+      <span className="auth-star s1" />
+      <span className="auth-star s2" />
+      <span className="auth-star s3" />
+      <span className="auth-star s4" />
+      <span className="auth-star s5" />
+      <span className="auth-star s6" />
+      <span className="auth-star s7" />
+      <span className="auth-star s8" />
+
+      <div className="auth-card">
+        <Link to="/" className="auth-logo">
+          Privax<span className="auth-logo-dot">.</span>
+        </Link>
+
+        <span className="auth-eyebrow">Create your account</span>
+        <h1 className="auth-title">Add your voice.</h1>
+        <p className="auth-sub">Report anonymously, on your own terms — no personal data required.</p>
+
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
+          <label className="auth-field">
+            <span className="auth-label">Username</span>
+            <input
               autoFocus
-              name='username'
-              icon='user'
-              iconPosition='left'
-              placeholder='Username'
+              type="text"
+              name="username"
               value={username}
-              onChange={handleInputChange}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Choose a username"
+              autoComplete="username"
             />
-            <Form.Input
-              fluid
-              name='password'
-              icon='lock'
-              iconPosition='left'
-              placeholder='Password'
-              type='password'
-              value={password}
-              onChange={handleInputChange}
-            />
-            <Form.Input
-              fluid
-              name='name'
-              icon='address card'
-              iconPosition='left'
-              placeholder='Name'
+          </label>
+
+          <label className="auth-field">
+            <span className="auth-label">Name</span>
+            <input
+              type="text"
+              name="name"
               value={name}
-              onChange={handleInputChange}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              autoComplete="name"
             />
-            <Form.Input
-              fluid
-              name='email'
-              icon='at'
-              iconPosition='left'
-              placeholder='Email'
+          </label>
+
+          <label className="auth-field">
+            <span className="auth-label">Email</span>
+            <input
+              type="email"
+              name="email"
               value={email}
-              onChange={handleInputChange}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
             />
-            <Form.Select
-              fluid
-              name='role'
-              options={[
-                { key: 'user',   text: 'I am a patient',     value: 'USER'   },
-                { key: 'doctor', text: 'I am a clinician',   value: 'DOCTOR' },
-              ]}
-              value={role}
-              onChange={handleInputChange}
-              placeholder='Account type'
+          </label>
+
+          <label className="auth-field">
+            <span className="auth-label">Password</span>
+            <input
+              type="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="new-password"
             />
-            <Button color='blue' fluid size='large'>Signup</Button>
-          </Segment>
-        </Form>
-        <Message>{`Already have an account? `}
-          <NavLink to="/login" color='teal'>Login</NavLink>
-        </Message>
-        {isError && <Message negative>{errorMessage}</Message>}
-      </Grid.Column>
-    </Grid>
+          </label>
+
+          <label className="auth-field">
+            <span className="auth-label">Account type</span>
+            <div className="auth-select-wrap">
+              <select
+                className="auth-select"
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="USER">I am a patient</option>
+                <option value="DOCTOR">I am a clinician</option>
+              </select>
+            </div>
+            {role === 'DOCTOR' && (
+              <span className="auth-hint">
+                You'll start as a standard account. Clinician access (including the research console) is granted after an admin verifies your request.
+              </span>
+            )}
+          </label>
+
+          {isError && <div className="auth-error">{errorMessage}</div>}
+
+          <button type="submit" className="auth-button" disabled={isLoading}>
+            {isLoading ? 'Creating account…' : (
+              <>Create account <span className="arrow">→</span></>
+            )}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          Already have an account? <Link to="/login" className="auth-link">Log in</Link>
+        </div>
+
+        <div className="auth-foot-note">
+          By creating an account, you agree to keep every report anonymous and honest.
+        </div>
+      </div>
+    </div>
   )
 }
 

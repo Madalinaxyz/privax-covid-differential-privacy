@@ -14,10 +14,39 @@ function AdminPage() {
   const [users, setUsers] = useState([])
   const [userUsernameSearch, setUserUsernameSearch] = useState('')
   const [isUsersLoading, setIsUsersLoading] = useState(false)
+  const [pending, setPending] = useState([])
 
   useEffect(() => {
     handleGetUsers()
+    handleGetPending()
   }, [])
+
+  const handleGetPending = async () => {
+    try {
+      const response = await privaxApi.getPendingUsers()
+      setPending(response.data)
+    } catch (error) {
+      handleLogError(error)
+    }
+  }
+
+  const handleApprove = async (username) => {
+    try {
+      await privaxApi.approveUser(username)
+      await Promise.all([handleGetPending(), handleGetUsers()])
+    } catch (error) {
+      handleLogError(error)
+    }
+  }
+
+  const handleDeny = async (username) => {
+    try {
+      await privaxApi.denyUser(username)
+      await Promise.all([handleGetPending(), handleGetUsers()])
+    } catch (error) {
+      handleLogError(error)
+    }
+  }
 
   const handleInputChange = (e, { name, value }) => {
     if (name === 'userUsernameSearch') {
@@ -74,6 +103,34 @@ function AdminPage() {
           Manage user accounts. Search, review, and remove access as needed.
         </p>
       </div>
+      {pending.length > 0 && (
+        <div className='admin-pending'>
+          <div className='admin-pending-head'>
+            <h2>Pending access requests</h2>
+            <span className='admin-pending-count'>{pending.length}</span>
+          </div>
+          <p className='admin-pending-sub'>
+            These users applied for privileged access at signup. Approving grants the role; denying keeps them a standard user.
+          </p>
+          <ul className='admin-pending-list'>
+            {pending.map(u => (
+              <li key={u.id} className='admin-pending-row'>
+                <div className='admin-pending-who'>
+                  <span className='admin-pending-name'>{u.name}</span>
+                  <span className='admin-pending-username'>@{u.username}</span>
+                  <span className={`admin-pending-role admin-pending-role--${(u.requestedRole || '').toLowerCase()}`}>
+                    requests {u.requestedRole}
+                  </span>
+                </div>
+                <div className='admin-pending-actions'>
+                  <button className='admin-btn admin-btn--approve' onClick={() => handleApprove(u.username)}>Approve</button>
+                  <button className='admin-btn admin-btn--deny' onClick={() => handleDeny(u.username)}>Deny</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className='admin-tabs-wrap'>
         <AdminTab
           isUsersLoading={isUsersLoading}

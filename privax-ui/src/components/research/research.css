@@ -190,25 +190,34 @@
 .research-field input:disabled,
 .research-field select:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Epsilon slider */
-.research-eps-row { display: flex; align-items: center; gap: 18px; }
-.research-eps-row input[type="range"] {
-  flex: 1;
-  accent-color: #3A9EC7;
-  height: 6px;
-  cursor: pointer;
+/* Epsilon slider — reuses the Reports EpsilonSlider (rc-slider). The .report-epsilon
+   card styling is global; these override the rc-slider track/handle on this page to
+   match the Reports control exactly. */
+.research-form .report-epsilon { margin-bottom: 0; }
+.research-page .rc-slider-rail {
+  background: rgba(20, 33, 61, 0.08);
+  height: 4px;
+  border-radius: 4px;
 }
-.research-eps-row input[type="range"]:disabled { cursor: not-allowed; opacity: 0.5; }
-.research-eps-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #3A9EC7;
-  min-width: 42px;
-  text-align: center;
-  background: rgba(58, 158, 199, 0.1);
-  border-radius: 8px;
-  padding: 4px 0;
+.research-page .rc-slider-track {
+  background: linear-gradient(90deg, #3A9EC7, #2DA597);
+  height: 4px;
+  border-radius: 4px;
+}
+.research-page .rc-slider-handle {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #2DA597;
+  background: #FFFFFF;
+  margin-top: -7px;
+  box-shadow: 0 2px 8px rgba(45, 165, 151, 0.35);
+  opacity: 1;
+}
+.research-page .rc-slider-handle:hover,
+.research-page .rc-slider-handle:active,
+.research-page .rc-slider-handle-dragging {
+  border-color: #2DA597 !important;
+  box-shadow: 0 0 0 6px rgba(45, 165, 151, 0.18), 0 4px 14px rgba(45, 165, 151, 0.45) !important;
 }
 
 /* Error */

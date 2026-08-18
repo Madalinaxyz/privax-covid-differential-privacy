@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './components/context/AuthContext'
 import PrivateRoute from './components/misc/PrivateRoute'
 import Navbar from './components/misc/Navbar'
+import PendingBanner from './components/misc/PendingBanner'
 import Footer from './components/misc/Footer'
 import NotFound from './components/misc/NotFound'
 import Privacy from './components/misc/Privacy'
@@ -24,6 +25,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Navbar />
+        <PendingBanner />
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/reports' element={<Report />} />

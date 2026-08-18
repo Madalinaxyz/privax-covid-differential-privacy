@@ -198,3 +198,93 @@
 .admin-page .ui.button.red .icon {
   margin: 0 !important;
 }
+
+/* ============================================================
+   PENDING ACCESS REQUESTS — approve / deny privileged roles
+   ============================================================ */
+.admin-pending {
+  max-width: 1280px;
+  margin: 0 auto 22px;
+  background: #FFFFFF;
+  border: 1px solid rgba(15, 26, 46, 0.06);
+  border-left: 3px solid #C9B380;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 26, 46, 0.05);
+  padding: 22px 26px;
+}
+.admin-pending-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-pending-head h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: #0F1A2E;
+}
+.admin-pending-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7A6A3E;
+  background: rgba(201, 179, 128, 0.22);
+  border-radius: 100px;
+  padding: 2px 9px;
+}
+.admin-pending-sub {
+  font-size: 0.85rem;
+  color: rgba(15, 26, 46, 0.55);
+  margin: 6px 0 16px;
+}
+.admin-pending-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.admin-pending-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #FBF7F0;
+  border: 1px solid rgba(15, 26, 46, 0.05);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.admin-pending-who { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.admin-pending-name { font-weight: 700; color: #0F1A2E; }
+.admin-pending-username { font-size: 0.85rem; color: rgba(15, 26, 46, 0.5); }
+.admin-pending-role {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(58, 158, 199, 0.12);
+  color: #2C7A96;
+}
+.admin-pending-role--doctor { background: rgba(45, 165, 151, 0.14); color: #1D7068; }
+.admin-pending-role--researcher { background: rgba(58, 158, 199, 0.14); color: #2C7A96; }
+.admin-pending-actions { display: flex; gap: 8px; }
+.admin-btn {
+  border: none;
+  border-radius: 100px;
+  padding: 9px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.2s, box-shadow 0.2s;
+}
+.admin-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.admin-btn--approve {
+  background: linear-gradient(135deg, #2DA597 0%, #3FB8A8 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 18px rgba(45, 165, 151, 0.3);
+}
+.admin-btn--deny {
+  background: #FFFFFF;
+  color: #B73B3B;
+  border: 1px solid rgba(217, 87, 87, 0.4);
+}
+.admin-btn--deny:hover { background: rgba(217, 87, 87, 0.06); }
