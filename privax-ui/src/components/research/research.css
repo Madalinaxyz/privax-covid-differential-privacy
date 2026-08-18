@@ -1,5 +1,5 @@
 /* ============================================================
-   RESEARCH CONSOLE — budgeted DP, cream + cyan
+   RESEARCH CONSOLE — budgeted DP, cream + verdigris (matches the clinician page)
    ============================================================ */
 .research-page {
   background: #F8F2E8;
@@ -30,7 +30,7 @@
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #3A9EC7;
+  color: #2DA597;
 }
 .research-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -109,8 +109,8 @@
 .research-budget-user {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #3A9EC7;
-  background: rgba(58, 158, 199, 0.1);
+  color: #2DA597;
+  background: rgba(45, 165, 151, 0.1);
   padding: 5px 12px;
   border-radius: 100px;
   white-space: nowrap;
@@ -124,7 +124,7 @@
 .research-meter-fill {
   height: 100%;
   border-radius: 100px;
-  background: linear-gradient(90deg, #3A9EC7 0%, #4FB6D9 100%);
+  background: linear-gradient(90deg, #2DA597 0%, #3FB8A8 100%);
   transition: width 0.4s ease;
 }
 .research-budget.is-low .research-meter-fill {
@@ -182,8 +182,8 @@
 }
 .research-field input[type="text"]:focus,
 .research-field select:focus {
-  border-color: #3A9EC7;
-  box-shadow: 0 0 0 3px rgba(58, 158, 199, 0.15);
+  border-color: #2DA597;
+  box-shadow: 0 0 0 3px rgba(45, 165, 151, 0.15);
   outline: none;
 }
 .research-field input::placeholder { color: #9CA5B8; }
@@ -234,7 +234,7 @@
 /* Submit */
 .research-btn {
   align-self: flex-start;
-  background: linear-gradient(135deg, #3A9EC7 0%, #4FB6D9 100%);
+  background: linear-gradient(135deg, #2DA597 0%, #3FB8A8 100%);
   color: #FFFFFF;
   font-family: 'Inter', sans-serif;
   font-size: 0.85rem;
@@ -245,13 +245,13 @@
   border: none;
   border-radius: 100px;
   cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(58, 158, 199, 0.4), 0 8px 24px rgba(58, 158, 199, 0.3);
+  box-shadow: 0 0 0 1px rgba(45, 165, 151, 0.4), 0 8px 24px rgba(45, 165, 151, 0.3);
   transition: transform 0.18s, filter 0.2s, box-shadow 0.2s;
 }
 .research-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.05);
-  box-shadow: 0 0 0 1px rgba(58, 158, 199, 0.6), 0 12px 32px rgba(58, 158, 199, 0.45);
+  box-shadow: 0 0 0 1px rgba(45, 165, 151, 0.6), 0 12px 32px rgba(45, 165, 151, 0.45);
 }
 .research-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
@@ -260,8 +260,8 @@
   font-family: 'Inter', sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #3A9EC7;
-  background: rgba(58, 158, 199, 0.12);
+  color: #2DA597;
+  background: rgba(45, 165, 151, 0.12);
   border-radius: 100px;
   padding: 2px 9px;
 }
@@ -293,7 +293,7 @@
 }
 .research-log-filters { font-size: 0.86rem; color: rgba(15, 26, 46, 0.6); }
 .research-log-meta { font-size: 0.8rem; color: rgba(15, 26, 46, 0.5); display: flex; gap: 8px; align-items: center; }
-.research-log-eps { color: #3A9EC7; font-weight: 700; }
+.research-log-eps { color: #2DA597; font-weight: 700; }
 .research-log-sep { color: rgba(15, 26, 46, 0.3); }
 
 /* Responsive */

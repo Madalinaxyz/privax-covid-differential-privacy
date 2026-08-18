@@ -84,13 +84,13 @@ function ResearchPage() {
     <main className="research-page">
       <div className="research-header">
         <div className="research-header-left">
-          <span className="research-eyebrow">Differential privacy · Researcher API</span>
+          <span className="research-eyebrow">Differential privacy · Research console</span>
           <h1 className="research-title">Research console</h1>
         </div>
         <p className="research-sub">
           Interactive, budgeted queries. Each query spends part of your privacy budget and returns a
           freshly-noised count. When the budget is gone, queries are refused — that ceiling is what
-          bounds how much any one researcher can learn.
+          bounds how much any one clinician can learn.
         </p>
       </div>
 
@@ -106,7 +106,7 @@ function ResearchPage() {
               </span>
             </h2>
           </div>
-          <span className="research-budget-user">{user?.name || user?.role || 'Researcher'}</span>
+          <span className="research-budget-user">{user?.name || user?.role || 'Clinician'}</span>
         </div>
         <div className="research-meter" aria-hidden="true">
           <div
@@ -117,7 +117,7 @@ function ResearchPage() {
         <p className="research-budget-note">
           {exhausted
             ? 'Budget exhausted. Further queries are refused until the budget resets (server restart).'
-            : `Every query debits its ε from this total (cumulative, per researcher). Spent so far: ${hasBudget ? (budget.total - budget.remaining).toFixed(2) : '—'} ε.`}
+            : `Every query debits its ε from this total (cumulative, per clinician). Spent so far: ${hasBudget ? (budget.total - budget.remaining).toFixed(2) : '—'} ε.`}
         </p>
       </section>
 

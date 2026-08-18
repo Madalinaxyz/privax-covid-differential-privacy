@@ -263,7 +263,6 @@
   color: #2C7A96;
 }
 .admin-pending-role--doctor { background: rgba(45, 165, 151, 0.14); color: #1D7068; }
-.admin-pending-role--researcher { background: rgba(58, 158, 199, 0.14); color: #2C7A96; }
 .admin-pending-actions { display: flex; gap: 8px; }
 .admin-btn {
   border: none;
