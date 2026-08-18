@@ -3,7 +3,7 @@
    ============================================================ */
 .notfound {
   min-height: calc(100vh - 92px);
-  background: #F8F2E8;
+  background: #F7F3EA;
   display: flex;
   align-items: center;
   justify-content: center;
