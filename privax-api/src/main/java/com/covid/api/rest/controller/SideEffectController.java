@@ -13,6 +13,7 @@ import com.covid.api.rest.service.SideEffectService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 
 import static com.covid.api.config.SwaggerConfig.BASIC_AUTH_SECURITY_SCHEME;
 
@@ -30,13 +31,13 @@ public class SideEffectController {
     }
 
     @PostMapping
-    public SideEffectReport reportSideEffect(@RequestBody SideEffectReportDTO reportDTO) {
+    public SideEffectReport reportSideEffect(@Valid @RequestBody SideEffectReportDTO reportDTO) {
         return sideEffectService.reportSideEffect(reportDTO);
     }
 
     /** Clinician-only: submits a report on behalf of a patient. */
     @PostMapping("/clinician")
-    public SideEffectReport reportSideEffectAsClinician(@RequestBody SideEffectReportDTO reportDTO) {
+    public SideEffectReport reportSideEffectAsClinician(@Valid @RequestBody SideEffectReportDTO reportDTO) {
         return sideEffectService.reportSideEffectAsClinician(reportDTO);
     }
 
