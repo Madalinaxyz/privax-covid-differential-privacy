@@ -22,9 +22,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +46,41 @@ public class SideEffectService {
     private static double effectiveEpsilon(Double epsilon) {
         if (epsilon == null || epsilon <= 0) return DEFAULT_EPSILON;
         return Math.min(epsilon, MAX_EPSILON);
+    }
+
+    // ---- Memoized fresh-noise release (public aggregate count endpoints) -------------------------
+    // A released count is drawn ONCE per secret with genuine Laplace noise, then cached and reused.
+    // This is what makes repeated querying safe on /grouped and /symptom-stats: the same query
+    // returns the identical value every time, so there is nothing to average away (averaging attack)
+    // and no second epsilon to difference against (epsilon-differencing attack). The release level is
+    // fixed server-side (RELEASE_EPSILON); the caller-supplied epsilon is intentionally ignored for
+    // the released numbers. The cache is bounded by the number of distinct secrets and cleared on
+    // restart (the demo DB reseeds on restart anyway). See docs/differential-privacy-analysis.md.
+    private static final double RELEASE_EPSILON = 1.0;
+    private final Random releaseRandom = new Random();
+    private final Map<String, Double> releasedCounts = new ConcurrentHashMap<>();
+
+    /** Stable string key identifying one released secret (a count for a specific cell / filter slice). */
+    private static String releaseKey(Object... parts) {
+        StringBuilder sb = new StringBuilder();
+        for (Object p : parts) sb.append(p == null ? "" : p.toString()).append('|');
+        return sb.toString();
+    }
+
+    /** Genuine Laplace draw via inverse transform sampling: noise = -scale * sgn(u) * ln(1 - 2|u|). */
+    private double freshLaplaceNoise(double scale) {
+        double u = releaseRandom.nextDouble() - 0.5; // uniform in [-0.5, 0.5]
+        return -scale * Math.signum(u) * Math.log(1 - 2 * Math.abs(u));
+    }
+
+    /**
+     * Differentially-private release of a raw count: draws genuine Laplace noise on first access for
+     * this key and caches it, returning the same clamped/rounded value on every subsequent call.
+     */
+    private long releasedCount(long rawCount, String key) {
+        double noisy = releasedCounts.computeIfAbsent(key,
+                k -> rawCount + freshLaplaceNoise(1.0 / RELEASE_EPSILON)); // counting query: sensitivity = 1
+        return Math.max(0, Math.round(noisy));
     }
 
     @Autowired
@@ -170,8 +207,9 @@ public class SideEffectService {
 
     public List<GroupedReportDTO> getGroupedReports(String vaccineName, String severityLevel, Double epsilon) {
         List<GroupedReportDTO> reports = sideEffectReportRepository.findGroupedReports(vaccineName, severityLevel);
-        // Always noise the map counts (effectiveEpsilon defaults/caps epsilon).
-        return applyDifferentialPrivacy(reports, effectiveEpsilon(epsilon), severityLevel);
+        // Released at a fixed server-side epsilon, memoized per cell; the caller-supplied epsilon is
+        // ignored (see RELEASE_EPSILON) to close the tunable-epsilon leak.
+        return applyDifferentialPrivacy(reports, severityLevel);
     }
 
     /**
@@ -184,12 +222,10 @@ public class SideEffectService {
     public List<SymptomCountDTO> getSymptomStats(String city, String severity, String vaccineName, Double epsilon) {
         List<SymptomCountDTO> counts = sideEffectReportRepository.countBySymptom(vaccineName, severity, city);
 
-        // Always noise the counts (effectiveEpsilon defaults/caps epsilon).
-        double scale = 1.0 / effectiveEpsilon(epsilon); // counting query: sensitivity = 1
+        // Released at a fixed server-side epsilon, memoized per (symptom, filter-slice): re-issuing
+        // the same query returns the identical value, so it can't be averaged or differenced away.
         for (SymptomCountDTO c : counts) {
-            // Seed by symptom + the exact filter slice, so re-issuing the same query is stable.
-            long seed = seedFor(c.getSymptom(), city, severity, vaccineName);
-            c.setCount(Math.max(0, Math.round(c.getCount() + laplaceNoise(scale, seed))));
+            c.setCount(releasedCount(c.getCount(), releaseKey("symptom", c.getSymptom(), city, severity, vaccineName)));
         }
         counts.sort((a, b) -> Long.compare(b.getCount(), a.getCount()));
         return counts;
@@ -200,10 +236,10 @@ public class SideEffectService {
      * When a specific severity is selected, the other counts are forced to 0
      * so noise doesn't leak false positives onto the map.
      */
-    private List<GroupedReportDTO> applyDifferentialPrivacy(List<GroupedReportDTO> reports, double epsilon, String severityLevel) {
-        double sensitivity = 1.0;
-        double scale = sensitivity / epsilon;
-
+    private List<GroupedReportDTO> applyDifferentialPrivacy(List<GroupedReportDTO> reports, String severityLevel) {
+        // Each (city, vaccine, severityBucket) cell is one released secret: fresh noise once, then
+        // memoized (see releasedCount). The caller-supplied epsilon is not used — the release level
+        // is fixed server-side (RELEASE_EPSILON).
         boolean filtered = severityLevel != null && !severityLevel.equalsIgnoreCase("ALL");
         String filter   = filtered ? severityLevel.toUpperCase() : null;
 
@@ -211,25 +247,25 @@ public class SideEffectService {
             String city = report.getCity();
             String vaccine = report.getVaccineName();
             if (!filtered || "MILD".equals(filter)) {
-                report.setMildCount(Math.max(0, (long) (report.getMildCount() + laplaceNoise(scale, seedFor(city, vaccine, "MILD")))));
+                report.setMildCount(releasedCount(report.getMildCount(), releaseKey(city, vaccine, "MILD")));
             } else {
                 report.setMildCount(0L);
             }
 
             if (!filtered || "MODERATE".equals(filter)) {
-                report.setModerateCount(Math.max(0, (long) (report.getModerateCount() + laplaceNoise(scale, seedFor(city, vaccine, "MODERATE")))));
+                report.setModerateCount(releasedCount(report.getModerateCount(), releaseKey(city, vaccine, "MODERATE")));
             } else {
                 report.setModerateCount(0L);
             }
 
             if (!filtered || "SEVERE".equals(filter)) {
-                report.setSevereCount(Math.max(0, (long) (report.getSevereCount() + laplaceNoise(scale, seedFor(city, vaccine, "SEVERE")))));
+                report.setSevereCount(releasedCount(report.getSevereCount(), releaseKey(city, vaccine, "SEVERE")));
             } else {
                 report.setSevereCount(0L);
             }
 
             if (!filtered || "FATAL".equals(filter)) {
-                report.setFatalCount(Math.max(0, (long) (report.getFatalCount() + laplaceNoise(scale, seedFor(city, vaccine, "FATAL")))));
+                report.setFatalCount(releasedCount(report.getFatalCount(), releaseKey(city, vaccine, "FATAL")));
             } else {
                 report.setFatalCount(0L);
             }
