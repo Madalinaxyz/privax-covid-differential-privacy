@@ -31,6 +31,7 @@ export default function Navbar() {
     { label: 'About',    to: '/about' },
     { label: 'Reports',  to: '/reports' },
     { label: 'Blog',     to: '/blog' },
+    ...(userIsAuthenticated() ? [{ label: 'Research', to: '/research' }] : []),
     ...(isDoctor ? [{ label: 'Doctor',  to: '/doctorpage' }] : []),
     ...(isAdmin  ? [{ label: 'Admin',   to: '/adminpage'  }] : []),
     ...(isUser   ? [{ label: 'My Page', to: '/userpage'   }] : []),

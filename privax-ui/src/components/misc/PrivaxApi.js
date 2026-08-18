@@ -36,6 +36,9 @@ export const privaxApi = {
   createClinicianReport,
   getGroupedSideEffectReports,
   getSymptomStats,
+  // ── Researcher API (budgeted DP)
+  getResearchBudget,
+  researchCount,
   // ── Blog
   getBlogPosts,
   getBlogPost,
@@ -128,6 +131,23 @@ function getSymptomStats({ epsilon = 1.0, city = null, severity = null, vaccineN
   return instance.get("/api/side-effects/symptom-stats", { params });
 }
 
+
+/* ── Researcher API (interactive, budgeted differential privacy) ─────────── */
+
+// The caller's current privacy budget (total + remaining). Does not spend any budget.
+function getResearchBudget() {
+  return instance.get('/api/research/budget')
+}
+
+// A budgeted, differentially-private count. Spends `epsilon` from the caller's budget and returns
+// a freshly-noised count. Rejected with HTTP 429 once the budget is exhausted, 400 for a bad epsilon.
+function researchCount({ epsilon, vaccineName = null, city = null, severity = null } = {}) {
+  const params = { epsilon }
+  if (vaccineName && vaccineName !== 'ALL') params.vaccineName = vaccineName
+  if (city) params.city = city
+  if (severity && severity !== 'ALL') params.severity = severity
+  return instance.get('/api/research/side-effects/count', { params })
+}
 
 function getUsers(username) {
   const url = username ? `/api/users/${username}` : '/api/users'

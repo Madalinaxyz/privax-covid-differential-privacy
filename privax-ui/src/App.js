@@ -13,6 +13,7 @@ import AdminPage from './components/admin/AdminPage'
 import UserPage from './components/user/UserPage'
 import DoctorPage from './components/doctor/DoctorPage'
 import Report from './components/reports/Report'
+import ResearchPage from './components/research/ResearchPage'
 import BlogIndex from './components/blog/BlogIndex'
 import BlogPostView from './components/blog/BlogPostView'
 import BlogEditor from './components/blog/BlogEditor'
@@ -37,6 +38,7 @@ function App() {
           <Route path="/adminpage" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
           <Route path="/userpage" element={<PrivateRoute><UserPage /></PrivateRoute>} />
           <Route path="/doctorpage" element={<PrivateRoute><DoctorPage /></PrivateRoute>} />
+          <Route path="/research" element={<PrivateRoute><ResearchPage /></PrivateRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
