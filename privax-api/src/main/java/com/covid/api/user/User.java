@@ -28,6 +28,12 @@ public class User {
     private String email;
     private String role;
 
+    // A privileged role the user has APPLIED for (e.g. DOCTOR) but not yet been
+    // granted. Null once there is no pending request. The user's effective authority always comes
+    // from {@code role} only, never this field — so a pending request grants no access until an
+    // admin approves it (role <- requestedRole).
+    private String requestedRole;
+
     public User(String username, String password, String name, String email, String role) {
         this.username = username;
         this.password = password;

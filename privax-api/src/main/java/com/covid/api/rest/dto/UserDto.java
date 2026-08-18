@@ -2,7 +2,7 @@ package com.covid.api.rest.dto;
 
 import com.covid.api.user.User;
 
-public record UserDto(Long id, String username, String name, String email, String role) {
+public record UserDto(Long id, String username, String name, String email, String role, String requestedRole) {
 
     public static UserDto from(User user) {
         return new UserDto(
@@ -10,7 +10,8 @@ public record UserDto(Long id, String username, String name, String email, Strin
                 user.getUsername(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getRequestedRole()
         );
     }
 }

@@ -822,8 +822,18 @@ Regardless of any suspected trigger, psychosis is a situation that needs **promp
     private static final List<User> USERS = Arrays.asList(
             new User("admin",  "admin",  "Admin",          "admin@mycompany.com",  SecurityConfig.ADMIN),
             new User("user",   "user",   "User",           "user@mycompany.com",   SecurityConfig.USER),
-            new User("doctor", "doctor", "Dr. Ana Popescu","doctor@mycompany.com", SecurityConfig.DOCTOR)
+            // Seeded as a PENDING clinician request (role USER, requestedRole DOCTOR) so the
+            // approval flow has something to demonstrate: an admin approves it to grant DOCTOR,
+            // which unlocks both the clinician page and the research console.
+            pendingRequest("doctor", "doctor", "Dr. Ana Popescu", "doctor@mycompany.com", SecurityConfig.DOCTOR)
     );
+
+    /** Builds a plain USER carrying a pending request for {@code requestedRole}. */
+    private static User pendingRequest(String username, String password, String name, String email, String requestedRole) {
+        User u = new User(username, password, name, email, SecurityConfig.USER);
+        u.setRequestedRole(requestedRole);
+        return u;
+    }
 
 
     // private void insertSideEffectReports() {

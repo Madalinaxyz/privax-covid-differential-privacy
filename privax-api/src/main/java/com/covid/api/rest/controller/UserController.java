@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,6 +40,40 @@ public class UserController {
         return userService.getUsers().stream()
                 .map(UserDto::from)
                 .collect(Collectors.toList());
+    }
+
+    /** Admin-only: users who have applied for a privileged role and are awaiting approval. */
+    @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
+    @GetMapping("/pending")
+    public List<UserDto> getPendingUsers() {
+        return userService.getUsers().stream()
+                .filter(u -> u.getRequestedRole() != null && !u.getRequestedRole().isBlank())
+                .map(UserDto::from)
+                .collect(Collectors.toList());
+    }
+
+    /** Admin-only: grant the requested role (role &lt;- requestedRole) and clear the request. */
+    @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
+    @PostMapping("/{username}/approve")
+    public UserDto approveUser(@PathVariable String username) {
+        User user = userService.validateAndGetUserByUsername(username);
+        String requested = user.getRequestedRole();
+        if (requested != null && !requested.isBlank()) {
+            user.setRole(requested);
+            user.setRequestedRole(null);
+            userService.saveUser(user);
+        }
+        return UserDto.from(user);
+    }
+
+    /** Admin-only: reject the pending request; the user stays a plain USER. */
+    @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
+    @PostMapping("/{username}/deny")
+    public UserDto denyUser(@PathVariable String username) {
+        User user = userService.validateAndGetUserByUsername(username);
+        user.setRequestedRole(null);
+        userService.saveUser(user);
+        return UserDto.from(user);
     }
 
     @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})

@@ -34,7 +34,7 @@ public class AuthController {
         Optional<User> userOptional = userService.validUsernameAndPassword(loginRequest.username(), loginRequest.password());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            return ResponseEntity.ok(new AuthResponse(user.getId(), user.getName(), user.getRole()));
+            return ResponseEntity.ok(new AuthResponse(user.getId(), user.getName(), user.getRole(), user.getRequestedRole()));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -50,7 +50,7 @@ public class AuthController {
         }
 
         User user = userService.saveUser(this.mapSignUpRequestToUser(signUpRequest));
-        return new AuthResponse(user.getId(), user.getName(), user.getRole());
+        return new AuthResponse(user.getId(), user.getName(), user.getRole(), user.getRequestedRole());
     }
 
     private User mapSignUpRequestToUser(SignUpRequest signUpRequest) {
@@ -59,13 +59,13 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(signUpRequest.password()));
         user.setName(signUpRequest.name());
         user.setEmail(signUpRequest.email());
-        // Doctor accounts may self-register from the dedicated signup form.
-        // Admin is always assigned manually — never via public signup.
-        String requested = signUpRequest.role();
-        if (SecurityConfig.DOCTOR.equalsIgnoreCase(requested)) {
-            user.setRole(SecurityConfig.DOCTOR);
-        } else {
-            user.setRole(SecurityConfig.USER);
+        // Public signup NEVER grants a privileged role directly — that would let anyone self-mint a
+        // DOCTOR (and defeat the per-user research privacy budget by registering fresh accounts).
+        // Everyone is created as a plain USER; a request for DOCTOR is recorded as a pending
+        // requestedRole that an admin must approve. ADMIN is never requestable.
+        user.setRole(SecurityConfig.USER);
+        if (SecurityConfig.DOCTOR.equalsIgnoreCase(signUpRequest.role())) {
+            user.setRequestedRole(SecurityConfig.DOCTOR);
         }
         return user;
     }

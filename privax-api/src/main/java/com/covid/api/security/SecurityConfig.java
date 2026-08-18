@@ -39,10 +39,11 @@ public class SecurityConfig {
                         // authenticated user may look up their own account.
                         .requestMatchers(HttpMethod.GET,    "/api/users/me").authenticated()
                         .requestMatchers("/api/users", "/api/users/**").hasAuthority(ADMIN)
-                        // Researcher API: interactive DP queries against a per-user epsilon budget.
-                        // Any authenticated user acts as a researcher; the budget is charged to their
-                        // username (a dedicated RESEARCHER authority would be a one-line extension).
-                        .requestMatchers("/api/research/**").authenticated()
+                        // Research API: interactive DP queries against a per-user epsilon budget.
+                        // Gated to the DOCTOR authority (granted only by admin approval, never via
+                        // public signup) — otherwise the budget could be defeated by registering
+                        // unlimited fresh accounts.
+                        .requestMatchers("/api/research/**").hasAuthority(DOCTOR)
                         // Catalogue + appointment mutations are ADMIN-only (reads stay open to
                         // any authenticated user). Without this, any logged-in user could add,
                         // edit, or delete vaccines and appointments.
