@@ -121,9 +121,18 @@ function randomize(original, domain, epsilon, r) {
     : original;
 }
 
-function symptomsWithinSeverity(symptoms, severity) {
-  const allowed = new Set(allowedSymptoms(severity));
-  return (symptoms || []).filter((s) => allowed.has(s));
+// Multi-label symptoms: k-ary randomized response on each symptom, drawing replacements from the
+// plausible pool for the displayed severity (so a MILD row never gains a severe symptom). This is
+// the "curse of dimensionality" case — at low ε almost every symptom is swapped, at high ε they
+// stay true — which is exactly why REAL symptom privacy is provided by the aggregate prevalence
+// chart rather than per row. Safe here because the data is synthetic.
+function noiseSymptoms(symptoms, severity, epsilon, r) {
+  const pool = allowedSymptoms(severity);
+  const q = replaceProbability(epsilon, pool.length);
+  const out = (symptoms || []).map((s) =>
+    (r() < q || !pool.includes(s)) ? pool[Math.floor(r() * pool.length)] : s
+  );
+  return [...new Set(out)]; // de-dupe collisions
 }
 
 /** Return a copy of a synthetic row with epsilon-DP noise applied (safe: data is synthetic). */
@@ -135,7 +144,7 @@ export function noiseReport(row, epsilon) {
     severity,
     vaccineName: randomize(row.vaccineName, VACCINES, epsilon, seededRandom(row.id, "vaccine")),
     city: randomize(row.city, CITIES, epsilon, seededRandom(row.id, "city")),
-    // symptoms stay consistent with the displayed (noised) severity
-    symptoms: symptomsWithinSeverity(row.symptoms, severity),
+    // symptoms are noised too, staying within the displayed (noised) severity tier
+    symptoms: noiseSymptoms(row.symptoms, severity, epsilon, seededRandom(row.id, "symptoms")),
   };
 }
