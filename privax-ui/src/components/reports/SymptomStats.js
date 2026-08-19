@@ -64,7 +64,9 @@ const SymptomStats = () => {
       <EpsilonSlider
         value={epsilon}
         onChange={setEpsilon}
-        hint="Each bar is a noised count of how many reports listed that symptom. Lower ε = more noise / more privacy · Higher ε = sharper counts."
+        disabled
+        label="Privacy level (epsilon)"
+        hint="Fixed at ε = 1.0 — each symptom count is released at one privacy level for everyone, so it can't be de-noised by tuning ε."
       />
 
       {/* Filters */}

@@ -219,7 +219,13 @@ const MapReport = () => {
       />
 
       <div style={{ marginBottom: "20px" }}>
-        <EpsilonSlider value={epsilon} onChange={setEpsilon} />
+        <EpsilonSlider
+          value={epsilon}
+          onChange={setEpsilon}
+          disabled
+          label="Privacy level (epsilon)"
+          hint="Fixed at ε = 1.0 — the map's city counts are released at one privacy level for everyone, so they can't be de-noised by tuning ε."
+        />
       </div>
 
       {(() => {
