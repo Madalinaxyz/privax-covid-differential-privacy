@@ -105,9 +105,12 @@ const TableReport = ({ handleLogError }) => {
       });
       const data = response.data;
       // Noise is applied server-side now; display the response verbatim.
+      // Pagination metadata lives under `page` (stable DTO shape); fall back to the
+      // legacy top-level fields so this keeps working either way.
+      const meta = data.page || data;
       setReports(data.content || []);
-      setTotal(data.totalElements || 0);
-      setTotalPgs(data.totalPages || 0);
+      setTotal(meta.totalElements || 0);
+      setTotalPgs(meta.totalPages || 0);
     } catch (error) {
       console.error("Error fetching reports:", error);
       handleLogError?.(error);
