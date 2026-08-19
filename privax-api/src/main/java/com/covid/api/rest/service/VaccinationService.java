@@ -55,7 +55,9 @@ public class VaccinationService {
 
     /** A fresh Laplace sample via inverse transform sampling: noise = -scale * sgn(u) * ln(1 - 2|u|). */
     private double freshLaplaceNoise(double scale) {
-        double u = random.nextDouble() - 0.5; // uniform in [-0.5, 0.5]
+        double r = random.nextDouble();          // [0, 1)
+        if (r == 0.0) r = Math.ulp(0.5);         // avoid u == -0.5 -> log(0) -> infinite noise
+        double u = r - 0.5;                       // (-0.5, 0.5)
         return -scale * Math.signum(u) * Math.log(1 - 2 * Math.abs(u));
     }
 

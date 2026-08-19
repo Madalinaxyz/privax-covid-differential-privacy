@@ -69,7 +69,9 @@ public class SideEffectService {
 
     /** Genuine Laplace draw via inverse transform sampling: noise = -scale * sgn(u) * ln(1 - 2|u|). */
     private double freshLaplaceNoise(double scale) {
-        double u = releaseRandom.nextDouble() - 0.5; // uniform in [-0.5, 0.5]
+        double r = releaseRandom.nextDouble();          // [0, 1)
+        if (r == 0.0) r = Math.ulp(0.5);                // avoid u == -0.5 -> log(0) -> infinite noise
+        double u = r - 0.5;                             // (-0.5, 0.5)
         return -scale * Math.signum(u) * Math.log(1 - 2 * Math.abs(u));
     }
 
@@ -289,7 +291,9 @@ public class SideEffectService {
      * scale (= sensitivity/ε) varies with ε. So the same key always yields the same draw.
      */
     private double laplaceNoise(double scale, long seed) {
-        double u = new Random(seed).nextDouble() - 0.5;
+        double r = new Random(seed).nextDouble();       // [0, 1)
+        if (r == 0.0) r = Math.ulp(0.5);                // avoid u == -0.5 -> log(0) -> infinite noise
+        double u = r - 0.5;                             // (-0.5, 0.5)
         return -scale * Math.signum(u) * Math.log(1 - 2 * Math.abs(u));
     }
 
@@ -371,15 +375,20 @@ public class SideEffectService {
         return original;
     }
 
-    private String randomizeCity(String original, double epsilon, long seed) {
-        // NOTE: for a fully rigorous guarantee the candidate set should equal the whole
-        // city domain; here it samples a representative subset, so treat city as an
-        // illustrative application of k-ary randomized response.
-        List<String> cities = Arrays.asList("Bucharest", "Cluj-Napoca", "Timișoara", "Iași", "Brașov", "Constanța");
+    // The full city domain (mirrors the seeded cities). k-ary randomized response over `city` uses
+    // the WHOLE domain, so k is correct and every real city can appear as a random replacement —
+    // required for the epsilon-DP guarantee on `city` to actually hold.
+    private static final List<String> ROMANIAN_CITIES = Arrays.asList(
+            "Bucharest", "Cluj-Napoca", "Timișoara", "Iași", "Constanța", "Craiova", "Brașov", "Galați",
+            "Ploiești", "Oradea", "Brăila", "Arad", "Pitești", "Sibiu", "Bacău", "Târgu Mureș",
+            "Baia Mare", "Buzău", "Satu Mare", "Râmnicu Vâlcea", "Drobeta-Turnu Severin", "Botoșani",
+            "Reșița", "Deva", "Slatina", "Focșani", "Vaslui", "Târgoviște", "Bistrița"
+    );
 
+    private String randomizeCity(String original, double epsilon, long seed) {
         Random rng = new Random(seed);
-        if (rng.nextDouble() < replaceProbability(epsilon, cities.size())) {
-            return cities.get(rng.nextInt(cities.size()));
+        if (rng.nextDouble() < replaceProbability(epsilon, ROMANIAN_CITIES.size())) {
+            return ROMANIAN_CITIES.get(rng.nextInt(ROMANIAN_CITIES.size()));
         }
         return original;
     }
