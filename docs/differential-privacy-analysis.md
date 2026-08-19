@@ -111,6 +111,24 @@ Reproduce: `curl "http://localhost:8080/api/side-effects/grouped?epsilon=<x>"` e
 The raw count (1250) differs from the released value by the Laplace draw and cannot be recovered from
 the public endpoint by any number of queries or ε settings.
 
+### 3.1 Why the noise is small (±1–2) — and why that is correct
+
+Comparing released counts to the true DB counts shows the noise is present but small (e.g. symptom
+"Fever" true 489 → released 490; "Headache" 473 → 471; some symptoms land on +0). This is the
+*correct* behaviour, not a weakness:
+
+- DP hides **one individual's contribution**, i.e. whether a count is `n` or `n−1` — a change of
+  **1**, because these are counting queries (sensitivity 1). The noise only has to make `n` and
+  `n−1` indistinguishable.
+- The Laplace scale is `sensitivity/ε = 1/1 = 1`, so the noise has standard deviation ≈ 1.4 — sized
+  exactly to mask that ±1 footprint. Blurring a count of ~490 into a wide range would hide nothing
+  more about any individual and would destroy the statistic's utility.
+- Because the noise is the *same* ±1–2 regardless of the count, it is a tiny fraction of a large
+  count (~0.3% of 490) but a larger fraction of a small one (~5–9% of 22). That is the guarantee
+  working: the fewer people a number represents, the more of it is noise — which is also why
+  individual-level data is pushed to the illustrative synthetic rows (a count of "1" would be almost
+  entirely noise, i.e. meaningless).
+
 ---
 
 ## 4. Channel 2 — Researcher API (rigorous, interactive)
