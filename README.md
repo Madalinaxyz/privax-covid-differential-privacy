@@ -36,7 +36,7 @@ Standard "anonymization" leaks. If a dataset says *"7 people in Bucharest aged 3
 
 Privax solves this by adding **calibrated Laplace noise** to every aggregate count before it leaves the database. The math (`ε` = epsilon, the privacy budget) guarantees that no observer — researcher, journalist, or attacker — can determine whether any *single individual* is in the dataset.
 
-In the UI, you can move the **epsilon slider** to see this trade-off live:
+Public aggregate statistics are released at a **fixed privacy level (`ε`)** chosen on the server, so the numbers can't be de-noised by simply dialing `ε` up. The `ε` control on the reports **table** lets you watch the trade-off in action:
 - **Low ε (more privacy)** → larger noise, blurrier statistics, stronger individual protection
 - **High ε (more accuracy)** → smaller noise, sharper statistics, weaker individual protection
 
@@ -48,14 +48,14 @@ This is the same technique used by Apple, Google, and the U.S. Census.
 
 | Feature | Description |
 |---|---|
-| **Anonymous reporting** | Submit experiences without an account, or with one — your choice |
-| **Differential privacy** | Laplace noise on all aggregate queries; tunable `ε` per request |
+| **Anonymous reporting** | Submitting needs a free login (basic abuse control), but a report is never linked back to your account |
+| **Differential privacy** | Laplace noise on every aggregate query; public statistics released at a fixed server-side `ε` |
 | **Interactive map** | Side-effect reports plotted by city, vaccine, and severity (Leaflet + OpenStreetMap) |
 | **Paginated table view** | Browse all reports with severity, vaccine, symptoms, location, time |
 | **Vaccine comparison** | Compare reported patterns across Pfizer, Moderna, AstraZeneca, J&J |
 | **Severity tracking** | MILD / MODERATE / SEVERE / FATAL — color-coded throughout |
 | **Cinematic homepage** | 11-scene narrative with parallax, starfields, editorial typography |
-| **Role-based admin** | Manage users (admins), submit reports (users) |
+| **Role-based access** | Admins approve clinician requests; approved clinicians (DOCTOR) file patient reports and use the budgeted research console |
 | **JWT-ready Basic auth** | Spring Security with stateless session policy |
 
 ---
@@ -99,16 +99,20 @@ COVID/
 │       │   └── dto/                         # Request/response DTOs
 │       ├── security/                        # Spring Security + CORS config
 │       ├── user/                            # User entity + auth
+│       ├── blog/                            # Blog posts
 │       ├── config/                          # DifferentialPrivacy, Swagger, ErrorAttrs
-│       └── runner/                          # DatabaseInitializer (seeds 10k records)
+│       └── runner/                          # DatabaseInitializer (users, vaccines, 10k vaccinations, 3k reports, blog posts)
 │
 ├── privax-ui/                               # React frontend
 │   └── src/components/
 │       ├── home/                            # Hero, login, signup, auth
-│       ├── reports/                         # Map, table, form
-│       ├── admin/                           # User management
+│       ├── reports/                         # Map, table, add-report form
+│       ├── doctor/                          # Clinician report console
+│       ├── research/                        # Budgeted DP research console
+│       ├── blog/                            # Blog index + posts
+│       ├── admin/                           # User management + clinician approvals
 │       ├── user/                            # User dashboard
-│       ├── misc/                            # API client (privaxApi)
+│       ├── misc/                            # API client, navbar, pending banner
 │       └── context/                         # Auth context
 │
 ├── docker-compose.yml                       # Postgres (privaxdb)
@@ -139,10 +143,11 @@ cd privax-api
 .\mvnw spring-boot:run
 ```
 The backend starts on `http://localhost:8080` and **automatically seeds the database** with:
-- 2 default users (see below)
+- 3 default users (see below)
 - 4 vaccine records
 - 10,000 random vaccination records
-- 15,000 random side-effect reports across 29 Romanian cities
+- 3,000 random side-effect reports across 29 Romanian cities
+- a set of long-form blog posts
 
 ### 3. Start the frontend
 ```powershell
@@ -160,8 +165,11 @@ Seeded on first backend boot:
 
 | Username | Password | Role |
 |---|---|---|
-| `admin` | `admin` | ADMIN |
-| `user`  | `user`  | USER  |
+| `admin`  | `admin`  | ADMIN |
+| `user`   | `user`   | USER  |
+| `doctor` | `doctor` | USER — **pending clinician request** |
+
+> The `doctor` account is seeded as a **pending clinician request**. Sign in as `admin`, open the admin panel, and **approve** it to grant the DOCTOR role — which unlocks the clinician report page and the research console. Privileged roles are never self-granted at signup; they always require admin approval.
 
 ---
 
@@ -171,16 +179,24 @@ All endpoints documented at **http://localhost:8080/swagger-ui.html** when runni
 
 ### Public (no auth)
 - `POST /auth/authenticate` — login
-- `POST /auth/signup` — register
-- `GET  /api/vaccinations/region?region=&epsilon=` — get noisy vaccination count for a region
-- `GET  /api/vaccinations/region/compare?region=&epsilon=` — raw vs. noisy side-by-side
+- `POST /auth/signup` — register (privileged roles are *requested*, not granted — see credentials above)
+- `GET  /api/vaccinations/region?region=` — noisy vaccination count for a region (fixed server-side ε)
+- `GET  /api/side-effects?page=0&size=10` — paginated reports with DP noise
+- `GET  /api/side-effects/grouped?vaccineName=&severityLevel=` — counts grouped by city (the map)
+- `GET  /api/side-effects/symptom-stats` — DP-noised symptom prevalence
 
-### Authenticated
-- `GET  /api/side-effects?page=0&size=10&epsilon=1.0` — paginated reports with DP noise
-- `GET  /api/side-effects/grouped?vaccineName=&severityLevel=&epsilon=` — grouped by city
-- `POST /api/side-effects` — submit a new report
-- `GET  /api/users` — list users (admin only)
+### Authenticated (any logged-in user)
+- `POST /api/side-effects` — submit a report
 - `GET  /api/vaccines` — list vaccines
+
+### Admin only
+- `GET  /api/users` — list users
+- `GET  /api/users/pending` · `POST /api/users/{username}/approve|deny` — manage clinician requests
+- `GET  /api/vaccinations/region/compare?region=` — raw vs. noisy side-by-side (exposes raw counts)
+
+### Clinician (DOCTOR) only
+- `POST /api/side-effects/clinician` — submit a report on behalf of a patient
+- `GET  /api/research/side-effects/count?epsilon=` — budgeted, differentially-private count
 
 ---
 
@@ -192,7 +208,8 @@ The interface is built around an extracted palette from the COVID virus + data-c
 |---|---|---|
 | Void / Deep | `#050810` / `#0A0E16` | Dark scenes |
 | Navy | `#0F1A2E` | Navbar, surfaces |
-| Cyan | `#3A9EC7` / `#4FB6D9` | Data, primary actions |
+| Verdigris | `#2DA597` / `#3FB8A8` | Primary accent — actions, consoles, highlights |
+| Cyan | `#3A9EC7` / `#4FB6D9` | Data & charts |
 | Ice / Glow | `#B8DCE8` / `#E5F1F8` | Text on dark |
 | Pearl / Stone | `#F7F3EA` / `#E4DCC8` | Light luxury surfaces |
 | Champagne | `#C9B380` | The one warm human accent |
@@ -203,18 +220,18 @@ The homepage alternates **dark cinematic** and **light editorial** scenes so the
 
 ## Privacy & ethics
 
-- **No personal data is required to submit a report.** You can submit fully anonymously.
+- **No personal data is stored in a report.** Submitting requires a free login (basic abuse control), but a report is never linked back to your account.
 - **All aggregate statistics shown publicly are protected by differential privacy.** Individual records are never displayed unmodified.
-- **Your right to delete:** logged-in users can edit or remove their reports at any time.
+- **Anonymous by design:** because reports carry no link to the submitting account, you can delete your account at any time — submitted reports remain only as anonymous, aggregate data with no way to trace them back to you.
 - **No third-party analytics or tracking.** This is a privacy-first platform by design.
 
 ---
 
 ## Roadmap (high-level)
 
+- [x] Budgeted researcher API — differentially-private aggregate queries against a per-user ε budget
 - [ ] Multi-language support (RO, EN, FR, DE)
-- [ ] Researcher API for accessing aggregated datasets
-- [ ] Export of personal report history (data portability)
+- [ ] Anonymous claim tokens — let a submitter revoke a report without linking it to an account
 - [ ] Symptom auto-suggest from a controlled medical vocabulary
 - [ ] Mobile-optimized reporting flow
 
