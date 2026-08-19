@@ -823,9 +823,9 @@ Regardless of any suspected trigger, psychosis is a situation that needs **promp
             }
             
             vaccinationRecordRepository.saveAll(records);
-            System.out.println("Inserted " + NUMBER_OF_RECORDS + " random vaccination records.");
+            log.info("Inserted {} random vaccination records.", NUMBER_OF_RECORDS);
         } else {
-            System.out.println("Vaccination records already exist, skipping data initialization.");
+            log.info("Vaccination records already exist, skipping data initialization.");
         }
     }
 
