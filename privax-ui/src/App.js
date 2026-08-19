@@ -11,7 +11,6 @@ import Home from './components/home/Home'
 import Login from './components/home/Login'
 import Signup from './components/home/Signup'
 import AdminPage from './components/admin/AdminPage'
-import UserPage from './components/user/UserPage'
 import DoctorPage from './components/doctor/DoctorPage'
 import Report from './components/reports/Report'
 import ResearchPage from './components/research/ResearchPage'
@@ -38,7 +37,6 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
           <Route path="/adminpage" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
-          <Route path="/userpage" element={<PrivateRoute><UserPage /></PrivateRoute>} />
           <Route path="/doctorpage" element={<PrivateRoute><DoctorPage /></PrivateRoute>} />
           <Route path="/research" element={<PrivateRoute><ResearchPage /></PrivateRoute>} />
           <Route path="*" element={<NotFound />} />

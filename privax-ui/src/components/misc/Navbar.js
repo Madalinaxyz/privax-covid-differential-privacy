@@ -23,7 +23,6 @@ export default function Navbar() {
 
   const user     = getUser()
   const isAdmin  = user?.role === 'ADMIN'
-  const isUser   = user?.role === 'USER'
   const isDoctor = user?.role === 'DOCTOR'
 
   const navLinks = [
@@ -35,7 +34,6 @@ export default function Navbar() {
     ...(isDoctor ? [{ label: 'Submit Report', to: '/doctorpage' }] : []),
     ...(isDoctor ? [{ label: 'Research',      to: '/research' }] : []),
     ...(isAdmin  ? [{ label: 'Admin',   to: '/adminpage'  }] : []),
-    ...(isUser   ? [{ label: 'My Page', to: '/userpage'   }] : []),
   ]
 
   const isHome = location.pathname === '/'
