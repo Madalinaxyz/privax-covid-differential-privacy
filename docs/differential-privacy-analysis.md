@@ -1,274 +1,223 @@
-# Differential Privacy in Privax — Security Analysis
+# Differential Privacy in Privax — Complete Analysis
 
-> Reproducible analysis notes for the thesis evaluation chapter.
-> Every number below was produced against the running application; the commands are included so the
-> results can be reproduced live (e.g. during the defense). Rewrite the prose in your own academic
-> voice — this file is technical material and evidence, not finished thesis text.
-
-Backend base URL used throughout: `http://localhost:8080`.
-Note: the demo database reseeds on every restart (`ddl-auto: create`), so absolute counts differ
-between runs. The *attacks* and their outcomes do not depend on the specific numbers.
+> Thesis reference. Every claim below was verified against the running system; the commands to
+> reproduce each result are included. Rewrite the prose in your own academic voice — this file is
+> the technical evidence, not finished thesis text. All absolute counts come from the demo database,
+> which reseeds on every restart, so exact numbers differ between runs; the *properties* do not.
 
 ---
 
-## 1. Baseline design (the "before")
+## 1. What Privax protects, and how
 
-Aggregate statistics are released with noise instead of exact values:
+Privax collects anonymous post-vaccination reports and publishes statistics about them. The privacy
+goal is the standard differential-privacy one: **an observer must not be able to determine whether
+any single individual is in the dataset**, no matter what side information they hold or how many
+queries they make.
 
-- **Counting queries** (vaccinations per region; reports per city/vaccine/severity; per-symptom
-  prevalence) use the **Laplace mechanism** with sensitivity 1 — adding or removing one person
-  changes any count by at most 1.
-- **Per-row categorical fields** (severity, vaccine, city) use **k-ary randomized response**
-  (Warner 1965; Kairouz et al. 2016) with replace-probability `q = k / (e^ε + k − 1)`.
+Reports are also **unlinked** — a report carries no reference to the account that submitted it
+(login is used only for access control, never stored on the report), so the data is anonymous at
+rest independently of the DP layer.
 
-The naive vaccination endpoint (tagged `naive-dp` in git) drew **fresh, independent** Laplace noise
-on every request and accepted an **unbounded, caller-supplied ε**:
+Privacy is delivered through **three release channels**, each matched to what its trust model can
+actually enforce:
 
-```java
-private final Random random = new Random();          // one shared RNG, re-rolled per request
-double u = random.nextDouble() - 0.5;
-double noise = -(1.0/epsilon) * Math.signum(u) * Math.log(1 - 2*Math.abs(u));
-return rawCount + noise;                              // epsilon taken straight from the URL
-```
+| Channel | What it releases | Mechanism | Guarantee |
+|---|---|---|---|
+| **Public aggregates** — map, symptom prevalence, region counts | counts over many people | Laplace, **fixed ε**, memoized | **Rigorous ε-DP** |
+| **Researcher API** (`/api/research`, DOCTOR-only) | counts, interactively | Laplace, **fresh noise + ε-budget** | **Rigorous ε-DP** (bounded by the budget) |
+| **Illustrative row table** (View Reports) | example individual rows | Laplace + randomized response on **synthetic** data | **None claimed** — a teaching view |
 
-Check out the baseline for comparison with:
-
-```bash
-git checkout naive-dp   # the pre-fix implementation
-```
+The first two are the rigorous guarantees. The third is deliberately *not* a privacy claim (see §6).
 
 ---
 
-## 2. Threat model
+## 2. The mechanisms (the math)
 
-The endpoint is:
+### 2.1 Laplace mechanism — for counting queries
 
-- **public** (no authentication),
-- **anonymous** (no per-user identity to hold accountable),
-- **unlimited** (no rate limit or query budget),
-- **caller-parameterised** (the attacker chooses ε per request).
+For a query `f` with sensitivity `Δf`, releasing `f(D) + Laplace(0, Δf/ε)` satisfies ε-DP.
 
-The attacker's goal is to recover an exact raw count, which the differential-privacy guarantee is
-supposed to prevent. All three attacks below assume only these properties.
+- **Sensitivity.** Every count in Privax is a counting query, so `Δf = 1`: adding or removing one
+  person changes any count by at most 1. The code uses `scale = 1/ε` accordingly.
+- **Sampling.** The noise is drawn by inverse transform: for `u ~ Uniform(−0.5, 0.5)`,
+  `X = −scale·sgn(u)·ln(1 − 2|u|)` is exactly `Laplace(0, scale)`. This is textbook-correct.
+- **Edge case (fixed).** `u` was computed as `nextDouble() − 0.5`, so a `nextDouble()` of exactly 0
+  gave `u = −0.5 → ln(0) → infinite noise`. The draw is now guarded so the log argument stays
+  positive. Applied to all four Laplace samplers.
+
+### 2.2 k-ary randomized response — for categorical fields
+
+For a categorical field with `k` possible values, the mechanism keeps the true value with
+probability `p` and otherwise outputs a uniformly random value; choosing the replace-probability
+
+```
+q = k / (e^ε + k − 1)
+```
+
+makes `P(keep true) = e^ε/(e^ε+k−1)` and `P(any specific other) = 1/(e^ε+k−1)`, so the ratio of
+output probabilities is exactly `e^ε` — i.e. ε-DP for that field (Warner 1965; Kairouz et al. 2016).
+The implementation of `replaceProbability` and the "uniform over all k (including the true value)"
+replacement match this derivation.
+
+- **Domain (fixed).** The replacement set must equal the whole domain for the guarantee to hold.
+  The `city` field previously drew from a 6-city subset while the real domain has 29 — so a city
+  outside the six could only ever appear as its true value, breaking ε-DP for it. It now uses the
+  full 29-city domain.
+
+### 2.3 Composition
+
+Answering queries with parameters `ε₁ … ε_k` on the same data leaks at most `Σεᵢ` (sequential
+composition). This is the basis of the researcher budget (§4).
+
+### 2.4 Post-processing
+
+Clamping counts to `≥ 0` and rounding are post-processing of a DP output, which cannot weaken the
+guarantee (post-processing immunity).
+
+**Verdict:** the Laplace sampler, the sensitivity, the randomized-response formula, the full-domain
+replacement, and the composition are all mathematically correct.
 
 ---
 
-## 3. Attacks against the baseline
+## 3. Channel 1 — Public aggregates (rigorous)
 
-### 3.1 Unbounded-ε leak (1 query, no math)
+The map (`/api/side-effects/grouped`), symptom prevalence (`/api/side-effects/symptom-stats`), and
+vaccination counts (`/api/vaccinations/region`) release **counts** with Laplace noise at a **fixed,
+server-side ε (= 1.0)**. The noise for each secret is drawn **once and memoized**, so the same secret
+always returns the same value. The caller-supplied `epsilon` parameter is accepted for compatibility
+but ignored.
 
-`scale = sensitivity / ε`. As ε → ∞ the noise → 0, so a single request returns the raw count:
+Why fixed + memoized: an *anonymous* endpoint cannot enforce a budget (there is no accountable
+identity — IPs rotate freely), so any *tunable* ε on a real secret leaks (see §5). Fixing ε and
+releasing once removes both levers.
 
-```bash
-curl -s "http://localhost:8080/api/vaccinations/region?region=Bucharest&epsilon=100000"
-# -> 1175.9999889581152   (the raw count, undisguised)
-```
-
-### 3.2 Averaging attack (N queries)
-
-Fresh zero-mean noise per request cancels under averaging; the mean of N samples has spread
-≈ `scale/√N`, so ≈ (1/ε)² queries suffice. Observed at ε = 0.5 (a "strong privacy" setting):
+**Verified live:**
 
 ```
-after   1 queries: running mean = 1175.579
-after   5 queries: running mean = 1177.350
-after  50 queries: running mean = 1176.312
-after 200 queries: running mean = 1176.090   <- true count recovered
-single-sample spread over 200 draws: 1165.7 .. 1186.7   (each answer really is noisy)
+# (a) repeat the same query 3x → identical (nothing to average away)
+grouped Bucharest/Pfizer mildCount: 21, 21, 21
+
+# (b) vary the client ε 0.1 vs 10 → identical (client ε ignored, fixed release)
+eps=0.1 -> 21   ;   eps=10 -> 21
+symptom "Joint Pain": eps=0.5 -> 497 ; eps=5.0 -> 497
+
+# (c) a huge ε cannot strip the noise
+region Bucharest: eps=1 -> 1249.599 ; eps=100000 -> 1249.599
+admin /compare  -> {"rawCount":1250, "noisyCount":1249.599}   # raw 1250 NOT recoverable publicly
 ```
 
-Reproduce:
+Reproduce: `curl "http://localhost:8080/api/side-effects/grouped?epsilon=<x>"` etc.
 
-```bash
-for i in $(seq 1 200); do curl -s "http://localhost:8080/api/vaccinations/region?region=Bucharest&epsilon=0.5"; echo; done \
-  | awk '{s+=$1} END{printf "mean of %d draws = %.3f\n", NR, s/NR}'
-```
-
-### 3.3 ε-differencing (2 queries, exact) — affects the *seeded* endpoints too
-
-A later hardening step seeded the noise from the query but **not** from ε (so that "sweeping the ε
-slider reuses the same underlying draw, only rescaled"). That stops averaging — but because the
-draw is one fixed value scaled by 1/ε, two queries at different ε give two linear equations:
-
-```
-answer(ε) = raw + K/ε          (K constant for a given secret)
-answer(ε=1) = raw + K
-answer(ε=2) = raw + K/2
-  =>  raw = 2·answer(2) − answer(1)
-```
-
-Observed:
-
-```
-answer(ε=1) = 1228.7597414514241
-answer(ε=2) = 1228.3798707257122
-recovered raw = 2·answer(2) − answer(1) = 1228.000000   (exact)
-```
-
-Confirmed against the admin-only ground truth:
-
-```bash
-curl -s -u admin:admin "http://localhost:8080/api/vaccinations/region/compare?region=Bucharest&epsilon=1"
-# -> {"rawCount":1228, "noisyCount":1228.7597414514241}
-```
-
-The "single fixed draw scaled by 1/ε" property is visible directly: `(answer − raw)·ε` is constant
-across ε (0.759741 at ε = 0.5, 1, 2, 4, 8). This attack applies to every additive-noise endpoint
-that seeds independently of ε (`/side-effects/grouped`, `/side-effects/symptom-stats`), recovering
-each count exactly for the `double`-valued endpoint and within ±1 where results are rounded to
-integers.
+The raw count (1250) differs from the released value by the Laplace draw and cannot be recovered from
+the public endpoint by any number of queries or ε settings.
 
 ---
 
-## 4. Mitigations and their trade-offs
+## 4. Channel 2 — Researcher API (rigorous, interactive)
 
-| Mitigation | Kills averaging | Kills ε-differencing | Genuine randomness | Live tunable slider on real data |
-|---|---|---|---|---|
-| Naive (fresh noise, unbounded ε) | ✗ | (n/a) | ✓ | ✓ — but leaks |
-| Seeded noise (ε-independent) | ✓ | ✗ | ✗ (PRNG from seed) | ✗ |
-| **Memoized fresh noise + fixed ε** | ✓ | ✓ | ✓ | ✗ |
-| Fixed ε + seeded noise | ✓ | ✓ | ✗ | ✗ |
+`/api/research/side-effects/count` is the **interactive** model, gated to the **DOCTOR** authority
+(granted only by admin approval — never self-registered — so the identity cannot be freely minted).
+It contrasts with Channel 1: instead of one memoized value, each researcher gets a **cumulative ε
+budget** and every query returns **fresh independent** Laplace noise.
 
-**Key impossibility result.** Any mechanism that lets an anonymous, unlimited caller obtain
-*multiple independent* noisy reads of the *same* secret leaks it — by averaging if the reads are
-independent, or by solving a linear system if they are a common draw rescaled. Therefore a live,
-caller-tunable ε slider operating on real public counts **cannot** be made safe. The fix is not a
-better noise function; it is releasing **one value per secret** and removing caller control of ε.
+- `TOTAL_EPSILON = 5.0` per researcher; `MAX_QUERY_EPSILON = 1.0` per query.
+- Each query debits its ε atomically **before** reading data; by sequential composition the total
+  leakage to one researcher is ≤ 5.0.
+- Fresh noise is safe *here* precisely because the budget bounds the number of samples an accountable
+  identity can obtain.
 
-**Why privacy budgets / rate limits don't rescue the public endpoint.** Budget accounting needs an
-accountable identity to charge; an anonymous endpoint can only key on IP, which is free to rotate.
-A global budget avoids that but lets one attacker exhaust it and black out the public dashboard.
-Rate limiting only *slows* the averaging attack. Budgets are the right tool for the planned
-**authenticated researcher API**, where each researcher's cumulative ε can be tracked and refused.
+**Verified live:**
+
+```
+starting budget: 5.0 / 5.0
+5 queries @ ε=1.0 → noisyCount 120.9, 124.9, 123.8, 125.7, 122.6  (fresh each time)
+               → budgetRemaining 4.0, 3.0, 2.0, 1.0, 0.0
+6th query        → HTTP 429  "Privacy budget exhausted … until the budget resets."
+ε=2.0            → HTTP 400  (over the per-query cap)
+no auth          → 401 ; plain USER → 403   (DOCTOR-only)
+```
+
+Reproduce: `curl -u doctor:doctor "http://localhost:8080/api/research/side-effects/count?epsilon=1.0&city=Bucharest"`.
 
 ---
 
-## 5. Final design (the "after")
+## 5. Threat model and the attacks that are closed
 
-`VaccinationService` now uses **memoized fresh noise at a fixed release ε**:
+**Threat model:** an anonymous, unlimited, adaptive attacker who chooses query parameters and wants
+to recover an exact raw value that the DP layer is supposed to hide.
 
-- The first request for a region draws a genuine Laplace sample and caches `raw + noise`.
-- Every later request returns that same cached value, for any caller and any ε.
-- The caller-supplied ε is accepted for API compatibility but ignored for the released number;
-  the release level is `RELEASE_EPSILON = 1.0`, fixed server-side.
+Three attacks were demonstrated against an earlier *tunable-ε* design and are now closed on the
+rigorous channels:
 
-This keeps genuine randomness while releasing exactly one value per secret, which closes §3.1–§3.3
-simultaneously (see §6 for the post-fix verification).
+1. **Unbounded ε.** `scale = 1/ε → 0` as `ε → ∞`, so one query at a huge ε returned the raw count.
+   *Closed:* public ε is fixed server-side; the researcher ε is capped at 1.0.
+2. **Averaging.** Fresh independent noise per query averages to zero; ≈ (1/ε)² queries recover the
+   truth. *Closed on the public channel:* the value is memoized, so repeats are identical (nothing to
+   average). *Bounded on the researcher channel:* the budget caps the number of samples.
+3. **ε-differencing.** With ε-independent seeding, the noise is one draw rescaled by 1/ε, so two
+   queries at different ε give two linear equations that solve for the raw value. *Closed:* the public
+   channel fixes ε (no second point); the researcher channel draws fresh independent noise under a
+   budget.
 
-The ε slider is retained as an **illustrative** control: it fogs/de-fogs a *demo* number so users
-still see the accuracy/privacy trade-off interactively, with no live secret involved.
-
-All three public aggregate endpoints now use memoized fresh noise at a fixed release ε:
-`/api/vaccinations/region`, `/api/side-effects/grouped`, and `/api/side-effects/symptom-stats`.
-Each secret (a region; a city×vaccine×severity cell; a symptom×filter-slice) is drawn once and
-cached, so repeated and multi-ε querying return identical values (verified in §6–§7).
-
-### Residual limitations / future work
-
-- The public channel's memoization handles *repeated identical* queries but does not bound leakage
-  across *many different* slices (composition). That bound requires a real budget charged to an
-  accountable identity — implemented on the authenticated researcher channel (§7), not the
-  anonymous endpoints.
-- Per-row `age` noise (the `/api/side-effects` row listing) uses an illustrative `sensitivity = 5.0`,
-  not a derived bound, and per-row categorical fields use k-ary randomized response — a weaker,
-  per-record model kept only for the row view; aggregate privacy is provided by the endpoints above.
-- City randomized-response samples a 6-city subset rather than the full domain, so its ε guarantee
-  is illustrative.
-- `ddl-auto: create` rebuilds the database on every restart — acceptable for a demo, unsafe for
-  real data.
+Each of §3 and §4's "identical across ε / repeats" results is the direct evidence these are closed.
 
 ---
 
-## 6. Post-fix verification
+## 6. Channel 3 — the illustrative row table (honest scoping)
 
-Re-running the three attacks against the memoized implementation (this run: raw Bucharest = 1225,
-released = 1224.2434512753925):
+The **View Reports** table shows individual example rows with a working ε slider. This is **not** a
+private release of real records, and does not claim to be — for a fundamental reason:
 
-**3.1 Unbounded ε — closed.** The client ε is ignored; a huge ε no longer strips the noise:
+> **An individual, high-dimensional record cannot be released with a meaningful DP guarantee.** A row
+> is age + city + vaccine + severity + a *set* of symptoms + free text. To hide the person you must
+> scramble so many fields that the row becomes meaningless (the *curse of dimensionality*); and any
+> tunable ε on a real record is de-noisable (attacks §5). No noise setting fixes this.
 
-```
-eps=100000 -> 1224.2434512753925    (noisy, not the raw 1225)
-```
+The honest response, and the one Privax takes:
 
-**3.2 Averaging — closed.** Repeated queries are byte-for-byte identical, so there is nothing to
-average:
+- **The rows are synthetic.** They are generated client-side to *mirror the real distribution*
+  (severity ~80/14/5/1, symptom prevalence, symptom↔severity consistency, the full 29-city domain,
+  vaccines, ages), so the table looks and behaves like the real data.
+- **The slider applies real DP noise to these synthetic rows, live** — Laplace on age, k-ary
+  randomized response on severity / vaccine / city / each symptom. Because the underlying "truth" is
+  synthetic, dialing ε to the sharp end reveals nothing about any real person.
+- **The table is labelled illustrative**, and points users to the Map / Symptom-prevalence views for
+  the real, privately-released numbers.
 
-```
-1224.2434512753925   (×8, identical)
-```
-
-**3.3 ε-differencing — closed.** Both ε values return the same released value, so there is no second
-data point to solve with; `2·a(2) − a(1)` collapses back to the noisy value, not the integer raw:
-
-```
-answer(ε=1) = 1224.2434512753925
-answer(ε=2) = 1224.2434512753925
-2·a(2) − a(1) = 1224.2435   (the noisy value, not a clean integer)
-```
-
-**Ground truth (admin):** `{"rawCount":1225, "noisyCount":1224.2434512753925}`. The true count 1225
-is no longer recoverable from the public endpoint — the released value differs from it by the
-Laplace draw (~0.76) and cannot be de-noised by any number of anonymous queries.
-
-Reproduce all three with the commands in §3 (they should now fail to recover the raw count).
-
-The same treatment was then applied to `/side-effects/grouped` (each city×vaccine×severity cell)
-and `/side-effects/symptom-stats` (each symptom×filter-slice). Verification — values are identical
-across repeats *and* across ε, so neither averaging nor differencing recovers anything:
-
-```
-/grouped  Bucharest/Pfizer mildCount:  eps=1 -> 25, eps=2 -> 25, eps=5 -> 25   (repeats also 25/25/25)
-/symptom-stats  "Joint Pain" count:     eps=0.5 -> 487, eps=3 -> 487            (repeats also 487/487/487)
-```
+This is a *strength* to state plainly in the thesis: rigorous DP is applied where it is achievable
+(aggregates + budgeted researcher API); per-record release is explicitly illustrative because
+per-record DP is infeasible. The symptom column even *demonstrates* the curse of dimensionality — at
+low ε almost every symptom flips, which is exactly why real symptom privacy is delivered by the
+aggregate prevalence chart, not per row.
 
 ---
 
-## 7. The interactive researcher channel (a contrasting DP model)
+## 7. Residual limitations / future work
 
-The public endpoints use **non-interactive** DP: one value per secret, released once. The
-authenticated researcher API (`/api/research/**`) demonstrates the **interactive** model, where the
-protection comes from a **cumulative ε budget** rather than memoization.
+- **No global composition budget across channels.** Each channel is individually correct, but total
+  privacy loss across the public aggregates *and* a researcher's queries is not tracked together. A
+  global accountant would be the rigorous next step.
+- **Fixed ε = 1.0 is a moderate setting**, chosen for utility; it is a parameter, not a flaw.
+- **Aggregates are memoized per run** — a newly submitted report does not change a cell's released
+  value until restart (the price of one-shot release; prevents averaging).
+- **Client-side auth (HTTP Basic).** Credentials are stored base64 in `localStorage`; a token
+  (JWT) scheme is the intended hardening (orthogonal to DP).
 
-**Mechanism** (`PrivacyBudgetService`, `ResearchService`):
+---
 
-- Each researcher (authenticated username) gets a fixed total budget `TOTAL_EPSILON = 5.0`.
-- Each query names a per-query ε (capped at `MAX_QUERY_EPSILON = 1.0`), which is **debited atomically**
-  from that researcher's budget before any data is read.
-- If the budget allows, the query returns a count with **fresh, independent** Laplace noise. Fresh
-  noise is safe *here* precisely because the total number of queries is bounded: by sequential
-  composition, k queries at ε₁..ε_k leak at most Σεᵢ ≤ 5.0, so worst-case leakage is capped.
-- When the budget is spent, further queries are refused with HTTP 429.
+## 8. One-paragraph summary for the thesis
 
-This only works because the caller is **authenticated**: the budget is charged to an accountable
-identity that cannot be rotated the way an anonymous IP can — which is exactly why the *public*
-endpoints can't use it and use memoization instead.
-
-**Verification:**
-
-```
-GET /api/research/side-effects/count?epsilon=1.0&city=Bucharest   (Basic auth: user:user)
-  query 1 -> {noisyCount: 100.2, epsilonSpent: 1.0, budgetRemaining: 4.0}   (fresh noise…)
-  query 2 -> {noisyCount:  98.7, ...,               budgetRemaining: 3.0}   (…different each time)
-  query 3 -> {noisyCount:  99.9, ...,               budgetRemaining: 2.0}
-  query 4 -> {noisyCount: 101.1, ...,               budgetRemaining: 1.0}
-  query 5 -> {noisyCount:  99.3, ...,               budgetRemaining: 0.0}
-  query 6 -> HTTP 429  "Privacy budget exhausted: 5.000 of 5.000 already spent…"
-
-GET .../count?epsilon=2.0            -> HTTP 400  (per-query epsilon above the cap)
-GET .../count  (no Authorization)    -> HTTP 401
-admin's budget is independent of user's  (per-identity accounting)
-```
-
-(Illustrative numbers; the raw Bucharest report count this run is ~99, and each query returns it with
-an independent Laplace draw. Reproduce with the commands above against the running server.)
-
-### Why this is the right pattern for the researcher API (and not the public one)
-
-| | Public / anonymous | Authenticated researcher |
-|---|---|---|
-| Can a budget be enforced? | No — no identity; IP rotation defeats per-IP budgets | Yes — charged to the login |
-| Safe mechanism | Memoized one-shot release (fixed ε) | Fresh noise + cumulative ε budget |
-| Bounds cross-slice composition? | No | Yes, up to the total budget |
-
-The two channels together are the thesis's core contribution: the *same* data, released two ways,
-each matched to what its trust model can actually enforce.
+> Privax applies differential privacy through two rigorous channels and one illustrative one. Public
+> aggregates (map, symptom prevalence, region counts) are released with the Laplace mechanism at a
+> fixed, server-chosen ε and memoized per secret, so — as verified — they are identical across
+> repeated queries and across any caller-supplied ε, defeating the averaging, unbounded-ε and
+> ε-differencing attacks. An authenticated, admin-approved researcher API answers interactive count
+> queries with fresh Laplace noise against a per-researcher cumulative-ε budget (5.0 total, 1.0 per
+> query), enforced with HTTP 429/400, which bounds total leakage by sequential composition. The
+> browsable individual-record table is explicitly illustrative: because a high-dimensional individual
+> record cannot be released with a meaningful DP guarantee, its rows are synthetic data that mirror
+> the real distribution, over which the ε slider demonstrates the privacy/accuracy trade-off live
+> without exposing anyone. The underlying mechanisms — Laplace inverse-transform sampling with
+> sensitivity 1, k-ary randomized response with `q = k/(e^ε+k−1)` over the full value domain, and
+> sequential composition — were reviewed and corrected for two defects (a subset city domain and a
+> Laplace log(0) edge case).
