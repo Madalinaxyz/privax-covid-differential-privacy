@@ -878,3 +878,17 @@
   color: #6B7790;
   font-style: italic;
 }
+
+/* Illustrative-examples note above the reports table */
+.report-illustrative-note {
+  font-size: 0.82rem;
+  color: #6B7790;
+  background: rgba(45, 165, 151, 0.08);
+  border: 1px solid rgba(45, 165, 151, 0.22);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.report-illustrative-note strong { color: #1D7068; }
+.report-illustrative-note em { font-style: italic; color: #14213D; }

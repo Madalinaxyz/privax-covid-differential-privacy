@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Table, TableRow, TableHeaderCell, TableHeader, TableCell, TableBody,
-  Icon, Select, Dropdown, Loader, Dimmer
+  Icon, Select, Dropdown,
 } from "semantic-ui-react";
-import { privaxApi } from "../misc/PrivaxApi";
 import EpsilonSlider from "./EpsilonSlider";
 import { cityCoordinates } from "../misc/Helpers";
+import { generateIllustrativeReports, noiseReport } from "./illustrativeReports";
 
 const PAGE_SIZE_OPTIONS = [
   { key: 10,  value: 10,  text: "10 per page"  },
@@ -75,81 +75,70 @@ const SYMPTOM_OPTIONS = [
 
 const SORTABLE = ["age", "severity", "vaccineName", "reportedAt", "city"];
 
-const TableReport = ({ handleLogError }) => {
+const TableReport = () => {
   /* ── State ── */
-  const [reports, setReports]     = useState([]);
-  const [totalElements, setTotal] = useState(0);
-  const [totalPages, setTotalPgs] = useState(0);
   const [page, setPage]           = useState(0);
   const [size, setSize]           = useState(10);
   const [sortField, setSortField] = useState(null);
   const [sortDir, setSortDir]     = useState(null);
   const [filters, setFilters]     = useState({ severity: "ALL", vaccineName: "ALL", city: "", symptom: "" });
   const [epsilon, setEpsilon]     = useState(1.0);
-  const [loading, setLoading]     = useState(false);
 
-  /* ── Fetcher ── */
-  const fetchReports = useCallback(async () => {
-    setLoading(true);
-    try {
-      const sortParam = sortField && sortDir ? `${sortField},${sortDir}` : null;
-      const response = await privaxApi.getSideEffectReports({
-        page,
-        size,
-        epsilon,                                                              // ← now actually sent
-        sort: sortParam,
-        vaccineName: filters.vaccineName && filters.vaccineName !== 'ALL' ? filters.vaccineName : null,
-        severity:    filters.severity,
-        city:        filters.city || null,
-        symptom:     filters.symptom || null,
-      });
-      const data = response.data;
-      // Noise is applied server-side now; display the response verbatim.
-      // Pagination metadata lives under `page` (stable DTO shape); fall back to the
-      // legacy top-level fields so this keeps working either way.
-      const meta = data.page || data;
-      setReports(data.content || []);
-      setTotal(meta.totalElements || 0);
-      setTotalPgs(meta.totalPages || 0);
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-      handleLogError?.(error);
-      setReports([]);
-      setTotal(0);
-      setTotalPgs(0);
+  /* ── Illustrative dataset (synthetic, generated once, mirrors the real distribution) ── */
+  const dataset = useMemo(() => generateIllustrativeReports(240), []);
+
+  /* Apply DP noise at the current ε, then filter + sort — all client-side, since the rows
+     are synthetic. This is what makes the slider safe AND fully live. */
+  const processed = useMemo(() => {
+    let rows = dataset.map((row) => noiseReport(row, epsilon));
+
+    if (filters.severity && filters.severity !== "ALL") rows = rows.filter((r) => r.severity === filters.severity);
+    if (filters.vaccineName && filters.vaccineName !== "ALL") rows = rows.filter((r) => r.vaccineName === filters.vaccineName);
+    if (filters.city) rows = rows.filter((r) => r.city === filters.city);
+    if (filters.symptom) {
+      const q = filters.symptom.toLowerCase();
+      rows = rows.filter((r) => (r.symptoms || []).some((s) => s.toLowerCase().includes(q)));
     }
-    setLoading(false);
-  }, [page, size, sortField, sortDir, filters, epsilon, handleLogError]);
 
-  /* Fetch on every dependency change (incl. epsilon — noise is applied server-side now).
-     Debounced so dragging the epsilon slider doesn't spam the API. */
-  useEffect(() => {
-    const t = setTimeout(fetchReports, 300);
-    return () => clearTimeout(t);
-    /* eslint-disable-next-line */
-  }, [page, size, sortField, sortDir, filters, epsilon]);
+    if (sortField && sortDir) {
+      const dir = sortDir === "asc" ? 1 : -1;
+      rows = [...rows].sort((a, b) => {
+        let av = a[sortField], bv = b[sortField];
+        if (sortField === "reportedAt") { av = new Date(av).getTime(); bv = new Date(bv).getTime(); }
+        if (typeof av === "string") return av.localeCompare(bv) * dir;
+        return (av < bv ? -1 : av > bv ? 1 : 0) * dir;
+      });
+    }
+    return rows;
+  }, [dataset, epsilon, filters, sortField, sortDir]);
+
+  /* Reset to the first page whenever the result set changes. */
+  useEffect(() => { setPage(0); }, [epsilon, filters, size, sortField, sortDir]);
+
+  const totalElements = processed.length;
+  const totalPages    = Math.max(1, Math.ceil(totalElements / size));
+  const safePage      = Math.min(page, totalPages - 1);
+  const pageRows      = processed.slice(safePage * size, safePage * size + size);
 
   /* ── Sort handler — cycles asc → desc → none on repeated clicks ── */
   const toggleSort = (field) => {
     if (!SORTABLE.includes(field)) return;
-    if (sortField !== field) { setSortField(field); setSortDir("asc"); setPage(0); return; }
-    if (sortDir === "asc")    { setSortDir("desc"); setPage(0); return; }
-    setSortField(null); setSortDir(null); setPage(0);
+    if (sortField !== field) { setSortField(field); setSortDir("asc"); return; }
+    if (sortDir === "asc")    { setSortDir("desc"); return; }
+    setSortField(null); setSortDir(null);
   };
   const sortIcon = (field) => {
     if (sortField !== field) return "sort";
     return sortDir === "asc" ? "sort up" : "sort down";
   };
 
-  /* ── Filter handlers ── */
-  const setFilter = (key, value) => { setFilters((f) => ({ ...f, [key]: value })); setPage(0); };
+  /* ── Filter handler ── */
+  const setFilter = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
 
   /* ── Pagination helpers ── */
-  const totalShown = reports.length;
-  const fromIdx    = totalElements === 0 ? 0 : page * size + 1;
-  const toIdx      = page * size + totalShown;
+  const fromIdx = totalElements === 0 ? 0 : safePage * size + 1;
+  const toIdx   = safePage * size + pageRows.length;
 
-  /* Build a compact page-number list around the current page */
   const buildPageList = () => {
     const out = [];
     const last = totalPages - 1;
@@ -157,25 +146,34 @@ const TableReport = ({ handleLogError }) => {
     const window = 1;
     const add = (p) => out.push(p);
     add(0);
-    if (page - window > 1) out.push("…");
-    for (let p = Math.max(1, page - window); p <= Math.min(last - 1, page + window); p++) if (p !== 0 && p !== last) add(p);
-    if (page + window < last - 1) out.push("…");
+    if (safePage - window > 1) out.push("…");
+    for (let p = Math.max(1, safePage - window); p <= Math.min(last - 1, safePage + window); p++) if (p !== 0 && p !== last) add(p);
+    if (safePage + window < last - 1) out.push("…");
     if (last > 0) add(last);
     return out.filter((p, i, arr) => arr.indexOf(p) === i);
   };
 
   return (
     <div className="report-card">
-      <EpsilonSlider value={epsilon} onChange={setEpsilon} />
+      <div className="report-illustrative-note">
+        <strong>Illustrative examples.</strong> These rows are synthetic — generated to mirror the
+        real data (severity mix, symptoms, cities, vaccines) — so you can safely explore the
+        privacy/accuracy trade-off. The real, privately-released numbers are in the <em>Map</em> and
+        <em> Symptom prevalence</em> views.
+      </div>
+
+      <EpsilonSlider
+        value={epsilon}
+        onChange={setEpsilon}
+        hint="Drag ε to watch differential-privacy noise blur ← → sharpen these illustrative rows, live."
+      />
 
       {/* Toolbar: total count + page size */}
       <div className="report-toolbar">
         <div className="report-count">
-          {loading ? "Loading…" : (
-            totalElements > 0
-              ? <>Showing <strong>{fromIdx.toLocaleString()}–{toIdx.toLocaleString()}</strong> of <strong>{totalElements.toLocaleString()}</strong> reports</>
-              : <>No reports match the current filters</>
-          )}
+          {totalElements > 0
+            ? <>Showing <strong>{fromIdx.toLocaleString()}–{toIdx.toLocaleString()}</strong> of <strong>{totalElements.toLocaleString()}</strong> examples</>
+            : <>No examples match the current filters</>}
         </div>
         <div className="report-page-size">
           <label>Page size</label>
@@ -183,115 +181,80 @@ const TableReport = ({ handleLogError }) => {
             compact
             options={PAGE_SIZE_OPTIONS}
             value={size}
-            onChange={(_, { value }) => { setSize(value); setPage(0); }}
+            onChange={(_, { value }) => setSize(value)}
           />
         </div>
       </div>
 
       <div className="report-table-wrap">
-        <Dimmer.Dimmable as="div" dimmed={loading}>
-          <Dimmer active={loading} inverted><Loader /></Dimmer>
-          <Table striped sortable>
-            <TableHeader>
-              <TableRow>
-                <TableHeaderCell onClick={() => toggleSort("age")}>
-                  <span className="th-content">Age <Icon name={sortIcon("age")} /></span>
-                </TableHeaderCell>
-                <TableHeaderCell onClick={() => toggleSort("severity")}>
-                  <span className="th-content">Severity <Icon name={sortIcon("severity")} /></span>
-                </TableHeaderCell>
-                <TableHeaderCell onClick={() => toggleSort("vaccineName")}>
-                  <span className="th-content">Vaccine <Icon name={sortIcon("vaccineName")} /></span>
-                </TableHeaderCell>
-                <TableHeaderCell>Symptoms</TableHeaderCell>
-                <TableHeaderCell onClick={() => toggleSort("reportedAt")}>
-                  <span className="th-content">Reported At <Icon name={sortIcon("reportedAt")} /></span>
-                </TableHeaderCell>
-                <TableHeaderCell onClick={() => toggleSort("city")}>
-                  <span className="th-content">City <Icon name={sortIcon("city")} /></span>
-                </TableHeaderCell>
-                <TableHeaderCell>Additional Info</TableHeaderCell>
-              </TableRow>
-              {/* Filter row — sits below the header */}
-              <TableRow className="report-filter-row">
-                <TableHeaderCell />
-                <TableHeaderCell>
-                  <Select
-                    fluid
-                    options={SEVERITY_OPTIONS}
-                    value={filters.severity}
-                    onChange={(_, { value }) => setFilter("severity", value)}
-                  />
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  <Select
-                    fluid
-                    options={VACCINE_OPTIONS}
-                    value={filters.vaccineName}
-                    onChange={(_, { value }) => setFilter("vaccineName", value)}
-                  />
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  <Dropdown
-                    fluid
-                    selection
-                    search
-                    clearable
-                    options={SYMPTOM_OPTIONS}
-                    value={filters.symptom}
-                    placeholder="All symptoms"
-                    onChange={(_, { value }) => setFilter("symptom", value || "")}
-                  />
-                </TableHeaderCell>
-                <TableHeaderCell />
-                <TableHeaderCell>
-                  <Dropdown
-                    fluid
-                    selection
-                    search
-                    clearable
-                    options={CITY_OPTIONS}
-                    value={filters.city}
-                    placeholder="All cities"
-                    onChange={(_, { value }) => setFilter("city", value || "")}
-                  />
-                </TableHeaderCell>
-                <TableHeaderCell />
-              </TableRow>
-            </TableHeader>
+        <Table striped sortable>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell onClick={() => toggleSort("age")}>
+                <span className="th-content">Age <Icon name={sortIcon("age")} /></span>
+              </TableHeaderCell>
+              <TableHeaderCell onClick={() => toggleSort("severity")}>
+                <span className="th-content">Severity <Icon name={sortIcon("severity")} /></span>
+              </TableHeaderCell>
+              <TableHeaderCell onClick={() => toggleSort("vaccineName")}>
+                <span className="th-content">Vaccine <Icon name={sortIcon("vaccineName")} /></span>
+              </TableHeaderCell>
+              <TableHeaderCell>Symptoms</TableHeaderCell>
+              <TableHeaderCell onClick={() => toggleSort("reportedAt")}>
+                <span className="th-content">Reported At <Icon name={sortIcon("reportedAt")} /></span>
+              </TableHeaderCell>
+              <TableHeaderCell onClick={() => toggleSort("city")}>
+                <span className="th-content">City <Icon name={sortIcon("city")} /></span>
+              </TableHeaderCell>
+              <TableHeaderCell>Additional Info</TableHeaderCell>
+            </TableRow>
+            {/* Filter row — sits below the header */}
+            <TableRow className="report-filter-row">
+              <TableHeaderCell />
+              <TableHeaderCell>
+                <Select fluid options={SEVERITY_OPTIONS} value={filters.severity} onChange={(_, { value }) => setFilter("severity", value)} />
+              </TableHeaderCell>
+              <TableHeaderCell>
+                <Select fluid options={VACCINE_OPTIONS} value={filters.vaccineName} onChange={(_, { value }) => setFilter("vaccineName", value)} />
+              </TableHeaderCell>
+              <TableHeaderCell>
+                <Dropdown fluid selection search clearable options={SYMPTOM_OPTIONS} value={filters.symptom} placeholder="All symptoms" onChange={(_, { value }) => setFilter("symptom", value || "")} />
+              </TableHeaderCell>
+              <TableHeaderCell />
+              <TableHeaderCell>
+                <Dropdown fluid selection search clearable options={CITY_OPTIONS} value={filters.city} placeholder="All cities" onChange={(_, { value }) => setFilter("city", value || "")} />
+              </TableHeaderCell>
+              <TableHeaderCell />
+            </TableRow>
+          </TableHeader>
 
-            <TableBody>
-              {reports.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell><b>{report.age}</b></TableCell>
-                  <TableCell><b>{report.severity}</b></TableCell>
-                  <TableCell><b>{report.vaccineName}</b></TableCell>
-                  <TableCell>{report.symptoms?.join(", ")}</TableCell>
-                  <TableCell>{new Date(report.reportedAt).toLocaleString()}</TableCell>
-                  <TableCell><b>{report.city}</b></TableCell>
-                  <TableCell>{report.additionalInfo}</TableCell>
-                </TableRow>
-              ))}
-              {!loading && reports.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} textAlign="center" className="report-empty">
-                    No reports match the current filters.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Dimmer.Dimmable>
+          <TableBody>
+            {pageRows.map((report) => (
+              <TableRow key={report.id}>
+                <TableCell><b>{report.age}</b></TableCell>
+                <TableCell><b>{report.severity}</b></TableCell>
+                <TableCell><b>{report.vaccineName}</b></TableCell>
+                <TableCell>{report.symptoms?.join(", ")}</TableCell>
+                <TableCell>{new Date(report.reportedAt).toLocaleString()}</TableCell>
+                <TableCell><b>{report.city}</b></TableCell>
+                <TableCell>{report.additionalInfo}</TableCell>
+              </TableRow>
+            ))}
+            {pageRows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} textAlign="center" className="report-empty">
+                  No examples match the current filters.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Pagination footer */}
       {totalPages > 1 && (
         <div className="report-pagination">
-          <button
-            className="page-btn page-btn-arrow"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-          >
+          <button className="page-btn page-btn-arrow" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={safePage === 0}>
             <Icon name="chevron left" /> Prev
           </button>
 
@@ -299,21 +262,13 @@ const TableReport = ({ handleLogError }) => {
             p === "…"
               ? <span className="page-ellipsis" key={`e${i}`}>…</span>
               : (
-                <button
-                  key={p}
-                  className={`page-btn page-num ${p === page ? "active" : ""}`}
-                  onClick={() => setPage(p)}
-                >
+                <button key={p} className={`page-btn page-num ${p === safePage ? "active" : ""}`} onClick={() => setPage(p)}>
                   {p + 1}
                 </button>
               )
           )}
 
-          <button
-            className="page-btn page-btn-arrow"
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-          >
+          <button className="page-btn page-btn-arrow" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={safePage >= totalPages - 1}>
             Next <Icon name="chevron right" />
           </button>
         </div>
