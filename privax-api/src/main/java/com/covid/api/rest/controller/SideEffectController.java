@@ -1,8 +1,6 @@
 package com.covid.api.rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,29 +39,12 @@ public class SideEffectController {
         return sideEffectService.reportSideEffectAsClinician(reportDTO);
     }
 
-    // @Operation(security = {@SecurityRequirement(name = BASIC_AUTH_SECURITY_SCHEME)})
-    // @GetMapping
-    // public Page<SideEffectReport> getSideEffects(
-    //     Pageable pageable,
-    //     @RequestParam(value = "epsilon", required = false) Double epsilon) {
-    //     return sideEffectService.findAll(pageable, epsilon);
-    // }
-
-
-    @GetMapping
-    public ResponseEntity<Page<SideEffectReport>> getReports(
-        Pageable pageable,
-        @RequestParam(value = "epsilon",     required = false) Double epsilon,
-        @RequestParam(value = "vaccineName", required = false) String vaccineName,
-        @RequestParam(value = "severity",    required = false) String severity,
-        @RequestParam(value = "city",        required = false) String city,
-        @RequestParam(value = "symptom",     required = false) String symptom
-    ) {
-        Page<SideEffectReport> reports = sideEffectService.getSideEffectReports(
-            pageable, vaccineName, severity, city, epsilon, symptom
-        );
-        return ResponseEntity.ok(reports);
-    }
+    // NOTE: There is deliberately NO GET endpoint that returns individual reports.
+    // Per-record differential privacy is infeasible (curse of dimensionality), so we never
+    // release individual rows publicly. Rigorous DP releases live in the aggregate endpoints
+    // below (/grouped, /symptom-stats — fixed-epsilon, memoized) and in the budgeted researcher
+    // API (/api/research/**). The browsable "View Reports" table in the UI is illustrative,
+    // synthetic data generated client-side. See docs/differential-privacy-analysis.md.
 
     @GetMapping("/grouped")
     public ResponseEntity<List<GroupedReportDTO>> getGroupedReports(

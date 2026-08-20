@@ -35,7 +35,6 @@ export const privaxApi = {
   approveUser,
   denyUser,
   test,
-  getSideEffectReports,
   createSideEffectReport,
   createClinicianReport,
   getGroupedSideEffectReports,
@@ -84,30 +83,9 @@ function test() {
   return instance.get('/api/vaccinations/test')
 }
 
-// function getSideEffectReports(epsilon) {
-//   return instance.get('/api/side-effects', {
-//     params: { epsilon },
-//   });
-// }
-
-function getSideEffectReports({
-  page = 0,
-  size = 10,
-  epsilon = 1.0,
-  sort = null,
-  vaccineName = null,
-  severity = null,
-  city = null,
-  symptom = null
-} = {}) {
-  const params = { page, size, epsilon };
-  if (sort)        params.sort        = sort;
-  if (vaccineName) params.vaccineName = vaccineName;
-  if (severity && severity !== 'ALL') params.severity = severity;
-  if (city)        params.city        = city;
-  if (symptom)     params.symptom     = symptom;
-  return instance.get('/api/side-effects', { params });
-}
+// NOTE: There is intentionally no getSideEffectReports() — the backend no longer exposes a
+// per-record feed. The View Reports table uses synthetic illustrative data (illustrativeReports.js),
+// and real privacy-preserving data comes from the aggregate endpoints and the researcher API.
 
 function createSideEffectReport(reportData) {
   return instance.post("/api/side-effects", reportData, {
