@@ -210,7 +210,110 @@ aggregate prevalence chart, not per row.
 
 ---
 
-## 7. Residual limitations / future work
+## 7. Penetration test of the running system
+
+Sections 2–6 argue the design is correct. This section **red-teams the deployed system** as an
+attacker would: black-box, against the live HTTP API, ignoring the UI entirely (an attacker never
+uses your front-end). It both confirms the rigorous channels hold *in practice* and documents one
+real vulnerability that this testing found and closed.
+
+**Method.** Direct `curl` requests to `http://localhost:8080`, unauthenticated and with each seeded
+role, attempting to (a) recover an exact raw value, (b) re-identify an individual, and (c) reach
+data above the caller's privilege. Absolute numbers below are from one seeded run (the demo DB
+reseeds on restart); the *properties* are what matter.
+
+### 7.1 What held up
+
+| Attack | Endpoint | Result |
+|---|---|---|
+| **Averaging** (repeat identical query ×5) | `/side-effects/grouped` | identical every time (`mild=21, 21, 21, 21, 21`) — nothing to average |
+| **Tunable ε** (ε=0.001 vs ε=9999) | `/side-effects/grouped` | identical (`mild=21` both) — caller ε ignored |
+| **Identifier leak** | `/side-effects` feed | `patientCode` absent from JSON (`@JsonIgnore` holds); keys are only `id, symptoms, age, severity, additionalInfo, reportedAt, vaccineName, city, reporterType` |
+| **Privilege escalation** | researcher / admin routes | see access-control matrix below |
+
+```
+# Access control — every check returns the intended status
+/api/research/count          no auth → 401 ; user:user → 403      (DOCTOR-only)
+/api/vaccinations/region/compare   no auth → 401                  (ADMIN-only)
+/api/appointments            no auth → 401                        (ADMIN-only)
+/api/users/pending           user:user → 403 ; admin:admin → 200  (ADMIN-only)
+```
+
+The averaging / tunable-ε results are the same properties §3 and §5 predict — confirmed empirically
+against the running server.
+
+### 7.2 The vulnerability that was found — and fixed
+
+The one endpoint that **failed** was the public per-record feed `GET /api/side-effects`. It returned
+**real individual database rows**, noised per record with a *caller-controlled* ε, and it was
+`permitAll` (no login). Three weaknesses chained into full re-identification:
+
+1. **Exact, un-noised counts leaked through the pagination envelope.** The page metadata field
+   `page.totalElements` is the *true* count for any filter combination — never noised:
+
+   ```
+   (no filter)                        → EXACT 3000
+   ?city=Sibiu                        → EXACT 95
+   ?city=Sibiu&severity=FATAL         → EXACT 1     ← isolates a single individual
+   ```
+
+   This alone is a raw aggregate with arbitrary filtering — a reconstruction surface — but its real
+   danger is that it lets the attacker *find a filter that matches exactly one person*.
+
+2. **The caller-supplied ε had a meaningless cap.** Unlike the aggregate channels (which ignore the
+   client ε), this endpoint honoured `epsilon` up to `MAX_EPSILON = 10`. But ε = 10 is effectively
+   *no noise*: the k-ary replace probability is `k/(e¹⁰+k−1) ≈ 0.0002`, so every categorical field
+   returns its true value, and the age Laplace scale is `5/10 = 0.5`. Same record, rising ε:
+
+   ```
+   ε=0.1  → age=75  FATAL  Reșița  AstraZeneca
+   ε=1    → age=50  FATAL  Reșița  AstraZeneca
+   ε=10   → age=48  MILD   Bacău   Johnson & Johnson    ← the true row emerges
+   ```
+
+3. **Several fields were never noised at all** — `reportedAt` (an exact timestamp), `additionalInfo`
+   (free text), and the symptom set were passed through untouched; and the fields being filtered on
+   (city, severity) were returned exactly by construction.
+
+**The chained attack — a complete re-identification:**
+
+```
+Step 1  enumerate filters until the exact count is 1:
+        ?city=Sibiu&severity=FATAL   →  page.totalElements = 1
+Step 2  read that one row at ε=10:
+        age=41, city=Sibiu, severity=FATAL, vaccine=Johnson & Johnson,
+        date=2025-10-24T20:41:32, symptoms=[Insomnia, Psychosis, Bell's Palsy]
+```
+
+That is a near-raw individual record obtained from a public, unauthenticated endpoint — directly
+contradicting the guarantee of §1. It is the very *tunable-ε on a real record* that §6 argues is
+un-fixable; the endpoint should never have released real rows in the first place.
+
+**Root cause.** The front-end had already been migrated to synthetic illustrative rows (§6), but the
+old real-data endpoint was left live and public — a design/implementation drift, not a flaw in the
+DP mathematics.
+
+**Fix.** The endpoint was removed. Privax now exposes **no** per-record read path: the only report
+GETs are the fixed-ε memoized aggregates (`/grouped`, `/symptom-stats`); submitting a report
+(`POST /api/side-effects`) still requires a login and is unaffected. Verified after the fix:
+
+```
+GET /api/side-effects?epsilon=10&size=5          → 405  (method gone)
+GET /api/side-effects?city=Sibiu&severity=FATAL  → 405
+GET /api/side-effects/grouped                    → 200  (unchanged)
+GET /api/side-effects/symptom-stats              → 200  (unchanged)
+POST /api/side-effects  (submit)                 → 401  (login still required)
+```
+
+This closes the last raw-data path and makes the implementation match the §1 claim exactly: **no
+channel releases individual records** — rigorous DP lives only in the aggregates and the budgeted
+researcher API, and the browsable table is synthetic. For the thesis this is worth presenting as
+*process*, not just outcome: the guarantee was stated, the system was adversarially tested against
+it, a gap between design and deployment was found, and it was closed and re-verified.
+
+---
+
+## 8. Residual limitations / future work
 
 - **No global composition budget across channels.** Each channel is individually correct, but total
   privacy loss across the public aggregates *and* a researcher's queries is not tracked together. A
@@ -223,7 +326,7 @@ aggregate prevalence chart, not per row.
 
 ---
 
-## 8. One-paragraph summary for the thesis
+## 9. One-paragraph summary for the thesis
 
 > Privax applies differential privacy through two rigorous channels and one illustrative one. Public
 > aggregates (map, symptom prevalence, region counts) are released with the Laplace mechanism at a
@@ -238,4 +341,7 @@ aggregate prevalence chart, not per row.
 > without exposing anyone. The underlying mechanisms — Laplace inverse-transform sampling with
 > sensitivity 1, k-ary randomized response with `q = k/(e^ε+k−1)` over the full value domain, and
 > sequential composition — were reviewed and corrected for two defects (a subset city domain and a
-> Laplace log(0) edge case).
+> Laplace log(0) edge case). The running system was then adversarially tested: the aggregate channels
+> resisted averaging, tunable-ε and privilege-escalation attempts as designed, and a penetration test
+> found and closed one deployment gap — a leftover public per-record endpoint that still released real
+> rows with a de-noisable ε — so that no channel now releases individual records at all.
