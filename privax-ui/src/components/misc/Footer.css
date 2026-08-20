@@ -7,7 +7,9 @@
   font-family: 'Inter', sans-serif;
   border-top: 1px solid rgba(58, 158, 199, 0.18);
   padding: 80px 0 36px;
-  margin-top: 80px;
+  /* No margin-top: the footer is rendered outside the page wrapper, so an external
+     margin would expose the white page background as a gap above the footer (most
+     visible on the dark homepage). The 80px internal padding gives the breathing room. */
 }
 
 .site-footer-inner {
