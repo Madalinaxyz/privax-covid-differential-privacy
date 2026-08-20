@@ -333,11 +333,19 @@ membership in the dataset, so none breaks the DP guarantee — they are hardenin
 
 1. **`/public/stats` returns exact, un-noised global totals** (total reports, distinct symptoms,
    resolved %). These are dataset-wide, non-filterable counts — they cannot isolate a person — but a
-   strict treatment would add Laplace noise to them too.
-2. **Account enumeration.** `POST /auth/signup` returns `409` for an existing username / e-mail, so
-   their existence can be probed. Mitigation: a generic "could not create account" response.
+   strict treatment would add Laplace noise to them too. *(Left as-is: these are headline counters,
+   and a single global total does not reveal any individual's membership.)*
+2. **Account enumeration — since fixed.** `POST /auth/signup` used to return field-specific messages
+   ("Username *X* is already been used"), letting an attacker probe which usernames / e-mails exist.
+   It now returns a single generic `409` ("An account with these details already exists.") for both a
+   duplicate username and a duplicate e-mail, revealing neither the field nor the value.
 3. **The OpenAPI schema and Swagger UI are public** (`/v3/api-docs`, `/swagger-ui.html`), disclosing
    the API surface. Intended for a showcase build; lock or remove them in a production deployment.
+
+A related robustness fix landed alongside the audit: a request for a non-existent resource id (e.g.
+`GET /api/appointments/{id}`) returned HTTP 500 instead of 404 because `ResourceNotFoundException`
+carried no status mapping; it now maps to 404. No data was exposed either way (the error body never
+contained a stack trace), but the correct status is cleaner.
 
 **Conclusion.** With the per-record feed removed, **no endpoint in the system releases raw individual
 records, credentials, or personal identifiers.** Individual-level protection now rests entirely on
