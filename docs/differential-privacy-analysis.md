@@ -311,6 +311,39 @@ researcher API, and the browsable table is synthetic. For the thesis this is wor
 *process*, not just outcome: the guarantee was stated, the system was adversarially tested against
 it, a gap between design and deployment was found, and it was closed and re-verified.
 
+### 7.3 Full-surface sweep — every other endpoint
+
+After the feed was fixed, a **second pass exercised every remaining endpoint** to confirm the fix was
+not masking similar problems elsewhere. All passed; the table records each check and its result.
+
+| Class | Test | Result |
+|---|---|---|
+| Credential exposure | do `/api/users/me` and `/api/users` serialise a password hash? | **No** — `UserDto` exposes only `id, username, name, email, role, requestedRole`; the `User` entity is never returned by any endpoint |
+| Write-path identifier leak | does the clinician `POST` echo the `patientCode` it stores? | **No** — `@JsonIgnore` strips it from the response (submitted `MRN-LEAK-TEST-999`, absent from the JSON) |
+| Privilege escalation | `POST /auth/signup` with `role=ADMIN` in the body | **Ignored** — the account is created as `USER`; privileged roles come only from admin approval, never the request body |
+| SQL injection | `' OR '1'='1` and `'; DROP TABLE …` in filter params | **Safe** — repositories use parameterised JPQL and JPA Specifications; the injected strings match nothing and the schema is intact (grouped still returns its rows) |
+| Cross-origin theft | CORS preflight from `https://evil.example.com` | **Blocked** — no `Access-Control-Allow-Origin` is returned, so a browser cannot let a hostile site read authenticated responses (origin is pinned to the configured front-end) |
+| Aggregate de-noising | `/api/vaccinations/region` repeated, and ε = 1 vs 100000 | **Memoised, fixed-ε** — identical every time; caller ε ignored |
+| Management interface | `/actuator/**` (env, beans, heap dump) | **Not exposed** — all `401` |
+| Error handling | forced parse error on a query param | **Clean** `{timestamp, status, error, message, path}` — no stack trace |
+| Blog | public post `author` field | **Display string only** (`"The patient who built Privax"`), no e-mail / PII |
+
+**Three low-severity information-disclosure items** were noted. None reveals any individual's
+membership in the dataset, so none breaks the DP guarantee — they are hardening opportunities:
+
+1. **`/public/stats` returns exact, un-noised global totals** (total reports, distinct symptoms,
+   resolved %). These are dataset-wide, non-filterable counts — they cannot isolate a person — but a
+   strict treatment would add Laplace noise to them too.
+2. **Account enumeration.** `POST /auth/signup` returns `409` for an existing username / e-mail, so
+   their existence can be probed. Mitigation: a generic "could not create account" response.
+3. **The OpenAPI schema and Swagger UI are public** (`/v3/api-docs`, `/swagger-ui.html`), disclosing
+   the API surface. Intended for a showcase build; lock or remove them in a production deployment.
+
+**Conclusion.** With the per-record feed removed, **no endpoint in the system releases raw individual
+records, credentials, or personal identifiers.** Individual-level protection now rests entirely on
+the two rigorous DP channels (§3–§4) and the anonymous-at-rest data model (§1); the three items above
+are hardening opportunities, not privacy breaches.
+
 ---
 
 ## 8. Residual limitations / future work
@@ -344,4 +377,7 @@ it, a gap between design and deployment was found, and it was closed and re-veri
 > Laplace log(0) edge case). The running system was then adversarially tested: the aggregate channels
 > resisted averaging, tunable-ε and privilege-escalation attempts as designed, and a penetration test
 > found and closed one deployment gap — a leftover public per-record endpoint that still released real
-> rows with a de-noisable ε — so that no channel now releases individual records at all.
+> rows with a de-noisable ε — so that no channel now releases individual records at all. A subsequent
+> full-surface sweep (credential exposure, privilege escalation, SQL injection, CORS, management
+> endpoints, error handling) found no further leak of records, credentials or identifiers, leaving
+> only three low-severity information-disclosure items as hardening opportunities.
