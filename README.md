@@ -51,7 +51,7 @@ This is the same technique used by Apple, Google, and the U.S. Census.
 | **Anonymous reporting** | Submitting needs a free login (basic abuse control), but a report is never linked back to your account |
 | **Differential privacy** | Laplace noise on every aggregate query; public statistics released at a fixed server-side `ε` |
 | **Interactive map** | Side-effect reports plotted by city, vaccine, and severity (Leaflet + OpenStreetMap) |
-| **Paginated table view** | Browse all reports with severity, vaccine, symptoms, location, time |
+| **Illustrative table view** | Synthetic example rows (severity, vaccine, symptoms, location, time) with a live `ε` slider — a teaching view, not a release of real records |
 | **Vaccine comparison** | Compare reported patterns across Pfizer, Moderna, AstraZeneca, J&J |
 | **Severity tracking** | MILD / MODERATE / SEVERE / FATAL — color-coded throughout |
 | **Cinematic homepage** | 11-scene narrative with parallax, starfields, editorial typography |
@@ -181,9 +181,12 @@ All endpoints documented at **http://localhost:8080/swagger-ui.html** when runni
 - `POST /auth/authenticate` — login
 - `POST /auth/signup` — register (privileged roles are *requested*, not granted — see credentials above)
 - `GET  /api/vaccinations/region?region=` — noisy vaccination count for a region (fixed server-side ε)
-- `GET  /api/side-effects?page=0&size=10` — paginated reports with DP noise
 - `GET  /api/side-effects/grouped?vaccineName=&severityLevel=` — counts grouped by city (the map)
 - `GET  /api/side-effects/symptom-stats` — DP-noised symptom prevalence
+
+> There is deliberately **no** endpoint that returns individual reports. Per-record differential
+> privacy is infeasible (the curse of dimensionality), so only DP-protected *aggregates* are public;
+> the browsable table in the UI is synthetic illustrative data. See the security note below.
 
 ### Authenticated (any logged-in user)
 - `POST /api/side-effects` — submit a report
@@ -221,8 +224,9 @@ The homepage alternates **dark cinematic** and **light editorial** scenes so the
 ## Privacy & ethics
 
 - **No personal data is stored in a report.** Submitting requires a free login (basic abuse control), but a report is never linked back to your account.
-- **All aggregate statistics shown publicly are protected by differential privacy.** Individual records are never displayed unmodified.
+- **All aggregate statistics shown publicly are protected by differential privacy.** No endpoint releases individual records at all — only fixed-`ε`, memoized aggregates and the budgeted researcher API.
 - **Anonymous by design:** because reports carry no link to the submitting account, you can delete your account at any time — submitted reports remain only as anonymous, aggregate data with no way to trace them back to you.
+- **Adversarially tested.** The public API was red-teamed (averaging, tunable-`ε`, and re-identification attacks). The DP aggregates and access controls held; a leftover public per-record endpoint that could still leak real rows was found and removed. The full attack chain, evidence, and fix are documented in [`docs/differential-privacy-analysis.md`](docs/differential-privacy-analysis.md) §7.
 - **No third-party analytics or tracking.** This is a privacy-first platform by design.
 
 ---
