@@ -188,7 +188,7 @@ const FormReport = () => {
           onChange={handleChange}
         />
         <small className="form-note">
-          Anyone can report — for themselves or on behalf of someone else. Clinicians should use the Doctor page instead.
+          Anyone can report — for themselves or on behalf of someone else. Clinicians should use the Submit Report page instead.
         </small>
       </FormField>
 
