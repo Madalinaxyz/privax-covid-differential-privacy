@@ -42,11 +42,12 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
     public AuthResponse signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if (userService.hasUserWithUsername(signUpRequest.username())) {
-            throw new DuplicatedUserInfoException(String.format("Username %s is already been used", signUpRequest.username()));
-        }
-        if (userService.hasUserWithEmail(signUpRequest.email())) {
-            throw new DuplicatedUserInfoException(String.format("Email %s is already been used", signUpRequest.email()));
+        // Reject duplicates with a SINGLE generic message that reveals neither which field collided
+        // (username vs email) nor the submitted value. This avoids account enumeration — an attacker
+        // must not be able to probe which usernames/emails already exist.
+        if (userService.hasUserWithUsername(signUpRequest.username())
+                || userService.hasUserWithEmail(signUpRequest.email())) {
+            throw new DuplicatedUserInfoException("An account with these details already exists.");
         }
 
         User user = userService.saveUser(this.mapSignUpRequestToUser(signUpRequest));
