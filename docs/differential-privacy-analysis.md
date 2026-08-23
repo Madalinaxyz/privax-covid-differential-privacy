@@ -212,15 +212,16 @@ aggregate prevalence chart, not per row.
 
 ## 7. Penetration test of the running system
 
-Sections 2–6 argue the design is correct. This section **red-teams the deployed system** as an
-attacker would: black-box, against the live HTTP API, ignoring the UI entirely (an attacker never
-uses your front-end). It both confirms the rigorous channels hold *in practice* and documents one
-real vulnerability that this testing found and closed.
+Sections 2–6 argue the design is correct. This section **simulates real attacks against the deployed
+system**, as an attacker would: black-box, against the live HTTP API, ignoring the UI entirely (an
+attacker never uses the front-end). Each attack below was actually run against the running server, not
+merely reasoned about. Simulating them both confirms the rigorous channels hold *in practice* and
+exposed one real vulnerability — which was then fixed and the attack re-run to confirm the fix.
 
-**Method.** Direct `curl` requests to `http://localhost:8080`, unauthenticated and with each seeded
-role, attempting to (a) recover an exact raw value, (b) re-identify an individual, and (c) reach
-data above the caller's privilege. Absolute numbers below are from one seeded run (the demo DB
-reseeds on restart); the *properties* are what matter.
+**Method.** Each attack was simulated with direct `curl` requests to `http://localhost:8080`,
+unauthenticated and with each seeded role, attempting to (a) recover an exact raw value, (b) re-identify
+an individual, and (c) reach data above the caller's privilege. Absolute numbers below are from one
+seeded run (the demo DB reseeds on restart); the *properties* are what matter.
 
 ### 7.1 What held up
 
