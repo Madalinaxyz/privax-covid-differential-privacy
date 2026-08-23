@@ -63,6 +63,19 @@ platform behaves realistically:
   myocarditis, keeping every generated record clinically plausible;
 - the **29 largest Romanian cities**, four vaccines, and an age range spanning the adult population.
 
+The severe symptoms the data models are not invented; they mirror the rare but real adverse events that
+post-vaccination surveillance has documented. Myocarditis following mRNA vaccination, for instance, is
+rare — on the order of two cases per 100,000 vaccinated people, rising to roughly six per 100,000 in
+young males after a second dose — and is usually mild to moderate, yet its concentration in one specific
+group is exactly the kind of pattern that only becomes visible when the data can be broken down finely
+[13], [15]. In the same period, a thrombosis-with-thrombocytopenia syndrome was identified after
+adenoviral-vector vaccines at roughly one case per 100,000, occurring mostly in younger women [14].
+Modelling such events in the synthetic data — as rare, severe, and clustered rather than spread evenly —
+lets the platform demonstrate the hardest case to protect: the individual who is easy to single out
+precisely because their experience is unusual. It is also a reminder of why granular reporting matters
+at all: these signals were found by looking closely at *who* was affected, which is only safe to do
+publicly if the looking is done through a privacy guarantee.
+
 The backend seeds this data on start-up — on the order of a few thousand reports and tens of thousands
 of vaccination records — which is enough to make the map and the prevalence charts meaningful while
 remaining an unmistakably demonstrative dataset. It is important to state plainly that these numbers
@@ -318,6 +331,15 @@ the contribution.
 - **[12]** C. Dwork, N. Kohli, and D. Mulligan, "Differential Privacy in Practice: Expose Your
   Epsilons!," *Journal of Privacy and Confidentiality*, vol. 9, no. 2, 2019. — used in 6.4 for the lack
   of consensus on choosing ε.
+- **[13]** G. Witberg, N. Barda, S. Hoss, *et al.*, "Myocarditis after Covid-19 Vaccination in a Large
+  Health Care Organization," *New England Journal of Medicine*, vol. 385, no. 23, pp. 2132–2139, 2021. —
+  used in 6.2 for the incidence and demographics of vaccine-associated myocarditis.
+- **[14]** A. Greinacher, T. Thiele, T. E. Warkentin, *et al.*, "Thrombotic Thrombocytopenia after
+  ChAdOx1 nCov-19 Vaccination," *New England Journal of Medicine*, vol. 384, no. 22, pp. 2092–2101,
+  2021. — used in 6.2 for the thrombosis-with-thrombocytopenia syndrome after adenoviral-vector vaccines.
+- **[15]** M. E. Oster, D. K. Shay, J. R. Su, *et al.*, "Myocarditis Cases Reported After mRNA-Based
+  COVID-19 Vaccination in the US From December 2020 to August 2021," *JAMA*, vol. 327, no. 4, pp.
+  331–340, 2022. — used in 6.2 for myocarditis surveillance rates and severity.
 
 *(Existing references reused: [5] Sweeney, re-identification; alongside the mechanism and design
 sources cited in the earlier chapters.)*
