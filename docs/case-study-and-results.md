@@ -1,90 +1,146 @@
 # 6. Case Study and Results Evaluation
 
-> Thesis-chapter draft. This pulls together the demonstration (case study) and the evaluation
-> (differential-privacy correctness, adversarial testing, functional testing, and analysis) into one
-> chapter. Rewrite the prose in your own academic voice — this file is the scaffold and the evidence,
-> not finished thesis text. Supporting detail lives in `differential-privacy-analysis.md` (design +
-> full pentest) and `dp-verification.md` (mechanism validation). Absolute counts come from the demo
-> database, which reseeds on restart, so exact numbers differ between runs; the *properties* do not.
+> Thesis-chapter draft. This chapter demonstrates Privax in a concrete scenario (the case study) and
+> then evaluates how well it works — its differential-privacy correctness, its resistance to attack,
+> and its functionality. Rewrite the prose in your own academic voice where you wish; the technical
+> claims are drawn from the running system, and the supporting evidence lives in
+> `differential-privacy-analysis.md` (design and full pentest) and `dp-verification.md` (mechanism
+> validation). Because the demonstration database reseeds on every restart, exact counts differ
+> between runs; the properties described here do not.
 
 ---
 
 ## 6.1 Purpose of the Case Study
 
-The case study demonstrates Privax working end to end and shows that its central promise — that a
-report can never be traced back to the person who made it — holds in practice, not just on paper. It
-is intended to demonstrate three things:
+Every claim made earlier in this thesis — that data can be shared usefully without exposing the people
+in it, that differential privacy is stronger than removing names, that a report can be counted without
+ever being traced back — is only worth as much as a working demonstration of it. The purpose of this
+chapter is to provide that demonstration and then to test it honestly.
 
-1. the **reporting workflow** — how a report is submitted and how the data is then browsed;
-2. the **role-based functionality** — what an ordinary user, an approved clinician (DOCTOR), and an
-   administrator can each do;
-3. the **differential privacy in action** — that the figures shown to the public are noised
-   aggregates, that the noise cannot be removed, and that no individual record is ever released.
+Concretely, the case study is designed to answer four questions:
+
+1. **Does the platform actually work end to end** — can a person submit a report, and can anyone then
+   see the resulting patterns without logging in?
+2. **Do the roles behave as intended** — does an ordinary user, an approved clinician, and an
+   administrator each get exactly the access they should, and no more?
+3. **Is the differential privacy real and correct** — is the noise genuinely applied, does it match
+   the mathematics, and does the privacy/accuracy trade-off behave as the theory predicts?
+4. **Does the guarantee survive an attacker** — can someone who is actively trying to recover a raw
+   value or single out an individual succeed?
+
+The first two questions are answered by the functional walkthrough (6.3, 6.6). The third is answered
+by the mechanism evaluation (6.4), and the fourth — the one I consider the most important — by the
+adversarial testing (6.5). I set out deliberately to try to break my own system, because a privacy
+platform that has never been attacked has not really been tested at all.
 
 ---
 
 ## 6.2 Case Study Scenario and Data
 
 The scenario is a public vaccine side-effect reporting platform. Members of the public submit reports
-of what they experienced after vaccination; anyone can then browse the reported patterns on a map and
-in charts; approved clinicians can submit reports on a patient's behalf and run their own queries; and
-an administrator manages who is granted clinician access.
+of what they experienced after being vaccinated; anyone can browse the reported patterns on a map and
+in charts; approved clinicians submit reports on a patient's behalf and run their own aggregate
+queries; and an administrator decides who is granted clinician access.
 
-The dataset used is **simulated (mock) data**:
+### The data is deliberately synthetic
 
-- **no real medical records are used;** every report is synthetic;
-- the data is generated only to demonstrate the platform's functionality and to make the privacy
-  behaviour visible;
-- the generated data mirrors a realistic distribution (a severity mix of roughly 80% mild, 14%
-  moderate, 5% severe, 1% fatal; symptoms grouped by severity; 29 Romanian cities; four vaccines),
-  so the demonstration looks and behaves like real data without any real person being involved.
+A decision I made early, and did not compromise on, is that the demonstration uses **only simulated
+data**. There are no real medical records anywhere in the system. This was partly practical — I had no
+ethical way to collect real post-vaccination reports for a student project — but it was also a matter
+of principle. It would have been strange to build a platform about protecting people's medical data and
+then populate it with real people's medical data to show it off. Using synthetic data means the
+demonstration can be as detailed and public as I like, because there is no real person behind any row
+to protect. This mirrors a wider move in privacy research toward synthetic data as a way to develop and
+show systems without exposing anyone.
 
-The backend seeds the database on start-up (on the order of a few thousand reports and tens of
-thousands of vaccination records), which is enough to make the aggregate views meaningful while
-remaining a demonstrative, not clinical, dataset.
+The generated data is not random noise; it is shaped to look like plausible real data so that the
+platform behaves realistically:
+
+- a **severity distribution** of roughly 80% mild, 14% moderate, 5% severe, and 1% fatal, matching the
+  shape one would expect from real adverse-event reporting, where the overwhelming majority of reports
+  are minor;
+- **symptoms grouped by severity tier**, so that a mild report never carries a severe symptom such as
+  myocarditis, keeping every generated record clinically plausible;
+- the **29 largest Romanian cities**, four vaccines, and an age range spanning the adult population.
+
+The backend seeds this data on start-up — on the order of a few thousand reports and tens of thousands
+of vaccination records — which is enough to make the map and the prevalence charts meaningful while
+remaining an unmistakably demonstrative dataset. It is important to state plainly that these numbers
+carry no epidemiological meaning; they exist only to exercise the platform.
 
 ---
 
 ## 6.3 Case Study Execution
 
-The platform was exercised through the following steps. *(Insert screenshots at each marked point.)*
+The platform was exercised along the paths a real visitor and each kind of account would take. Insert
+screenshots at the marked points.
 
-1. **Authentication.** Log in with a seeded account (`user`, `doctor`, or `admin`). *(screenshot: login)*
-2. **Browsing the public data (no login required).** Open the Reports section and view the map of
-   reports by city and severity, and the symptom-prevalence chart. *(screenshot: map + charts)*
-3. **Filtering.** Filter the data by vaccine, severity, and city and observe the aggregates update.
-4. **Changing the privacy level (ε).** Move the epsilon slider on the illustrative table and observe
-   the displayed rows change as the noise scales. *(screenshot: slider at low vs high ε)*
-5. **Observing the privacy-protected results.** Note that the public map and charts stay stable
-   regardless of the client ε, because they are released at a fixed server-side level.
-6. **Submitting a report as a clinician.** Log in as the approved `doctor` account and submit a
-   report on a patient's behalf, including an internal patient code. *(screenshot: clinician form)*
-7. **Role-specific pages.** Show that the admin panel (user approvals) is reachable only as `admin`,
-   and the research console only as `doctor`.
+### As a member of the public (no account)
+
+1. **Open the Reports section.** The map loads reports by city and severity, and the symptom-prevalence
+   chart shows how common each symptom is. No login is required — browsing the anonymised data is fully
+   public, which is the whole point of the platform. *(screenshot: map + prevalence chart)*
+2. **Filter.** Filtering by vaccine, severity, and city updates the aggregates. The numbers stay
+   coherent because the filters are applied on the server before the differentially-private figures are
+   produced. *(screenshot: a filtered view)*
+3. **Move the epsilon slider.** On the illustrative table, dragging ε changes the displayed rows: at a
+   low ε the values are heavily scrambled, at a high ε they sharpen. This makes the privacy/accuracy
+   trade-off visible and tangible. *(screenshot: low ε vs high ε)*
+
+### As a registered user
+
+4. **Log in and submit a report.** Submitting requires a free account — a light abuse control — but the
+   report is stored with no link to the account that made it. The confirmation shows the report was
+   accepted; nothing in the system connects it back to the submitter. *(screenshot: submission form)*
+
+### As a clinician (DOCTOR)
+
+5. **Submit on a patient's behalf.** After an administrator has approved the account, the clinician page
+   allows a report to be filed for a patient, with an optional internal patient code. That code is
+   stored but never returned by any part of the API. *(screenshot: clinician form)*
+6. **Run a budgeted query.** The research console answers aggregate count questions against a personal
+   privacy budget; each query spends part of it, and once the budget is gone the console refuses further
+   queries. *(screenshot: research console + budget)*
+
+### As an administrator
+
+7. **Approve a clinician.** The admin panel lists pending clinician requests and lets the administrator
+   approve or reject them. Only an administrator can reach this page. *(screenshot: admin panel)*
+
+Walking these paths shows the three release channels in use at once: the public sees noised aggregates,
+the clinician spends a budget for sharper answers, and no one — at any role — is shown a real individual
+record.
 
 ---
 
 ## 6.4 Evaluation of the Differential Privacy Mechanism
 
-Two things are evaluated here: that the mechanisms are **correct** (they satisfy ε-differential
-privacy), and the **trade-off** between privacy and accuracy that ε controls.
+This section evaluates two distinct things: that the mechanism is **correct**, and the **trade-off** it
+exposes between privacy and accuracy.
 
 ### Correctness
 
-The exact formulas used in the implementation were validated (see `dp-verification.md`):
+It is not enough to add some random noise and call it private; the noise has to satisfy the
+differential-privacy definition. The exact formulas used in the implementation were therefore validated
+independently (the full validation is in `dp-verification.md`):
 
-- the **Laplace sampler** reproduces a true Laplace distribution (mean ≈ 0, variance ≈ 2·scale²);
-- the **Laplace mechanism** on neighbouring datasets (differing by one person) has an output-density
-  ratio bounded by exactly `e^ε` — the ε-DP guarantee;
-- **k-ary randomized response** with `q = k/(e^ε + k − 1)` has an output-probability ratio of exactly
-  `e^ε`.
+- the **Laplace sampler** reproduces a true Laplace distribution — over two million samples its mean is
+  approximately zero and its variance approximately twice the square of the scale, as the distribution
+  requires;
+- the **Laplace mechanism** applied to counts, on two databases that differ by a single person, has an
+  output-density ratio bounded by exactly `e^ε` — which is precisely the ε-differential-privacy
+  guarantee;
+- **k-ary randomized response**, used for categorical fields, keeps the true value with probability
+  `e^ε/(e^ε+k−1)` and its output-probability ratio is exactly `e^ε`.
 
-So both mechanisms provably satisfy ε-differential privacy.
+Both mechanisms therefore provably satisfy ε-differential privacy, and the running code matches the
+validated formulas line for line. This matters because it moves the privacy claim from "the numbers
+look noisy" to "the release satisfies a stated mathematical definition."
 
 ### The privacy / accuracy trade-off
 
-Epsilon fixes the balance between how much privacy is preserved and how accurate the released numbers
-are. Lower ε means more noise and stronger protection; higher ε means less noise and sharper results.
+Epsilon is the dial between privacy and accuracy. A smaller ε adds more noise and protects harder; a
+larger ε adds less noise and reveals more. The relationship is summarised below.
 
 | Epsilon (ε) | Noise level | Privacy protection | Result accuracy |
 |---|---|---|---|
@@ -92,101 +148,176 @@ are. Lower ε means more noise and stronger protection; higher ε means less noi
 | 0.5 | Moderate | High | Moderate |
 | 1.0 | Lower | Lower | Higher |
 
-An important subtlety observed in testing is that the noise is calibrated to what **one person** can
-change (a count's sensitivity is 1), not to the size of the count. At ε = 1 the noise is only about
-±1–2, which looks small next to a large count but is exactly enough to hide any single individual's
-contribution; on a small (rare) count the same noise is a much larger fraction, so rare cases are
-automatically protected more strongly relative to their size. Privax releases its public figures at a
-fixed ε = 1.0, chosen as a moderate balance for a demonstrative platform.
+Testing surfaced a subtlety that is easy to get wrong. The noise is calibrated to what **one person**
+can change — a count's sensitivity is one — not to the size of the count itself. At ε = 1 the noise on
+a count is only about one or two, which looks tiny beside a count of several hundred, yet it is exactly
+enough to make "n" and "n−1" indistinguishable, and that is all it needs to do to hide any one person.
+On a small, rare count the same one-or-two of noise is a large fraction of the value, so rare cases are
+automatically protected more, relative to their size — which is reassuring, because rare cases are the
+ones easiest to single out.
+
+### Choosing epsilon
+
+One question I could not answer with mathematics alone is which value of ε to use. There is, in fact,
+no consensus in the field on how to choose it; researchers have argued that implementations should at
+least publish the ε they used so that choices can be compared and debated [12]. Privax releases its
+public figures at a fixed ε = 1.0, a moderate value that keeps the aggregate views useful while still
+masking individuals, and — importantly — it is fixed on the server so that a visitor cannot raise it to
+strip the noise. I present this as a reasoned choice for a demonstrative platform, not as a universally
+correct value, and I return to its limits in 6.8.
 
 ---
 
 ## 6.5 Security and Privacy Evaluation (Adversarial Testing)
 
-Beyond checking that the mechanism is correct, the running system was tested **as an attacker would**:
-black-box, against the live API, trying to recover a raw value, single out an individual, or reach
-data above the caller's privilege. (Full detail in `differential-privacy-analysis.md`, §7.)
+The most important evaluation is not whether the system works when used politely, but whether it holds
+when someone is actively trying to break it. This section reports a black-box adversarial test of the
+running platform. (The full method and evidence are in `differential-privacy-analysis.md`, §7.)
 
-**Threat model.** An anonymous, unlimited, adaptive attacker who chooses query parameters and may
-already hold outside information, whose goal is to recover a value the privacy layer is meant to hide.
+### Why this matters — the precedents
 
-**Attacks attempted and results:**
+The history of "anonymised" data is a history of it being un-anonymised. Removing names has repeatedly
+failed: a set of hospital records stripped of identifiers was re-identified by matching date of birth,
+sex, and postcode against a public voter roll [5]; and a large collection of "anonymous" film ratings
+was re-identified simply by cross-referencing it with a handful of publicly known preferences [11].
+Both attacks worked not by breaking a password but by combining ordinary details until they pointed to
+one person. Vaccine side-effect reports — age, city, symptoms, and timing — are exactly this kind of
+data, which is why I did not want to rely on de-identification and why I felt I had to attack my own
+system rather than assume it was safe.
+
+### Threat model
+
+I assumed an anonymous, unlimited, adaptive attacker: someone who can send any query, as many times as
+they like, may already hold outside information, and whose goal is to recover a value the privacy layer
+is meant to hide or to establish whether a particular person is in the data.
+
+### Attacks attempted and results
 
 | Attack | What it tries | Result |
 |---|---|---|
-| **Read an individual record** | fetch raw rows from the per-record feed | **Closed** — the endpoint returns HTTP 405; no per-record feed exists |
-| **Averaging** | repeat the same aggregate query and average out the noise | **Closed** — results are memoised, identical on every repeat |
-| **Tunable-ε / differencing** | query at very low vs very high ε to solve for the true value | **Closed** — public ε is fixed server-side; results identical across ε |
-| **Singling-out** | narrow filters until a slice matches one person | **Closed** — counts are noised, so a slice cannot confirm a single individual |
-| **SQL injection** | inject SQL through filter parameters | **Closed** — parameterised JPQL/Specifications; payloads match nothing |
-| **Cross-origin theft (CORS)** | read authenticated responses from a hostile origin | **Closed** — origin pinned to the front-end; no `Access-Control-Allow-Origin` returned |
-| **Privilege escalation** | request an ADMIN/DOCTOR role at signup | **Closed** — accounts are created as USER; privileged roles require admin approval |
-| **Account enumeration** | probe which usernames/emails exist via signup | **Closed** — a single generic 409 for any duplicate |
-| **Identifier leak** | read `patientCode` from any response | **Closed** — `@JsonIgnore` strips it on read and write paths |
+| Read an individual record | fetch raw rows from a per-record endpoint | **Closed** — no such endpoint exists (returns HTTP 405) |
+| Averaging | repeat one aggregate query to average the noise away | **Closed** — results are memoised; every repeat is identical |
+| Tunable-ε / differencing | query at very low vs very high ε to solve for the truth | **Closed** — the public ε is fixed server-side; results are identical across ε |
+| Singling-out | narrow the filters until a slice matches one person | **Closed** — the count is noised, so a slice cannot confirm any individual |
+| SQL injection | inject SQL through the filter parameters | **Closed** — parameterised queries; injected strings match nothing and the schema is intact |
+| Cross-origin theft (CORS) | read authenticated responses from a hostile web page | **Closed** — the origin is pinned; no cross-origin access is granted |
+| Privilege escalation | request an ADMIN or DOCTOR role at signup | **Closed** — accounts are created as ordinary users; privileged roles require admin approval |
+| Account enumeration | probe which usernames or emails already exist | **Closed** — a single generic message is returned for any duplicate |
+| Identifier leak | read the internal patient code from any response | **Closed** — it is stored but never serialised, on read or write |
 
-**A vulnerability found and fixed.** The testing was not only confirmatory. It found a real gap: a
-public per-record endpoint had been left live after the front-end moved to synthetic data, and it
-returned real rows noised with a caller-controlled ε (capped at a level high enough to be effectively
-no noise), while the exact record count leaked through the pagination metadata. Chained together, these
-allowed a full re-identification. The endpoint was removed and the fix re-verified (it now returns
-405). Reporting this honestly — a gap between design and deployment, found by adversarial testing and
-closed — is itself a result.
+### A real vulnerability, found and fixed
 
-**Conclusion.** After the fix, no endpoint releases raw individual records, credentials, or personal
-identifiers; individual-level protection rests entirely on the differentially-private aggregates, the
-budgeted researcher API, and the anonymous-at-rest data model.
+The testing was not merely confirmatory — it found a genuine hole. A public per-record endpoint had
+been left live after the front end had already moved to synthetic data, and it still returned real
+rows, noised with a client-supplied ε that was capped so high it amounted to no noise at all; worse, the
+exact number of matching records leaked through the pagination metadata. Chained together, these let an
+attacker narrow a filter until it matched a single person and then read that person's near-exact record.
+I removed the endpoint entirely and re-verified the fix. I include this deliberately: finding a gap
+between what I designed and what I had actually deployed, and closing it, is a more honest and more
+useful result than a claim that everything was perfect from the first commit.
+
+### Conclusion
+
+After the fix, no endpoint releases raw individual records, credentials, or personal identifiers. The
+attacks that defeat ordinary anonymisation — averaging, ε-tuning, differencing, and re-identification by
+linkage — were all closed. Individual-level protection rests entirely on the differentially-private
+aggregates, the budgeted researcher channel, and the anonymous-at-rest data model.
 
 ---
 
 ## 6.6 Functional Evaluation
 
-Each main feature was checked against its expected behaviour:
+Alongside the privacy testing, each main feature was checked against its expected behaviour, so that
+the platform can be said to work, not merely to be private.
 
 | Feature | Expected behaviour | Result |
 |---|---|---|
 | Authentication | valid credentials log in; invalid are rejected | Works |
-| Role-based authorization | USER / DOCTOR / ADMIN each reach only their own functions | Works (401/403 enforced server-side) |
-| Report submission (public) | a logged-in user can submit a report | Works (login required) |
-| Report submission (clinician) | an approved DOCTOR can submit with a patient code | Works; patient code never returned |
-| Report visualisation | map and charts render the aggregated data | Works, no login required |
-| Filtering and sorting | filters by vaccine/severity/city apply correctly | Works |
-| Differential privacy processing | public figures are noised at a fixed ε and memoised | Works (verified in 6.4/6.5) |
-| Admin functions | approve/deny clinician requests, manage users | Works (ADMIN only) |
-| Research console | budgeted DP queries with 429 on exhaustion | Works (DOCTOR only) |
+| Role-based authorization | USER / DOCTOR / ADMIN each reach only their own functions | Works — enforced server-side (401 / 403) |
+| Report submission (public) | a logged-in user can submit a report | Works — login required, report unlinked |
+| Report submission (clinician) | an approved clinician can submit with a patient code | Works — code stored, never returned |
+| Report visualisation | the map and charts render the aggregated data | Works — no login required |
+| Filtering and sorting | filters by vaccine, severity, and city apply correctly | Works |
+| Differential-privacy processing | public figures are noised at a fixed ε and memoised | Works — verified in 6.4 and 6.5 |
+| Admin functions | approve or reject clinician requests, manage users | Works — administrator only |
+| Research console | budgeted queries, refused once the budget is spent | Works — clinician only |
+| Error handling | missing resources return 404, not 500; no stack traces leak | Works |
+
+Every feature behaved as intended. Notably, the access-control checks all failed *closed* — an
+unauthorised request is refused rather than quietly served — which is the behaviour a privacy platform
+must have.
 
 ---
 
 ## 6.7 Results Analysis
 
-The obtained results highlight the trade-off between data privacy and statistical utility. Lower
-epsilon values introduce a higher level of noise, providing stronger privacy protection while also
-reducing the accuracy of the aggregated results; conversely, higher epsilon values improve accuracy
-but provide weaker privacy. Privax manages this trade-off not with a single setting but by separating
-the data into channels — a fixed, moderate ε for the public aggregates, a spending budget for
-researchers, and synthetic data for the illustrative per-record view — so that each audience receives
-the strongest protection compatible with its needs.
+The results should be read together rather than feature by feature, because their combined message is
+the point.
 
-The adversarial testing shows that these guarantees hold in practice and not only in theory: the
-attacks that defeat ordinary de-identification (averaging, ε-tuning, differencing, and re-identification
-by linkage) were all closed, and the one real gap that testing uncovered was fixed and re-verified.
-Taken together, the correctness proof (6.4) and the adversarial evaluation (6.5) support the central
-claim of the thesis — that an individual cannot be identified from anything the platform releases.
+The mechanism evaluation shows that the privacy is **real and correct**: the noise is genuinely
+applied, it matches the mathematics, and it satisfies the ε-differential-privacy definition rather than
+merely resembling it. The trade-off behaves exactly as the theory predicts — lower ε means more noise,
+stronger privacy, and less accuracy; higher ε means the reverse — and Privax manages that trade-off not
+with a single global setting but by separating the data into channels, giving each audience the
+strongest protection compatible with what it actually needs.
+
+The adversarial evaluation shows that this protection **holds under pressure**. The attacks that have
+historically broken "anonymised" datasets [5], [11] were tried here and did not work, because Privax
+does not depend on the strategy those attacks exploit — it never releases the individual-level data in
+the first place, and it noises what it does release in a way that cannot be undone by repetition or by
+tuning ε. The one real weakness that testing uncovered was a deployment gap, not a flaw in the
+mathematics, and it was closed.
+
+Put plainly, the two evaluations support the central claim of the thesis from two directions at once:
+the correctness proof (6.4) shows that *in principle* an individual's contribution is hidden, and the
+adversarial testing (6.5) shows that *in practice* an attacker cannot recover it. That agreement
+between theory and testing is the strongest result the project offers.
 
 ---
 
-## 6.8 Limitations
+## 6.8 Limitations and Future Work
 
-The evaluation is subject to the following limitations:
+It would be dishonest to present the evaluation without its limits, and stating them clearly is part of
+the contribution.
 
-- the data is **simulated**, not real medical records;
-- the **dataset is limited in size** and generated to a fixed distribution, so it does not capture the
-  messiness of real-world reporting;
-- only a **small number of test users** and roles were exercised;
-- there was **no testing in a real healthcare environment**, and no clinicians or patients took part;
-- Privax is a **demonstrative research prototype**, not a production system — for example, it uses
-  HTTP Basic authentication over plain HTTP and does not implement transport encryption (HTTPS) or
-  encryption at rest, which would be required before any real deployment;
-- the evaluation **does not constitute a clinical or epidemiological study**, and no medical
-  conclusions should be drawn from the demonstration data;
-- privacy loss is bounded **per release channel** but not by a single global budget across all
-  channels, which would be the rigorous next step.
+**Limitations**
+
+- The data is **simulated**, not real medical reports, and is generated to a fixed distribution, so it
+  does not capture the messiness, bias, and under-reporting of real-world data.
+- The **dataset is limited in size** and the number of **test users and roles** exercised was small.
+- There was **no testing in a real healthcare setting**; no clinicians or patients took part, and the
+  evaluation is **not a clinical or epidemiological study** — no medical conclusion should be drawn
+  from the demonstration data.
+- Privax is a **demonstrative research prototype**. It uses HTTP Basic authentication over plain HTTP
+  and does not implement transport encryption (HTTPS) or encryption at rest; these would be required
+  before any real deployment.
+- Privacy loss is bounded **per release channel**, but not by a single global budget across all
+  channels at once.
+
+**Future work**
+
+- A **global privacy accountant** that tracks total privacy loss across the public aggregates and the
+  researcher queries together, so the whole system carries one bounded guarantee rather than several.
+- **Transport and storage hardening** — HTTPS, encryption at rest, and a token-based (JWT) auth scheme
+  in place of HTTP Basic.
+- **A live, synthetic ε demonstration** on the privacy page, so a sceptical reader can watch the
+  trade-off happen on data that is safe by construction — deliberately on synthetic numbers, since a
+  tunable slider on real counts would itself be an attack.
+- **Richer reporting** — capturing the onset and duration of symptoms as structured fields (they are
+  currently only free text), and a way to withdraw a report anonymously via a one-time claim token.
+- Evaluation on **larger and more realistic synthetic datasets**, and, eventually, a study of how the
+  platform behaves under the kind of continuous, repeated release that real surveillance involves.
+
+---
+
+## New references introduced in this chapter
+
+- **[11]** A. Narayanan and V. Shmatikov, "Robust De-anonymization of Large Sparse Datasets," in
+  *Proc. 2008 IEEE Symposium on Security and Privacy*, Oakland, CA, USA, 2008, pp. 111–125. — the
+  Netflix Prize re-identification; used in 6.5 and 6.7 for the failure of anonymisation.
+- **[12]** C. Dwork, N. Kohli, and D. Mulligan, "Differential Privacy in Practice: Expose Your
+  Epsilons!," *Journal of Privacy and Confidentiality*, vol. 9, no. 2, 2019. — used in 6.4 for the lack
+  of consensus on choosing ε.
+
+*(Existing references reused: [5] Sweeney, re-identification; alongside the mechanism and design
+sources cited in the earlier chapters.)*
