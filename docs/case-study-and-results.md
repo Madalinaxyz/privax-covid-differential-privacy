@@ -184,8 +184,11 @@ correct value, and I return to its limits in 6.8.
 ## 6.5 Security and Privacy Evaluation (Adversarial Testing)
 
 The most important evaluation is not whether the system works when used politely, but whether it holds
-when someone is actively trying to break it. This section reports a black-box adversarial test of the
-running platform. (The full method and evidence are in `differential-privacy-analysis.md`, §7.)
+when someone is actively trying to break it. To test this I did not only reason about the design — I
+**simulated a series of real attacks directly against the running platform**, sending the actual
+requests an attacker would send and observing what came back. Each attack below was carried out against
+the live system, not merely imagined. (The full method and evidence are in
+`differential-privacy-analysis.md`, §7.)
 
 ### Why this matters — the precedents
 
@@ -204,12 +207,14 @@ I assumed an anonymous, unlimited, adaptive attacker: someone who can send any q
 they like, may already hold outside information, and whose goal is to recover a value the privacy layer
 is meant to hide or to establish whether a particular person is in the data.
 
-### Vulnerabilities found and fixed
+### Simulated attacks that exposed a real problem
 
-The testing was not merely confirmatory. Over the course of the project it uncovered several real
-problems — some outright data leaks, some correctness bugs in the privacy mechanism itself — each of
-which I then fixed and re-verified. I report them all, because in a privacy system the record of what
-went wrong and how it was closed is as much a result as the parts that worked.
+Simulating the attacks was not a formality — several of them succeeded on the first run, and each
+success exposed a real problem: some were outright data leaks, some were correctness bugs in the privacy
+mechanism itself. For each one I reproduced the attack, confirmed what it exposed, applied a fix, and
+then **re-ran the same attack** to check that it no longer worked. The table records, for each simulated
+attack, what it revealed and how it was closed. I report them all, because in a privacy system the
+record of what an attack exposed and how it was closed is as much a result as the parts that held.
 
 | # | Vulnerability found | Why it was dangerous | Fix I made | Verified |
 |---|---|---|---|---|
@@ -248,10 +253,11 @@ age, city, severity, vaccine, exact date, and note. This is precisely the failur
 every ε). Finding a gap between what I had designed and what I had actually deployed, and closing it, is
 a more honest and more useful result than a claim that the system was perfect from the first commit.
 
-### Attacks tested that already held
+### Simulated attacks the system withstood
 
-Alongside the issues above, a wider set of attacks was attempted and found already closed — evidence
-that the defences behave as intended, not only that the known holes were patched.
+Alongside the issues above, I simulated a wider set of attacks that the system withstood on the first
+run — evidence that the defences behave as intended, not only that the known holes were patched. Each of
+these was run against the live platform in the same way, and each failed to recover anything.
 
 | Attack | What it tries | Result |
 |---|---|---|
