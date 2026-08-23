@@ -204,37 +204,82 @@ I assumed an anonymous, unlimited, adaptive attacker: someone who can send any q
 they like, may already hold outside information, and whose goal is to recover a value the privacy layer
 is meant to hide or to establish whether a particular person is in the data.
 
-### Attacks attempted and results
+### Vulnerabilities found and fixed
+
+The testing was not merely confirmatory. Over the course of the project it uncovered several real
+problems — some outright data leaks, some correctness bugs in the privacy mechanism itself — each of
+which I then fixed and re-verified. I report them all, because in a privacy system the record of what
+went wrong and how it was closed is as much a result as the parts that worked.
+
+| # | Vulnerability found | Why it was dangerous | Fix I made | Verified |
+|---|---|---|---|---|
+| 1 | **Public per-record feed** (`GET /api/side-effects`) returned real individual rows | full re-identification (see below) | endpoint removed entirely | returns HTTP 405 |
+| 2 | **Exact record count leaked** through the pagination metadata (`totalElements`) | let an attacker narrow filters until a slice matched exactly one person | removed with the endpoint (feed no longer exists) | no count endpoint remains |
+| 3 | **Caller-controlled ε, capped too high** on that feed (up to ~10, ≈ no noise) | an attacker could dial the noise away and read near-raw values | removed with the endpoint; public ε is now fixed server-side everywhere | ε ignored on all public views |
+| 4 | **Un-noised fields** on that feed — exact timestamp and free-text note | leaked precise timing and possibly identifying text even at low ε | removed with the endpoint | not exposed anywhere |
+| 5 | **`patientCode` serialised** to a public response | the one identifier in the system was exposed | `@JsonIgnore` on the field | absent from every response, read and write |
+| 6 | **Account enumeration at signup** — field-specific 409 messages | let an attacker probe which usernames/emails exist | one generic 409 for any duplicate | same message for username or email |
+| 7 | **Missing resources returned HTTP 500** instead of 404 | a robustness flaw and a minor information signal | `@ResponseStatus(NOT_FOUND)` on the exception | returns 404 |
+| 8 | **Signup accepted a blank email** (only format was checked) | incomplete server-side validation | added `@NotBlank` to the email field | blank email rejected |
+| 9 | **City randomised over a 6-city subset**, not the full 29 | broke the ε-DP guarantee for the city field (a city outside the six could only ever appear as itself) | randomised response now uses the full 29-city domain | k matches the real domain |
+| 10 | **Laplace `log(0)` edge case** — a draw of exactly 0 gave infinite noise | a rare but real numerical failure in the noise | the draw is guarded so the log argument stays positive | applied to every Laplace sampler |
+
+Items 1–8 are endpoint- and validation-level fixes; items 9–10 are fixes to the differential-privacy
+mechanism itself, and matter for correctness rather than for a direct leak.
+
+### The flagship finding — a full re-identification chain
+
+The most serious issue (items 1–4 above) deserves spelling out, because it is a textbook example of how
+"anonymous" data leaks. A public per-record endpoint had been left live after the front end had already
+moved to synthetic data. It still returned **real** database rows, and three weaknesses combined into a
+complete re-identification:
+
+1. the exact number of records matching any filter leaked through the pagination metadata, so an
+   attacker could add filters (city, then severity, then vaccine…) until the count fell to **one**,
+   isolating a single person;
+2. the caller could set ε, and the cap was so high that at the maximum the noise effectively vanished,
+   revealing the categorical fields at their true values;
+3. the timestamp and the free-text note were never noised at all.
+
+Chained, these let an attacker single out one individual and then read that person's near-exact record —
+age, city, severity, vaccine, exact date, and note. This is precisely the failure mode that defeated the
+"anonymised" datasets in the precedents above [5], [11]. I removed the endpoint entirely; Privax now has
+**no** per-record read path, and the fix was re-verified (the endpoint returns 405 for every method and
+every ε). Finding a gap between what I had designed and what I had actually deployed, and closing it, is
+a more honest and more useful result than a claim that the system was perfect from the first commit.
+
+### Attacks tested that already held
+
+Alongside the issues above, a wider set of attacks was attempted and found already closed — evidence
+that the defences behave as intended, not only that the known holes were patched.
 
 | Attack | What it tries | Result |
 |---|---|---|
-| Read an individual record | fetch raw rows from a per-record endpoint | **Closed** — no such endpoint exists (returns HTTP 405) |
-| Averaging | repeat one aggregate query to average the noise away | **Closed** — results are memoised; every repeat is identical |
-| Tunable-ε / differencing | query at very low vs very high ε to solve for the truth | **Closed** — the public ε is fixed server-side; results are identical across ε |
-| Singling-out | narrow the filters until a slice matches one person | **Closed** — the count is noised, so a slice cannot confirm any individual |
-| SQL injection | inject SQL through the filter parameters | **Closed** — parameterised queries; injected strings match nothing and the schema is intact |
-| Cross-origin theft (CORS) | read authenticated responses from a hostile web page | **Closed** — the origin is pinned; no cross-origin access is granted |
-| Privilege escalation | request an ADMIN or DOCTOR role at signup | **Closed** — accounts are created as ordinary users; privileged roles require admin approval |
-| Account enumeration | probe which usernames or emails already exist | **Closed** — a single generic message is returned for any duplicate |
-| Identifier leak | read the internal patient code from any response | **Closed** — it is stored but never serialised, on read or write |
+| Averaging | repeat one aggregate query to average the noise away | Held — results are memoised; every repeat is identical |
+| Tunable-ε / differencing | query at very low vs very high ε to solve for the truth | Held — public ε is fixed server-side; results identical across ε |
+| Singling-out via aggregates | narrow filters until a slice matches one person | Held — the count is noised, so a slice cannot confirm any individual |
+| SQL injection | inject SQL through filter parameters | Held — parameterised queries; injected strings match nothing, schema intact |
+| Cross-origin theft (CORS) | read authenticated responses from a hostile web page | Held — origin pinned to the front end; no cross-origin access granted |
+| Privilege escalation | request an ADMIN/DOCTOR role at signup | Held — accounts created as ordinary users; privileged roles need admin approval |
+| Password-hash exposure | read a password hash from a user endpoint | Held — a DTO is returned; the hash is never serialised, even for the admin |
+| Management endpoints | reach Spring Actuator (env, beans, heap dump) | Held — not exposed (HTTP 401) |
+| Error-message leakage | force an error and read a stack trace | Held — clean error body, no stack trace |
+| Path traversal | bypass access control via a crafted path (`/api/users/me/../pending`) | Held — normalised and still authorised by role |
+| Blog author PII | read an author's email from a public post | Held — the author field is a display string only |
 
-### A real vulnerability, found and fixed
-
-The testing was not merely confirmatory — it found a genuine hole. A public per-record endpoint had
-been left live after the front end had already moved to synthetic data, and it still returned real
-rows, noised with a client-supplied ε that was capped so high it amounted to no noise at all; worse, the
-exact number of matching records leaked through the pagination metadata. Chained together, these let an
-attacker narrow a filter until it matched a single person and then read that person's near-exact record.
-I removed the endpoint entirely and re-verified the fix. I include this deliberately: finding a gap
-between what I designed and what I had actually deployed, and closing it, is a more honest and more
-useful result than a claim that everything was perfect from the first commit.
+Two low-severity information-disclosure items were noted and deliberately left in place, because neither
+reveals any individual's membership: the homepage counters (`/public/stats`) are exact global totals,
+and the API schema (OpenAPI/Swagger) is public — both appropriate for a demonstrative build, and both
+flagged for a production deployment.
 
 ### Conclusion
 
-After the fix, no endpoint releases raw individual records, credentials, or personal identifiers. The
+After the fixes, no endpoint releases raw individual records, credentials, or personal identifiers. The
 attacks that defeat ordinary anonymisation — averaging, ε-tuning, differencing, and re-identification by
-linkage — were all closed. Individual-level protection rests entirely on the differentially-private
-aggregates, the budgeted researcher channel, and the anonymous-at-rest data model.
+linkage — were all closed, and the correctness bugs in the mechanism itself (items 9–10) were repaired
+so that the ε-DP guarantee holds as stated. Individual-level protection now rests entirely on the
+differentially-private aggregates, the budgeted researcher channel, and the anonymous-at-rest data
+model.
 
 ---
 
