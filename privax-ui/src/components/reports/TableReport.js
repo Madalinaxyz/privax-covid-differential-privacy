@@ -156,12 +156,12 @@ const TableReport = () => {
     const out = [];
     const last = totalPages - 1;
     if (last < 0) return out;
-    const window = 1;
+    const windowSize = 1;
     const add = (p) => out.push(p);
     add(0);
-    if (safePage - window > 1) out.push("…");
-    for (let p = Math.max(1, safePage - window); p <= Math.min(last - 1, safePage + window); p++) if (p !== 0 && p !== last) add(p);
-    if (safePage + window < last - 1) out.push("…");
+    if (safePage - windowSize > 1) out.push("…");
+    for (let p = Math.max(1, safePage - windowSize); p <= Math.min(last - 1, safePage + windowSize); p++) if (p !== 0 && p !== last) add(p);
+    if (safePage + windowSize < last - 1) out.push("…");
     if (last > 0) add(last);
     return out.filter((p, i, arr) => arr.indexOf(p) === i);
   };

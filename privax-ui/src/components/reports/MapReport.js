@@ -159,7 +159,7 @@ const vaccineOptions = [
   { key: "Pfizer", text: "Pfizer", value: "Pfizer" },
   { key: "Moderna", text: "Moderna", value: "Moderna" },
   { key: "AstraZeneca", text: "AstraZeneca", value: "AstraZeneca" },
-  { key: "Johnson & Johnson", text: "Johnson & Johnson" },
+  { key: "Johnson & Johnson", text: "Johnson & Johnson", value: "Johnson & Johnson" },
 ];
 
 // Define severity filter options
@@ -181,7 +181,6 @@ const MapReport = () => {
   const fetchGroupedReports = async () => {
     try {
       const response = await privaxApi.getGroupedSideEffectReports(selectedVaccine, selectedSeverity, epsilon);
-      console.log("API Response:", response.data);
       setReports(response.data);
       setFilteredReports(response.data);
     } catch (error) {

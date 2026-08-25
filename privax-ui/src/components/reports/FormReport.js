@@ -153,9 +153,7 @@ const FormReport = () => {
     setLoading(true);
 
     try {
-      console.log("Submitting report:", formData); // ✅ Debug submission data
-      const response = await privaxApi.createSideEffectReport(formData);
-      console.log("Report created:", response.data);
+      await privaxApi.createSideEffectReport(formData);
       setSuccessMessage("Report submitted successfully!");
       setFormData({
         age: "",
