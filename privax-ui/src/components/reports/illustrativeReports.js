@@ -138,10 +138,17 @@ function noiseSymptoms(symptoms, severity, epsilon, r) {
 /** Return a copy of a synthetic row with epsilon-DP noise applied (safe: data is synthetic). */
 export function noiseReport(row, epsilon) {
   const severity = randomize(row.severity, SEVERITIES, epsilon, seededRandom(row.id, "severity"));
+  // If the noise changed the severity, re-pick the note from the new severity's pool so the row
+  // stays internally consistent (no "resolved within 48 hours" on a FATAL case). Unchanged rows
+  // keep their original note.
+  const additionalInfo = severity === row.severity
+    ? row.additionalInfo
+    : NOTES[severity][Math.floor(seededRandom(row.id, "note")() * NOTES[severity].length)];
   return {
     ...row,
     age: Math.max(0, Math.min(120, Math.round(row.age + laplace(5 / epsilon, seededRandom(row.id, "age"))))),
     severity,
+    additionalInfo,
     vaccineName: randomize(row.vaccineName, VACCINES, epsilon, seededRandom(row.id, "vaccine")),
     city: randomize(row.city, CITIES, epsilon, seededRandom(row.id, "city")),
     // symptoms are noised too, staying within the displayed (noised) severity tier
