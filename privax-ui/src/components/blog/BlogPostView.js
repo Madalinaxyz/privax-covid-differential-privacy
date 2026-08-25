@@ -103,6 +103,15 @@ export default function BlogPostView() {
     h3: ({ children }) => <h3 id={slugifyHeading(nodeText(children))}>{children}</h3>,
   }), [])
 
+  // The article header already renders post.title as the page <h1>. Many posts also
+  // begin their markdown body with a "# Title" line, which would duplicate the title
+  // and produce a second <h1>. Strip a single leading top-level heading (section
+  // headings in these posts are all ## / ###, so a body # is always that duplicate).
+  const bodyContent = useMemo(() => {
+    if (!post?.content) return ''
+    return post.content.replace(/^\s*#\s+.*(?:\r?\n|$)/, '')
+  }, [post])
+
   const goTo = (id) => {
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -181,7 +190,7 @@ export default function BlogPostView() {
           )}
 
           <div className="blog-content">
-            <ReactMarkdown components={mdComponents}>{post.content}</ReactMarkdown>
+            <ReactMarkdown components={mdComponents}>{bodyContent}</ReactMarkdown>
           </div>
         </div>
 

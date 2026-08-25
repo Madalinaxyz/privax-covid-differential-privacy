@@ -22,7 +22,16 @@ const EpsilonSlider = ({
       <span>{label}</span>
       <span className="report-epsilon-value">{value.toFixed(1)}</span>
     </div>
-    <Slider min={min} max={max} step={step} value={value} onChange={onChange} disabled={disabled} />
+    <Slider
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      ariaLabelForHandle={label}
+      ariaValueTextFormatterForHandle={(v) => `${label}: ${v.toFixed(1)}`}
+    />
     <p className="report-epsilon-hint">{hint}</p>
   </div>
 );

@@ -798,6 +798,18 @@
    ============================================================ */
 @media (max-width: 880px) {
   .reports-page { padding: 40px 4vw 64px; }
+  /* Stack the Semantic Tab grid: menu on top, content full-width below.
+     Without this the columns stay pinned at 220px + calc(100% - 220px),
+     squeezing the content into a ~150px sliver on phones. */
+  .reports-page .ui.grid > .row > [class*="four wide"].column,
+  .reports-page .ui.grid > [class*="four wide"].column,
+  .reports-page .ui.grid > .row > [class*="twelve wide"].column,
+  .reports-page .ui.grid > [class*="twelve wide"].column {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
   .reports-page .ui.tab.menu.tabular,
   .reports-page .ui.vertical.tabular.menu {
     width: 100% !important;
@@ -811,6 +823,17 @@
   }
   .reports-page .ui.tab.segment { padding: 24px !important; }
   .report-filters { grid-template-columns: 1fr; }
+}
+
+/* On very narrow phones the four tab labels no longer fit on one row —
+   let them wrap instead of overflowing. */
+@media (max-width: 560px) {
+  .reports-page .ui.vertical.tabular.menu {
+    flex-wrap: wrap !important;
+  }
+  .reports-page .ui.vertical.tabular.menu .item {
+    flex: 1 1 44% !important;
+  }
 }
 
 /* ============================================================
