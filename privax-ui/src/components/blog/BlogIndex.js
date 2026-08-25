@@ -77,7 +77,7 @@ export default function BlogIndex() {
       {!loading && posts.length > 0 && (
         <div className="blog-toolbar">
           <div className="blog-search">
-            <svg className="blog-search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none"
+            <svg className="blog-search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"
                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -95,12 +95,14 @@ export default function BlogIndex() {
           <div className="blog-tags-bar">
             <button
               className={`blog-tag-chip ${activeTag === null ? 'is-active' : ''}`}
+              aria-pressed={activeTag === null}
               onClick={() => setActiveTag(null)}
             >All</button>
             {allTags.map((t) => (
               <button
                 key={t}
                 className={`blog-tag-chip ${activeTag === t ? 'is-active' : ''}`}
+                aria-pressed={activeTag === t}
                 onClick={() => setActiveTag(activeTag === t ? null : t)}
               >{t}</button>
             ))}

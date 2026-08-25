@@ -19,6 +19,8 @@ function UserTable({ users, userUsernameSearch, handleInputChange, handleDeleteU
               color='red'
               size='small'
               icon='trash'
+              aria-label={`Delete user ${user.username}`}
+              title={`Delete user ${user.username}`}
               disabled={user.username === 'admin'}
               onClick={() => handleDeleteUser(user.username)}
             />
@@ -37,8 +39,9 @@ function UserTable({ users, userUsernameSearch, handleInputChange, handleDeleteU
     <>
       <Form onSubmit={handleSearchUser}>
         <Input
-          action={{ icon: 'search' }}
+          action={{ icon: 'search', type: 'submit', 'aria-label': 'Search' }}
           name='userUsernameSearch'
+          aria-label='Search users by username'
           placeholder='Search by Username'
           value={userUsernameSearch}
           onChange={handleInputChange}

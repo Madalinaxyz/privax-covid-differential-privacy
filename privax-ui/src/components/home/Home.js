@@ -473,13 +473,18 @@ export default function Home() {
               <div
                 key={i}
                 className={`faq-item ${openFaq === i ? 'open' : ''}`}
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
               >
-                <div className="faq-q">
+                <button
+                  type="button"
+                  className="faq-q"
+                  aria-expanded={openFaq === i}
+                  aria-controls={`faq-answer-${i}`}
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
                   <span>{f.q}</span>
-                  <span className="faq-icon">+</span>
-                </div>
-                {openFaq === i && <div className="faq-a">{f.a}</div>}
+                  <span className="faq-icon" aria-hidden="true">+</span>
+                </button>
+                {openFaq === i && <div className="faq-a" id={`faq-answer-${i}`}>{f.a}</div>}
               </div>
             ))}
           </div>
