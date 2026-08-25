@@ -72,11 +72,11 @@ const SymptomStats = () => {
       {/* Filters */}
       <div className="report-toolbar">
         <div className="symptom-filters">
-          <Select compact options={SEVERITY_OPTIONS} value={filters.severity}
+          <Select compact aria-label="Filter by severity" options={SEVERITY_OPTIONS} value={filters.severity}
                   onChange={(_, { value }) => setFilter("severity", value)} />
-          <Select compact options={VACCINE_OPTIONS} value={filters.vaccineName}
+          <Select compact aria-label="Filter by vaccine" options={VACCINE_OPTIONS} value={filters.vaccineName}
                   onChange={(_, { value }) => setFilter("vaccineName", value)} />
-          <Select compact search options={CITY_OPTIONS} value={filters.city}
+          <Select compact search aria-label="Filter by city" options={CITY_OPTIONS} value={filters.city}
                   onChange={(_, { value }) => setFilter("city", value || "")} />
         </div>
         <div className="report-count">

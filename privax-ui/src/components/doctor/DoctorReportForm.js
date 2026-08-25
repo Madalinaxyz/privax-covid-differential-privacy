@@ -94,8 +94,9 @@ const DoctorReportForm = ({ onSubmitted }) => {
   return (
     <Form onSubmit={handleSubmit} loading={loading} success={!!success} error={!!error}>
       <FormField>
-        <label>Patient code <span className="form-hint">(optional, e.g. P-4821)</span></label>
+        <label htmlFor="doc-patient-code">Patient code <span className="form-hint">(optional, e.g. P-4821)</span></label>
         <input
+          id="doc-patient-code"
           type="text"
           name="patientCode"
           maxLength={64}
@@ -106,8 +107,9 @@ const DoctorReportForm = ({ onSubmitted }) => {
       </FormField>
 
       <FormField error={!!ageError}>
-        <label>Age</label>
+        <label htmlFor="doc-age">Age</label>
         <input
+          id="doc-age"
           type="number"
           name="age"
           min={MIN_AGE}
@@ -129,6 +131,7 @@ const DoctorReportForm = ({ onSubmitted }) => {
         <Dropdown
           placeholder="Select symptoms"
           fluid multiple selection
+          aria-label="Symptoms reported"
           options={symptomOptions}
           name="symptoms"
           value={formData.symptoms}
@@ -141,6 +144,7 @@ const DoctorReportForm = ({ onSubmitted }) => {
         <Dropdown
           placeholder="Select severity"
           fluid selection
+          aria-label="Severity"
           options={severityOptions}
           name="severity"
           value={formData.severity}
@@ -154,6 +158,7 @@ const DoctorReportForm = ({ onSubmitted }) => {
         <Dropdown
           placeholder="Select vaccine"
           fluid selection
+          aria-label="Vaccine administered"
           options={vaccineOptions}
           name="vaccineName"
           value={formData.vaccineName}
@@ -167,6 +172,7 @@ const DoctorReportForm = ({ onSubmitted }) => {
         <Dropdown
           placeholder="Select city"
           fluid selection
+          aria-label="City"
           options={cityOptions}
           name="city"
           value={formData.city}
@@ -176,8 +182,9 @@ const DoctorReportForm = ({ onSubmitted }) => {
       </FormField>
 
       <FormField>
-        <label>Clinical observations</label>
+        <label htmlFor="doc-additional-info">Clinical observations</label>
         <TextArea
+          id="doc-additional-info"
           name="additionalInfo"
           placeholder="Your own clinical notes about onset, duration, treatment, etc."
           rows={4}

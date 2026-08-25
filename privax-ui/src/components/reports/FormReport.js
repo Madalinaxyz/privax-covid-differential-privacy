@@ -182,6 +182,7 @@ const FormReport = () => {
           placeholder="Select"
           fluid
           selection
+          aria-label="Who is this report for?"
           options={reporterOptions}
           name="reporterType"
           value={formData.reporterType}
@@ -193,8 +194,9 @@ const FormReport = () => {
       </FormField>
 
       <FormField error={!!ageError}>
-        <label>Age</label>
+        <label htmlFor="report-age">Age</label>
         <input
+          id="report-age"
           type="number"
           name="age"
           min={MIN_AGE}
@@ -220,6 +222,7 @@ const FormReport = () => {
           fluid
           multiple
           selection
+          aria-label="Symptoms"
           options={symptomOptions}
           name="symptoms"
           value={formData.symptoms}
@@ -233,6 +236,7 @@ const FormReport = () => {
           placeholder="Select severity"
           fluid
           selection
+          aria-label="Severity"
           options={severityOptions}
           name="severity"
           value={formData.severity}
@@ -252,6 +256,7 @@ const FormReport = () => {
           placeholder="Select vaccine"
           fluid
           selection
+          aria-label="Vaccine name"
           options={vaccineOptions}
           name="vaccineName"
           value={formData.vaccineName}
@@ -266,6 +271,7 @@ const FormReport = () => {
           placeholder="Select city"
           fluid
           selection
+          aria-label="City"
           options={cityOptions}
           name="city"
           value={formData.city}
@@ -275,8 +281,9 @@ const FormReport = () => {
       </FormField>
 
       <FormField>
-        <label>Additional Info</label>
+        <label htmlFor="report-additional-info">Additional Info</label>
         <TextArea
+          id="report-additional-info"
           name="additionalInfo"
           placeholder="Any context — onset, duration, treatment. If you're reporting for someone else, please note your relationship to them."
           value={formData.additionalInfo}

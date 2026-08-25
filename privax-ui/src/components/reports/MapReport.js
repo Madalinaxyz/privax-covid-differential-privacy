@@ -202,6 +202,7 @@ const MapReport = () => {
         placeholder="Filter by Vaccine"
         fluid
         selection
+        aria-label="Filter by vaccine"
         options={vaccineOptions}
         value={selectedVaccine}
         onChange={(e, { value }) => setSelectedVaccine(value)}
@@ -212,6 +213,7 @@ const MapReport = () => {
         placeholder="Filter by Severity"
         fluid
         selection
+        aria-label="Filter by severity"
         options={severityOptions}
         value={selectedSeverity}
         onChange={(e, { value }) => setSelectedSeverity(value)}
@@ -306,7 +308,7 @@ const MapReport = () => {
         );
       })()}
 
-      <MapContainer center={[45.9432, 24.9668]} zoom={6} style={{ height: "800px", width: "100%", zIndex: "3" }}>
+      <MapContainer center={[45.9432, 24.9668]} zoom={6} aria-label="Map of vaccine side-effect case counts by Romanian city" style={{ height: "800px", width: "100%", zIndex: "3" }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

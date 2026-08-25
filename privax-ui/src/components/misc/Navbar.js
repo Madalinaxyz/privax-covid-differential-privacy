@@ -48,16 +48,20 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <nav className="navbar-links">
-          {navLinks.map(({ label, to }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`navbar-link ${location.pathname === to ? 'navbar-link--active' : ''}`}
-            >
-              {label}
-            </Link>
-          ))}
+        <nav className="navbar-links" aria-label="Primary">
+          {navLinks.map(({ label, to }) => {
+            const active = location.pathname === to
+            return (
+              <Link
+                key={to}
+                to={to}
+                aria-current={active ? 'page' : undefined}
+                className={`navbar-link ${active ? 'navbar-link--active' : ''}`}
+              >
+                {label}
+              </Link>
+            )
+          })}
         </nav>
 
         <div className="navbar-auth">

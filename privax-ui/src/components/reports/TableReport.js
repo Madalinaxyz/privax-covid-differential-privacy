@@ -131,6 +131,19 @@ const TableReport = () => {
     if (sortField !== field) return "sort";
     return sortDir === "asc" ? "sort up" : "sort down";
   };
+  /* aria-sort value for a column header (screen-reader announcement). */
+  const ariaSortFor = (field) => {
+    if (sortField !== field) return "none";
+    return sortDir === "asc" ? "ascending" : "descending";
+  };
+  /* A sortable header cell: keyboard-focusable button + aria-sort on the cell. */
+  const sortableHeader = (field, label) => (
+    <TableHeaderCell aria-sort={ariaSortFor(field)}>
+      <button type="button" className="th-content th-sort" onClick={() => toggleSort(field)}>
+        {label} <Icon name={sortIcon(field)} />
+      </button>
+    </TableHeaderCell>
+  );
 
   /* ── Filter handler ── */
   const setFilter = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
@@ -176,9 +189,10 @@ const TableReport = () => {
             : <>No examples match the current filters</>}
         </div>
         <div className="report-page-size">
-          <label>Page size</label>
+          <label id="page-size-label">Page size</label>
           <Select
             compact
+            aria-labelledby="page-size-label"
             options={PAGE_SIZE_OPTIONS}
             value={size}
             onChange={(_, { value }) => setSize(value)}
@@ -190,39 +204,29 @@ const TableReport = () => {
         <Table striped sortable>
           <TableHeader>
             <TableRow>
-              <TableHeaderCell onClick={() => toggleSort("age")}>
-                <span className="th-content">Age <Icon name={sortIcon("age")} /></span>
-              </TableHeaderCell>
-              <TableHeaderCell onClick={() => toggleSort("severity")}>
-                <span className="th-content">Severity <Icon name={sortIcon("severity")} /></span>
-              </TableHeaderCell>
-              <TableHeaderCell onClick={() => toggleSort("vaccineName")}>
-                <span className="th-content">Vaccine <Icon name={sortIcon("vaccineName")} /></span>
-              </TableHeaderCell>
+              {sortableHeader("age", "Age")}
+              {sortableHeader("severity", "Severity")}
+              {sortableHeader("vaccineName", "Vaccine")}
               <TableHeaderCell>Symptoms</TableHeaderCell>
-              <TableHeaderCell onClick={() => toggleSort("reportedAt")}>
-                <span className="th-content">Reported At <Icon name={sortIcon("reportedAt")} /></span>
-              </TableHeaderCell>
-              <TableHeaderCell onClick={() => toggleSort("city")}>
-                <span className="th-content">City <Icon name={sortIcon("city")} /></span>
-              </TableHeaderCell>
+              {sortableHeader("reportedAt", "Reported At")}
+              {sortableHeader("city", "City")}
               <TableHeaderCell>Additional Info</TableHeaderCell>
             </TableRow>
             {/* Filter row — sits below the header */}
             <TableRow className="report-filter-row">
               <TableHeaderCell />
               <TableHeaderCell>
-                <Select fluid options={SEVERITY_OPTIONS} value={filters.severity} onChange={(_, { value }) => setFilter("severity", value)} />
+                <Select fluid aria-label="Filter by severity" options={SEVERITY_OPTIONS} value={filters.severity} onChange={(_, { value }) => setFilter("severity", value)} />
               </TableHeaderCell>
               <TableHeaderCell>
-                <Select fluid options={VACCINE_OPTIONS} value={filters.vaccineName} onChange={(_, { value }) => setFilter("vaccineName", value)} />
+                <Select fluid aria-label="Filter by vaccine" options={VACCINE_OPTIONS} value={filters.vaccineName} onChange={(_, { value }) => setFilter("vaccineName", value)} />
               </TableHeaderCell>
               <TableHeaderCell>
-                <Dropdown fluid selection search clearable options={SYMPTOM_OPTIONS} value={filters.symptom} placeholder="All symptoms" onChange={(_, { value }) => setFilter("symptom", value || "")} />
+                <Dropdown fluid selection search clearable aria-label="Filter by symptom" options={SYMPTOM_OPTIONS} value={filters.symptom} placeholder="All symptoms" onChange={(_, { value }) => setFilter("symptom", value || "")} />
               </TableHeaderCell>
               <TableHeaderCell />
               <TableHeaderCell>
-                <Dropdown fluid selection search clearable options={CITY_OPTIONS} value={filters.city} placeholder="All cities" onChange={(_, { value }) => setFilter("city", value || "")} />
+                <Dropdown fluid selection search clearable aria-label="Filter by city" options={CITY_OPTIONS} value={filters.city} placeholder="All cities" onChange={(_, { value }) => setFilter("city", value || "")} />
               </TableHeaderCell>
               <TableHeaderCell />
             </TableRow>

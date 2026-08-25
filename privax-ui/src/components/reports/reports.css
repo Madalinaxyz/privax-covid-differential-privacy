@@ -279,6 +279,24 @@
   color: #14213D;
   transition: color 0.18s;
 }
+/* Sortable header button — strip native chrome, keep it keyboard-focusable */
+button.th-content.th-sort {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+button.th-content.th-sort:focus-visible {
+  outline: 2px solid #2DA597;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
 .th-content .icon {
   font-size: 0.85rem !important;
   color: #9CA5B8;
