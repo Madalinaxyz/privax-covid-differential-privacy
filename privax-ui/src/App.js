@@ -23,8 +23,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <Navbar />
         <PendingBanner />
+        <div id="main-content" tabIndex={-1}>
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/reports' element={<Report />} />
@@ -41,6 +43,7 @@ function App() {
           <Route path="/research" element={<PrivateRoute><ResearchPage /></PrivateRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </div>
         <Footer />
       </Router>
     </AuthProvider>

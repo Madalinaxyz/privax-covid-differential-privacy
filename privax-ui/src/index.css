@@ -38,3 +38,26 @@ code {
 
 /* Semantic UI modal dimmer */
 .ui.page.modals.dimmer { background: rgba(0, 0, 0, 0.7); }
+
+/* Skip link — visually hidden until focused, so keyboard users can jump past
+   the navbar straight to the page content (WCAG 2.4.1 Bypass Blocks). */
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  z-index: 2000;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: #14213D;
+  color: #FFFFFF;
+  font-weight: 700;
+  text-decoration: none;
+  transition: top 0.18s ease;
+}
+.skip-link:focus {
+  top: 16px;
+  outline: 2px solid #2DA597;
+  outline-offset: 2px;
+}
+/* The main-content wrapper is focusable only as a skip target, not a focus ring. */
+#main-content:focus { outline: none; }
