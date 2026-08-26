@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "privax",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", ".claude\\start-app.cmd"],
+      "port": 3000
+    },
+    {
+      "name": "privax-backend-only",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", ".claude\\run-backend.cmd"],
+      "port": 8080
+    }
+  ]
+}
