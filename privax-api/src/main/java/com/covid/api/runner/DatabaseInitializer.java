@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,7 @@ import java.util.Random;
 @Slf4j
 @RequiredArgsConstructor
 @Component
+@Profile("!test") // don't seed the big demo dataset during automated tests
 public class DatabaseInitializer implements CommandLineRunner {
 
     @Autowired

@@ -68,7 +68,7 @@ public class SideEffectService {
     }
 
     /** Genuine Laplace draw via inverse transform sampling: noise = -scale * sgn(u) * ln(1 - 2|u|). */
-    private double freshLaplaceNoise(double scale) {
+    double freshLaplaceNoise(double scale) { // package-private for unit testing
         double r = releaseRandom.nextDouble();          // [0, 1)
         if (r == 0.0) r = Math.ulp(0.5);                // avoid u == -0.5 -> log(0) -> infinite noise
         double u = r - 0.5;                             // (-0.5, 0.5)
@@ -350,7 +350,7 @@ public class SideEffectService {
      * Rearranged, the replace-probability is  q = k / (e^ε + k − 1).
      * q is always in [0, 1]: high ε → q→0 (truth), low ε → q→1 (uniform).
      */
-    private static double replaceProbability(double epsilon, int k) {
+    static double replaceProbability(double epsilon, int k) { // package-private for unit testing
         return k / (Math.exp(epsilon) + k - 1.0);
     }
 
