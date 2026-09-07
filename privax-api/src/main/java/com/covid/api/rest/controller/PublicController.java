@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.covid.api.rest.model.SeverityLevel;
 import com.covid.api.rest.repository.SideEffectReportRepository;
-import com.covid.api.rest.repository.VaccineRepository;
 import com.covid.api.user.UserService;
 
 @RequiredArgsConstructor
@@ -20,7 +19,6 @@ public class PublicController {
 
     private final UserService userService;
     private final SideEffectReportRepository sideEffectReportRepository;
-    private final VaccineRepository vaccineRepository;
 
     @GetMapping("/numberOfUsers")
     public Integer getNumberOfUsers() {
@@ -34,7 +32,7 @@ public class PublicController {
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
         long total      = sideEffectReportRepository.count();
-        long vaccines   = vaccineRepository.count();
+        long vaccines   = sideEffectReportRepository.countDistinctVaccines();
         long symptoms   = sideEffectReportRepository.countDistinctSymptoms();
 
         // "Resolved" = MILD + MODERATE reports (i.e., everyone who recovered without serious outcomes)

@@ -60,6 +60,10 @@ public interface SideEffectReportRepository
     @Query("SELECT COUNT(DISTINCT s) FROM SideEffectReport r JOIN r.symptoms s")
     long countDistinctSymptoms();
 
+    /** Distinct count of vaccine names actually appearing in reports (feeds the homepage counter). */
+    @Query("SELECT COUNT(DISTINCT r.vaccineName) FROM SideEffectReport r")
+    long countDistinctVaccines();
+
     /** Per-symptom report counts, optionally filtered by vaccine / severity / city. Newest counts first. */
     @Query("SELECT new com.covid.api.rest.dto.SymptomCountDTO(s, COUNT(r)) " +
            "FROM SideEffectReport r JOIN r.symptoms s " +

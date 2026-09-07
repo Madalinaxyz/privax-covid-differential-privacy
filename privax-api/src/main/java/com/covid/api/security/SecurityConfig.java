@@ -21,10 +21,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/public/**", "/auth/**").permitAll()
-                        // The compare endpoint returns the RAW (un-noised) count next to the noisy
-                        // one — useful only for demonstrating the trade-off, never for the public.
-                        .requestMatchers("/api/vaccinations/region/compare").hasAuthority(ADMIN)
-                        .requestMatchers("/api/vaccinations/**").permitAll()
                         .requestMatchers(HttpMethod.GET,    "/api/blog/**").permitAll()
                         .requestMatchers(HttpMethod.POST,   "/api/blog/**").hasAuthority(ADMIN)
                         .requestMatchers(HttpMethod.PUT,    "/api/blog/**").hasAuthority(ADMIN)
@@ -44,15 +40,6 @@ public class SecurityConfig {
                         // public signup) — otherwise the budget could be defeated by registering
                         // unlimited fresh accounts.
                         .requestMatchers("/api/research/**").hasAuthority(DOCTOR)
-                        // Appointments carry personal data (name, date, location), so the ENTIRE
-                        // appointment API is ADMIN-only — reads included. Without this, any
-                        // authenticated user could read everyone's appointments.
-                        .requestMatchers("/api/appointments", "/api/appointments/**").hasAuthority(ADMIN)
-                        // Vaccine catalogue MUTATIONS are ADMIN-only; GET /api/vaccines stays open to
-                        // any authenticated user (it is the vaccine list, not personal data).
-                        .requestMatchers(HttpMethod.POST,   "/api/vaccines", "/api/vaccines/**").hasAuthority(ADMIN)
-                        .requestMatchers(HttpMethod.PUT,    "/api/vaccines/**").hasAuthority(ADMIN)
-                        .requestMatchers(HttpMethod.DELETE, "/api/vaccines/**").hasAuthority(ADMIN)
                         .requestMatchers("/", "/error", "/csrf", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())

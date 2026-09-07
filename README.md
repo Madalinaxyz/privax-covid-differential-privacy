@@ -144,8 +144,6 @@ cd privax-api
 ```
 The backend starts on `http://localhost:8080` and **automatically seeds the database** with:
 - 3 default users (see below)
-- 4 vaccine records
-- 10,000 random vaccination records
 - 3,000 random side-effect reports across 29 Romanian cities
 - a set of long-form blog posts
 
@@ -180,7 +178,6 @@ All endpoints documented at **http://localhost:8080/swagger-ui.html** when runni
 ### Public (no auth)
 - `POST /auth/authenticate` — login
 - `POST /auth/signup` — register (privileged roles are *requested*, not granted — see credentials above)
-- `GET  /api/vaccinations/region?region=` — noisy vaccination count for a region (fixed server-side ε)
 - `GET  /api/side-effects/grouped?vaccineName=&severityLevel=` — counts grouped by city (the map)
 - `GET  /api/side-effects/symptom-stats` — DP-noised symptom prevalence
 
@@ -190,12 +187,10 @@ All endpoints documented at **http://localhost:8080/swagger-ui.html** when runni
 
 ### Authenticated (any logged-in user)
 - `POST /api/side-effects` — submit a report
-- `GET  /api/vaccines` — list vaccines
 
 ### Admin only
 - `GET  /api/users` — list users
 - `GET  /api/users/pending` · `POST /api/users/{username}/approve|deny` — manage clinician requests
-- `GET  /api/vaccinations/region/compare?region=` — raw vs. noisy side-by-side (exposes raw counts)
 
 ### Clinician (DOCTOR) only
 - `POST /api/side-effects/clinician` — submit a report on behalf of a patient

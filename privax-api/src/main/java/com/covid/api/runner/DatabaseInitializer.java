@@ -14,11 +14,7 @@ import com.covid.api.blog.BlogPostRepository;
 import com.covid.api.rest.model.ReporterType;
 import com.covid.api.rest.model.SeverityLevel;
 import com.covid.api.rest.model.SideEffectReport;
-import com.covid.api.rest.model.VaccinationRecord;
-import com.covid.api.rest.model.Vaccine;
 import com.covid.api.rest.repository.SideEffectReportRepository;
-import com.covid.api.rest.repository.VaccinationRecordRepository;
-import com.covid.api.rest.repository.VaccineRepository;
 import com.covid.api.security.SecurityConfig;
 import com.covid.api.user.User;
 import com.covid.api.user.UserService;
@@ -36,19 +32,11 @@ import java.util.Random;
 @Profile("!test") // don't seed the big demo dataset during automated tests
 public class DatabaseInitializer implements CommandLineRunner {
 
-    @Autowired
-    private VaccinationRecordRepository vaccinationRecordRepository;
     private final SideEffectReportRepository sideEffectReportRepository;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final VaccineRepository vaccineRepository;
     private final BlogPostRepository blogPostRepository;
 
-
-    private static final String[] REGIONS = {
-        "Bucharest", "Cluj", "Timisoara", "Iasi", "Constanta", "Brasov", "Oradea", "Craiova"
-    };
-    
     private static final String[] VACCINE_TYPES = {
         "Pfizer", "Moderna", "AstraZeneca", "Johnson & Johnson"
     };
@@ -81,14 +69,6 @@ public class DatabaseInitializer implements CommandLineRunner {
         return pool;
     }
 
-    private static final List<Vaccine> VACCINES = Arrays.asList(
-        new Vaccine("Pfizer", "Pfizer Inc.", 10000),
-        new Vaccine("Moderna", "Moderna, Inc.", 8000),
-        new Vaccine("AstraZeneca", "AstraZeneca plc", 6000),
-        new Vaccine("Johnson & Johnson", "Johnson & Johnson", 5000)
-    );
-
-    private static final int NUMBER_OF_RECORDS = 10_000;
     private static final int NUMBER_OF_REPORTS = 3_000;
 
     private final Random random = new Random();
@@ -96,8 +76,6 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         insertUsers();
-        insertVaccines();
-        insertVaccinationRecords();
         insertSideEffectReports();
         insertBlogPosts();
         log.info("Database initialized");
@@ -798,38 +776,6 @@ Regardless of any suspected trigger, psychosis is a situation that needs **promp
         });
     }
 
-    private void insertVaccines() {
-        if (vaccineRepository.count() == 0) {
-            vaccineRepository.saveAll(VACCINES);
-            log.info("Inserted predefined vaccines into the database.");
-        } else {
-            log.info("Vaccines already exist, skipping initialization.");
-        }
-    }
-
-    private void insertVaccinationRecords() {
-        if (vaccinationRecordRepository.count() == 0) {
-            List<VaccinationRecord> records = new ArrayList<>();
-            
-            LocalDate startDate = LocalDate.of(2020, 1, 1);
-            long daysBetween = LocalDate.now().toEpochDay() - startDate.toEpochDay();
-            
-            for (int i = 0; i < NUMBER_OF_RECORDS; i++) {
-                int age = 16 + random.nextInt(60); // 16 to 100
-                int numberOfDoses = 1 + random.nextInt(2);
-                String region = REGIONS[random.nextInt(REGIONS.length)];
-                String vaccineType = VACCINE_TYPES[random.nextInt(VACCINE_TYPES.length)];
-                LocalDate vaccinationDate = startDate.plusDays(random.nextInt((int) daysBetween + 1));
-                VaccinationRecord record = new VaccinationRecord(age, region, vaccineType, numberOfDoses, vaccinationDate);
-                records.add(record);
-            }
-            
-            vaccinationRecordRepository.saveAll(records);
-            log.info("Inserted {} random vaccination records.", NUMBER_OF_RECORDS);
-        } else {
-            log.info("Vaccination records already exist, skipping data initialization.");
-        }
-    }
 
     private static final List<User> USERS = Arrays.asList(
             new User("admin",  "admin",  "Admin",          "admin@mycompany.com",  SecurityConfig.ADMIN),

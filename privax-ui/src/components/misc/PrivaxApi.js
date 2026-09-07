@@ -34,7 +34,6 @@ export const privaxApi = {
   getPendingUsers,
   approveUser,
   denyUser,
-  test,
   createSideEffectReport,
   createClinicianReport,
   getGroupedSideEffectReports,
@@ -76,11 +75,6 @@ function numberOfUsers() {
 
 function getPublicStats() {
   return instance.get('/public/stats')
-}
-
-// Protected Endpoints (No Need to Manually Pass User)
-function test() {
-  return instance.get('/api/vaccinations/test')
 }
 
 // NOTE: There is intentionally no getSideEffectReports() — the backend no longer exposes a
